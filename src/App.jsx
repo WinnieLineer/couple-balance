@@ -17,7 +17,7 @@ export default function App() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [offlineMode, setOfflineMode] = useState(false);
   const [displayCurrency, setDisplayCurrency] = useState('TWD');
-  const [myIdentity, setMyIdentity] = useState('p1');
+  const [myIdentity, setMyIdentity] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
 
@@ -38,8 +38,8 @@ export default function App() {
 
   // Default partner details (overwritten on mount by cache or wizard)
   const [partners, setPartners] = useState({
-    p1: { name: '伴侶一', role: 'white_dog' },
-    p2: { name: '伴侶二', role: 'brown_dog' }
+    p1: { name: '伴侶一', role: 'white_dog', deviceId: '' },
+    p2: { name: '伴侶二', role: 'brown_dog', deviceId: '' }
   });
 
   // --- TOAST NOTIFICATIONS ---
@@ -52,6 +52,13 @@ export default function App() {
 
   // --- INITIAL LOADING ---
   useEffect(() => {
+    // 0. Ensure unique device ID is present
+    let devId = localStorage.getItem('device_id');
+    if (!devId) {
+      devId = 'dev_' + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem('device_id', devId);
+    }
+
     // 1. Detect if secrets are injected via GitHub Actions, otherwise fall back to localStorage
     const envToken = import.meta.env.VITE_GIST_TOKEN || '';
     const envGistId = import.meta.env.VITE_GIST_ID || '';
@@ -69,8 +76,8 @@ export default function App() {
     // 2. Load cached partners configuration
     const savedPartners = localStorage.getItem('partners_config');
     let loadedPartners = {
-      p1: { name: '老公', role: 'white_dog' },
-      p2: { name: '老婆', role: 'brown_dog' }
+      p1: { name: '伴侶一', role: 'white_dog', deviceId: '' },
+      p2: { name: '伴侶二', role: 'brown_dog', deviceId: '' }
     };
     if (savedPartners) {
       try {
@@ -94,7 +101,7 @@ export default function App() {
     }
 
     // 3. Load my identity
-    const savedMyIdentity = localStorage.getItem('my_identity') || 'p1';
+    const savedMyIdentity = localStorage.getItem('my_identity') || '';
     setMyIdentity(savedMyIdentity);
 
     // 4. Load cached display currency
@@ -176,27 +183,54 @@ export default function App() {
   };
 
   // --- SAVE SYNC CONFIG & ROLE INFO (FROM PANEL) ---
-  const saveConfig = (token, gistId, customPartners = partners) => {
+  const saveConfig = (token, gistId, customPartners = partners, identity = '') => {
     localStorage.setItem('gist_token', token);
     localStorage.setItem('gist_id', gistId);
     localStorage.setItem('offline_mode', 'false');
-    localStorage.setItem('partners_config', JSON.stringify(customPartners));
+    
+    const devId = localStorage.getItem('device_id') || '';
+    const finalIdentity = identity || localStorage.getItem('my_identity') || 'p1';
+    
+    const updatedPartners = { ...customPartners };
+    if (updatedPartners[finalIdentity]) {
+      updatedPartners[finalIdentity] = {
+        ...updatedPartners[finalIdentity],
+        deviceId: devId
+      };
+    }
+    
+    localStorage.setItem('partners_config', JSON.stringify(updatedPartners));
     
     setSyncConfig({ token, gistId });
     setOfflineMode(false);
-    setPartners(customPartners);
+    setPartners(updatedPartners);
     
-    pullCloudData(token, gistId);
+    localStorage.setItem('my_identity', finalIdentity);
+    setMyIdentity(finalIdentity);
+    
+    // Force a push to cloud Gist to sync the assigned device ID
+    pushCloudData(records, token, gistId, updatedPartners);
   };
 
   // --- UPDATE PARTNERS NICKNAMES & ROLES ---
   const handleUpdatePartners = (customPartners) => {
-    setPartners(customPartners);
-    localStorage.setItem('partners_config', JSON.stringify(customPartners));
+    const devId = localStorage.getItem('device_id') || '';
+    const finalIdentity = myIdentity || 'p1';
+    
+    const updatedPartners = { ...customPartners };
+    if (updatedPartners[finalIdentity]) {
+      updatedPartners[finalIdentity] = {
+        ...updatedPartners[finalIdentity],
+        deviceId: devId
+      };
+    }
+
+    setPartners(updatedPartners);
+    localStorage.setItem('partners_config', JSON.stringify(updatedPartners));
     showToast('角色設定已更新', 'success');
     
     // Auto-push the updated structure to the cloud
-    pushCloudData(records, syncConfig.token, syncConfig.gistId, customPartners);
+    pushCloudData(records, syncConfig.token, syncConfig.gistId, updatedPartners);
   };
 
   // --- TOGGLE OFFLINE MODE ---

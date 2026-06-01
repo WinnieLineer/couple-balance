@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCw, Cloud, CloudOff, ArrowLeftRight } from 'lucide-react';
-import { createSecretGist } from '../utils/githubGist';
+import { createSecretGist, fetchGistData } from '../utils/githubGist';
 
 export default function GistSyncPanel({ 
   syncConfig, 
@@ -10,6 +10,7 @@ export default function GistSyncPanel({
   onPush, 
   isSyncing,
   offlineMode,
+  setOfflineMode,
   partners,
   onUpdatePartners,
   myIdentity = 'p1',
@@ -21,9 +22,9 @@ export default function GistSyncPanel({
   // Show onboarding wizard if nicknames haven't been set yet in localStorage
   const [showWizard, setShowWizard] = useState(!localStorage.getItem('partners_config'));
 
-  // Wizard state for custom names and roles
-  const [p1Name, setP1Name] = useState(partners.p1.name || '老公');
-  const [p2Name, setP2Name] = useState(partners.p2.name || '老婆');
+  // Wizard state for custom names and roles (Create mode)
+  const [p1Name, setP1Name] = useState(partners.p1.name || '伴侶一');
+  const [p2Name, setP2Name] = useState(partners.p2.name || '伴侶二');
   const [p1Role, setP1Role] = useState(partners.p1.role || 'white_dog');
   const [p2Role, setP2Role] = useState(partners.p2.role || 'brown_dog');
 
@@ -32,6 +33,13 @@ export default function GistSyncPanel({
   const [gistIdInput, setGistIdInput] = useState(syncConfig.gistId || '');
   const [localError, setLocalError] = useState('');
   const [localSuccess, setLocalSuccess] = useState('');
+
+  // Onboarding Wizard Modes & States
+  const [wizardMode, setWizardMode] = useState('create'); // 'create' | 'join'
+  const [joinToken, setJoinToken] = useState('');
+  const [joinGistId, setJoinGistId] = useState('');
+  const [fetchedPartners, setFetchedPartners] = useState(null);
+  const [selectedJoinIdentity, setSelectedJoinIdentity] = useState('');
 
   // Sync inputs with config props
   useEffect(() => {
@@ -48,15 +56,21 @@ export default function GistSyncPanel({
 
   const getCustomPartnersPayload = () => {
     return {
-      p1: { name: p1Name.trim() || '老公', role: p1Role },
-      p2: { name: p2Name.trim() || '老婆', role: p2Role }
+      p1: { name: p1Name.trim() || '伴侶一', role: p1Role },
+      p2: { name: p2Name.trim() || '伴侶二', role: p2Role }
     };
   };
 
-  // Complete onboarding and start App
+  // Complete onboarding and start App (Create Mode)
   const handleStart = () => {
     const customPartners = getCustomPartnersPayload();
     onUpdatePartners(customPartners);
+    
+    // Automatically set default identity to p1 on the creator device
+    if (onUpdateMyIdentity) {
+      onUpdateMyIdentity('p1');
+    }
+    
     setShowWizard(false);
   };
 
@@ -76,7 +90,17 @@ export default function GistSyncPanel({
       return;
     }
     const customPartners = getCustomPartnersPayload();
-    saveConfig(tokenInput.trim(), gistIdInput.trim(), customPartners);
+    
+    // Perform verification to block 3rd-party join even in regular settings save
+    const currentDevId = localStorage.getItem('device_id') || '';
+    const p1Dev = customPartners.p1?.deviceId || '';
+    const p2Dev = customPartners.p2?.deviceId || '';
+    if (p1Dev && p2Dev && p1Dev !== currentDevId && p2Dev !== currentDevId) {
+      setLocalError(`⚠️ 連線失敗：目前現有使用者為「${customPartners.p1.name}」與「${customPartners.p2.name}」已經額滿。`);
+      return;
+    }
+
+    saveConfig(tokenInput.trim(), gistIdInput.trim(), customPartners, myIdentity || 'p1');
     setLocalSuccess('雲端設定已儲存並載入！');
   };
 
@@ -91,6 +115,14 @@ export default function GistSyncPanel({
     try {
       setLocalSuccess('正在建立雲端資料庫...');
       const customPartners = getCustomPartnersPayload();
+      
+      // Seed with initial creator deviceId
+      const currentDevId = localStorage.getItem('device_id') || '';
+      const finalIdentity = myIdentity || 'p1';
+      if (customPartners[finalIdentity]) {
+        customPartners[finalIdentity].deviceId = currentDevId;
+      }
+
       const initialPayload = {
         meta: { updated_at: new Date().toISOString(), version: '1.0' },
         records: [],
@@ -99,12 +131,75 @@ export default function GistSyncPanel({
       
       const newGistId = await createSecretGist(tokenInput.trim(), initialPayload);
       setGistIdInput(newGistId);
-      saveConfig(tokenInput.trim(), newGistId, customPartners);
+      saveConfig(tokenInput.trim(), newGistId, customPartners, finalIdentity);
       setLocalSuccess('雲端資料庫建立成功！');
     } catch (err) {
       console.error(err);
       setLocalError(`建立失敗：${err.message || '連線錯誤'}`);
     }
+  };
+
+  // Handle Gist connection in Join mode
+  const handleJoinConnect = async () => {
+    setLocalError('');
+    setLocalSuccess('');
+    
+    const finalToken = (isLocal ? joinToken.trim() : (import.meta.env.VITE_GIST_TOKEN || '')).trim();
+    const finalGistId = joinGistId.trim();
+    
+    if (isLocal && !finalToken) {
+      setLocalError('請填寫 GitHub Token (PAT)！');
+      return;
+    }
+    if (!finalGistId) {
+      setLocalError('請輸入 Gist ID！');
+      return;
+    }
+    
+    try {
+      setLocalSuccess('正在連線雲端並載入天秤設定...');
+      
+      const cloudData = await fetchGistData(finalToken, finalGistId);
+      if (cloudData && cloudData.partners) {
+        // Block 3rd-party join if both spots are taken by other deviceIds
+        const currentDevId = localStorage.getItem('device_id') || '';
+        const p1Dev = cloudData.partners.p1?.deviceId || '';
+        const p2Dev = cloudData.partners.p2?.deviceId || '';
+        
+        if (p1Dev && p2Dev && p1Dev !== currentDevId && p2Dev !== currentDevId) {
+          throw new Error(`目前現有使用者為「${cloudData.partners.p1.name}」與「${cloudData.partners.p2.name}」已經額滿`);
+        }
+        
+        setFetchedPartners(cloudData.partners);
+        setLocalSuccess('連線成功！請選擇您的身份。');
+      } else {
+        throw new Error('雲端天秤中未找到伴侶暱稱設定，請確認此 Gist 是由本 App 建立的！');
+      }
+    } catch (err) {
+      console.error(err);
+      setLocalError(`連結失敗：${err.message || '連線錯誤'}`);
+      setLocalSuccess('');
+    }
+  };
+
+  // Complete onboarding wizard for Join mode
+  const handleCompleteJoin = () => {
+    if (!selectedJoinIdentity) {
+      setLocalError('請選擇您在這台裝置上的身份！');
+      return;
+    }
+    
+    const finalToken = isLocal ? joinToken.trim() : (import.meta.env.VITE_GIST_TOKEN || '');
+    const finalGistId = joinGistId.trim();
+    
+    // Save config and bind identity
+    saveConfig(finalToken, finalGistId, fetchedPartners, selectedJoinIdentity);
+    
+    if (onUpdateMyIdentity) {
+      onUpdateMyIdentity(selectedJoinIdentity);
+    }
+    
+    setShowWizard(false);
   };
 
   return (
@@ -115,102 +210,233 @@ export default function GistSyncPanel({
           <div className="comic-card animate-float" style={styles.wizardCard}>
             <div style={{ textAlign: 'center', marginBottom: '24px', borderBottom: '3px solid #000000', paddingBottom: '16px' }}>
               <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', border: '3px solid #000000', borderRadius: '50%', marginBottom: '12px', fontSize: '1.4rem', boxShadow: '2px 2px 0px #000000', backgroundColor: '#FFFFFF' }}>
-                🤍
+                ⚖️
               </div>
               <h2 style={styles.wizardTitle}>歡迎來到 HeartSync</h2>
-              <p style={styles.wizardSubtitle}>設定您們的代表名稱，開啟共同生活付出的極簡天秤紀錄之旅。</p>
+              <p style={styles.wizardSubtitle}>設定代表名稱或連結現有雲端天秤，開啟共同付出的極簡生活記帳之旅。</p>
+            </div>
+
+            {/* Segmented control tabs */}
+            <div style={styles.tabContainer}>
+              <button
+                type="button"
+                onClick={() => {
+                  setWizardMode('create');
+                  setLocalError('');
+                  setLocalSuccess('');
+                }}
+                style={{
+                  ...styles.tabBtn,
+                  backgroundColor: wizardMode === 'create' ? '#000000' : '#FFFFFF',
+                  color: wizardMode === 'create' ? '#FFFFFF' : '#000000',
+                }}
+              >
+                🆕 建立新同步天秤
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setWizardMode('join');
+                  setLocalError('');
+                  setLocalSuccess('');
+                }}
+                style={{
+                  ...styles.tabBtn,
+                  backgroundColor: wizardMode === 'join' ? '#000000' : '#FFFFFF',
+                  color: wizardMode === 'join' ? '#FFFFFF' : '#000000',
+                }}
+              >
+                🔗 連結現有天秤 (Gist ID)
+              </button>
             </div>
 
             <div style={styles.wizardBody}>
-              <div style={styles.wizardSection}>
-                <h3 style={styles.sectionHeader}>設定伴侶名稱與小狗角色</h3>
-                
-                <div style={styles.namesRow}>
-                  {/* Partner 1 Input */}
-                  <div style={styles.inputCol}>
-                    <label style={styles.label}>
-                      伴侶一 姓名
-                      <span style={{ fontSize: '0.75rem', color: '#666666', marginLeft: '6px', fontWeight: '800' }}>
-                        ({p1Role === 'white_dog' ? '白狗' : '灰狗'})
-                      </span>
-                    </label>
-                    <input 
-                      type="text" 
-                      value={p1Name} 
-                      onChange={(e) => setP1Name(e.target.value)} 
-                      className="comic-input" 
-                      placeholder="例如：小明、伴侶A..."
-                    />
-                  </div>
+              {wizardMode === 'join' ? (
+                // --- JOIN EXISTING GIST MODE ---
+                !fetchedPartners ? (
+                  <div style={styles.wizardSection}>
+                    <h3 style={styles.sectionHeader}>連結現有天秤 (Gist ID)</h3>
+                    <p style={{ fontSize: '0.82rem', color: '#666666', marginBottom: '16px', fontWeight: 'bold' }}>
+                      請輸入伴侶分享的 Gist ID。連結成功後，系統會自動載入伴侶設定，免手動重複輸入！
+                    </p>
 
-                  {/* Swap Button */}
-                  <div style={styles.swapCol}>
+                    {isLocal && (
+                      <div style={styles.inputCol}>
+                        <label style={styles.label}>GitHub Token (PAT)</label>
+                        <input 
+                          type="password" 
+                          value={joinToken} 
+                          onChange={(e) => setJoinToken(e.target.value)} 
+                          className="comic-input" 
+                          placeholder="ghp_..."
+                        />
+                      </div>
+                    )}
+
+                    <div style={{ ...styles.inputCol, marginTop: isLocal ? '12px' : '0px' }}>
+                      <label style={styles.label}>Gist ID</label>
+                      <input 
+                        type="text" 
+                        value={joinGistId} 
+                        onChange={(e) => setJoinGistId(e.target.value)} 
+                        className="comic-input" 
+                        placeholder="請貼上現有的 Gist ID"
+                      />
+                    </div>
+
+                    {localError && <div style={styles.localErrorText}>{localError}</div>}
+                    {localSuccess && <div style={styles.localSuccessText}>{localSuccess}</div>}
+
                     <button 
-                      type="button" 
-                      onClick={handleSwapRoles} 
-                      className="comic-btn secondary"
-                      style={styles.swapBtn}
-                      title="互換代表角色"
+                      onClick={handleJoinConnect} 
+                      className="comic-btn" 
+                      style={{ width: '100%', marginTop: '20px', padding: '12px 16px', fontSize: '1.05rem', backgroundColor: '#000000', color: '#FFFFFF' }}
                     >
-                      <ArrowLeftRight size={16} />
+                      連結並載入
                     </button>
                   </div>
+                ) : (
+                  // --- JOIN SUCCESS - CHOOSE DEVICE IDENTITY ---
+                  <div style={styles.wizardSection}>
+                    <h3 style={styles.sectionHeader}>🎉 連線成功！請選擇您的身份</h3>
+                    <p style={{ fontSize: '0.85rem', color: '#666666', marginBottom: '20px', fontWeight: 'bold', lineHeight: '1.5' }}>
+                      已成功連線！已從雲端載入設定好的伴侶名稱：<br />
+                      🤍 <b>{fetchedPartners.p1.name}</b> 與 🖤 <b>{fetchedPartners.p2.name}</b><br />
+                      請選取「您自己」在這台裝置上的身份，系統後續將自動預設為您記錄付出！
+                    </p>
 
-                  {/* Partner 2 Input */}
-                  <div style={styles.inputCol}>
-                    <label style={styles.label}>
-                      伴侶二 姓名
-                      <span style={{ fontSize: '0.75rem', color: '#666666', marginLeft: '6px', fontWeight: '800' }}>
-                        ({p2Role === 'white_dog' ? '白狗' : '灰狗'})
-                      </span>
-                    </label>
-                    <input 
-                      type="text" 
-                      value={p2Name} 
-                      onChange={(e) => setP2Name(e.target.value)} 
-                      className="comic-input" 
-                      placeholder="例如：小美、伴侶B..."
-                    />
-                  </div>
-                </div>
+                    <label style={styles.label}>我是哪一位？</label>
+                    <div style={styles.identityRow}>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedJoinIdentity('p1')}
+                        style={{
+                          ...styles.identityBtn,
+                          backgroundColor: selectedJoinIdentity === 'p1' ? '#000000' : '#FFFFFF',
+                          color: selectedJoinIdentity === 'p1' ? '#FFFFFF' : '#000000',
+                        }}
+                      >
+                        我是 {fetchedPartners.p1.name} ({fetchedPartners.p1.role === 'white_dog' ? '白狗' : '灰狗'})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedJoinIdentity('p2')}
+                        style={{
+                          ...styles.identityBtn,
+                          backgroundColor: selectedJoinIdentity === 'p2' ? '#000000' : '#FFFFFF',
+                          color: selectedJoinIdentity === 'p2' ? '#FFFFFF' : '#000000',
+                        }}
+                      >
+                        我是 {fetchedPartners.p2.name} ({fetchedPartners.p2.role === 'white_dog' ? '白狗' : '灰狗'})
+                      </button>
+                    </div>
 
-                {/* Who am I device selection */}
-                <div style={{ marginTop: '20px' }}>
-                  <label style={styles.label}>這台裝置主要使用者是誰？（預設為該使用者記帳）</label>
-                  <div style={styles.identityRow}>
-                    <button
-                      type="button"
-                      onClick={() => onUpdateMyIdentity('p1')}
-                      style={{
-                        ...styles.identityBtn,
-                        backgroundColor: myIdentity === 'p1' ? '#000000' : '#FFFFFF',
-                        color: myIdentity === 'p1' ? '#FFFFFF' : '#000000',
-                      }}
+                    {localError && <div style={styles.localErrorText}>{localError}</div>}
+
+                    <button 
+                      onClick={handleCompleteJoin} 
+                      className="comic-btn" 
+                      style={{ width: '100%', marginTop: '24px', padding: '12px 16px', fontSize: '1.05rem', backgroundColor: '#000000', color: '#FFFFFF' }}
+                      disabled={!selectedJoinIdentity}
                     >
-                      {p1Name} ({p1Role === 'white_dog' ? '白狗' : '灰狗'})
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onUpdateMyIdentity('p2')}
-                      style={{
-                        ...styles.identityBtn,
-                        backgroundColor: myIdentity === 'p2' ? '#000000' : '#FFFFFF',
-                        color: myIdentity === 'p2' ? '#FFFFFF' : '#000000',
-                      }}
-                    >
-                      {p2Name} ({p2Role === 'white_dog' ? '白狗' : '灰狗'})
+                      確認並進入天秤
                     </button>
                   </div>
-                </div>
-              </div>
+                )
+              ) : (
+                // --- CREATE NEW SCALE MODE ---
+                <>
+                  <div style={styles.wizardSection}>
+                    <h3 style={styles.sectionHeader}>設定伴侶名稱與小狗角色</h3>
+                    
+                    <div style={styles.namesRow}>
+                      {/* Partner 1 Input */}
+                      <div style={styles.inputCol}>
+                        <label style={styles.label}>
+                          伴侶一 姓名
+                          <span style={{ fontSize: '0.75rem', color: '#666666', marginLeft: '6px', fontWeight: '800' }}>
+                            ({p1Role === 'white_dog' ? '白狗' : '灰狗'})
+                          </span>
+                        </label>
+                        <input 
+                          type="text" 
+                          value={p1Name} 
+                          onChange={(e) => setP1Name(e.target.value)} 
+                          className="comic-input" 
+                          placeholder="例如：小明、伴侶A..."
+                        />
+                      </div>
 
-              <button 
-                onClick={handleStart} 
-                className="comic-btn" 
-                style={{ width: '100%', marginTop: '10px', padding: '12px 16px', fontSize: '1.05rem', backgroundColor: '#000000', color: '#FFFFFF' }}
-              >
-                開始體驗 HeartSync
-              </button>
+                      {/* Swap Button */}
+                      <div style={styles.swapCol}>
+                        <button 
+                          type="button" 
+                          onClick={handleSwapRoles} 
+                          className="comic-btn secondary"
+                          style={styles.swapBtn}
+                          title="互換代表角色"
+                        >
+                          <ArrowLeftRight size={16} />
+                        </button>
+                      </div>
+
+                      {/* Partner 2 Input */}
+                      <div style={styles.inputCol}>
+                        <label style={styles.label}>
+                          伴侶二 姓名
+                          <span style={{ fontSize: '0.75rem', color: '#666666', marginLeft: '6px', fontWeight: '800' }}>
+                            ({p2Role === 'white_dog' ? '白狗' : '灰狗'})
+                          </span>
+                        </label>
+                        <input 
+                          type="text" 
+                          value={p2Name} 
+                          onChange={(e) => setP2Name(e.target.value)} 
+                          className="comic-input" 
+                          placeholder="例如：小美、伴侶B..."
+                        />
+                      </div>
+                    </div>
+
+                    {/* Who am I device selection */}
+                    <div style={{ marginTop: '20px' }}>
+                      <label style={styles.label}>這台裝置主要使用者是誰？（預設為該使用者記帳）</label>
+                      <div style={styles.identityRow}>
+                        <button
+                          type="button"
+                          onClick={() => onUpdateMyIdentity('p1')}
+                          style={{
+                            ...styles.identityBtn,
+                            backgroundColor: myIdentity === 'p1' ? '#000000' : '#FFFFFF',
+                            color: myIdentity === 'p1' ? '#FFFFFF' : '#000000',
+                          }}
+                        >
+                          {p1Name} ({p1Role === 'white_dog' ? '白狗' : '灰狗'})
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onUpdateMyIdentity('p2')}
+                          style={{
+                            ...styles.identityBtn,
+                            backgroundColor: myIdentity === 'p2' ? '#000000' : '#FFFFFF',
+                            color: myIdentity === 'p2' ? '#FFFFFF' : '#000000',
+                          }}
+                        >
+                          {p2Name} ({p2Role === 'white_dog' ? '白狗' : '灰狗'})
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={handleStart} 
+                    className="comic-btn" 
+                    style={{ width: '100%', marginTop: '10px', padding: '12px 16px', fontSize: '1.05rem', backgroundColor: '#000000', color: '#FFFFFF' }}
+                  >
+                    開始體驗 HeartSync
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -377,6 +603,36 @@ export default function GistSyncPanel({
                   disabled={!tokenInput}
                 >
                   一鍵自動新建
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* --- GIST ID SHARING AND COPY CARD --- */}
+          {syncConfig.gistId && (
+            <div style={styles.localGistCard}>
+              <h4 style={styles.localGistTitle}>🔗 分享天秤給伴侶 (Gist ID)</h4>
+              <p style={{ fontSize: '0.8rem', color: '#666666', marginBottom: '8px', fontWeight: 'bold' }}>
+                您的伴侶只需在另一台裝置的引導精靈中選擇「連結現有天秤」並輸入此 Gist ID，即可自動連線並同步！
+              </p>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <input 
+                  type="text" 
+                  value={syncConfig.gistId} 
+                  readOnly 
+                  onClick={(e) => e.target.select()}
+                  style={{ flex: 1, backgroundColor: '#EEEEEE', padding: '8px', border: '2.5px solid #000000', fontFamily: 'monospace', fontWeight: '800', fontSize: '0.85rem' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(syncConfig.gistId);
+                    alert('Gist ID 已成功複製到剪貼簿！');
+                  }}
+                  className="comic-btn secondary"
+                  style={{ padding: '8px 16px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+                >
+                  複製 ID
                 </button>
               </div>
             </div>
@@ -605,5 +861,24 @@ const styles = {
     fontSize: '0.8rem',
     fontWeight: '800',
     marginTop: '12px',
+  },
+  tabContainer: {
+    display: 'flex',
+    gap: '8px',
+    marginBottom: '20px',
+    borderBottom: '3px solid #000000',
+    paddingBottom: '12px',
+  },
+  tabBtn: {
+    flex: 1,
+    padding: '8px 12px',
+    fontSize: '0.85rem',
+    fontWeight: '800',
+    cursor: 'pointer',
+    border: '2.5px solid #000000',
+    borderRadius: '8px',
+    boxShadow: '2px 2px 0px #000000',
+    transition: 'all 0.1s ease',
+    fontFamily: 'inherit',
   }
 };
