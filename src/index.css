@@ -1,0 +1,293 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Nunito:wght@300..900&display=swap');
+
+/* --- DESIGN SYSTEM & CSS VARIABLES --- */
+:root {
+  --bg-primary: #FAF6EE;      /* Warm Oats & Milk background */
+  --bg-secondary: #FFFFFF;    /* Clean White for cards */
+  --text-primary: #5D4A3E;    /* Cozy Deep Chocolate Brown */
+  --text-muted: #8E7E73;      /* Lighter Cocoa Brown */
+  --border-color: #E6DDD0;    /* Soft beige lines */
+  --border-thick: 3px solid #5D4A3E; /* Signature hand-drawn outline */
+  
+  /* Pastel Accent Colors */
+  --color-pink: #FFD3D3;      /* Warm Blush Pink */
+  --color-pink-hover: #FFAFAF;
+  --color-yellow: #FFEFA6;    /* Sunlit Pastel Yellow */
+  --color-yellow-hover: #FFE275;
+  --color-green: #E1ECC8;     /* Mint Pastel Green */
+  --color-blue: #D7E9F7;      /* Clear Sky Blue */
+  --color-brown: #E5A96E;     /* Little Brown Dog Brown */
+
+  /* Shadows */
+  --shadow-flat: 4px 4px 0px #5D4A3E;
+  --shadow-flat-large: 8px 8px 0px #5D4A3E;
+  --shadow-flat-hover: 6px 6px 0px #5D4A3E;
+  --shadow-flat-active: 1px 1px 0px #5D4A3E;
+
+  font-family: 'Fredoka', 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+}
+
+/* --- RESET & BASICS --- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  background-image: 
+    radial-gradient(#5D4A3E 1px, transparent 1px), 
+    radial-gradient(#5D4A3E 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: 0 0, 20px 20px;
+  background-opacity: 0.05; /* Fallback using tiny opacity in color instead */
+  background-image: 
+    radial-gradient(rgba(93, 74, 62, 0.03) 1.5px, transparent 1.5px), 
+    radial-gradient(rgba(93, 74, 62, 0.03) 1.5px, transparent 1.5px);
+}
+
+/* --- HAND-DRAWN COMIC STYLING --- */
+.comic-card {
+  background: var(--bg-secondary);
+  border: var(--border-thick);
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: var(--shadow-flat);
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
+}
+
+.comic-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-flat-hover);
+}
+
+.comic-btn {
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text-primary);
+  background-color: var(--color-yellow);
+  border: var(--border-thick);
+  border-radius: 16px;
+  padding: 10px 20px;
+  cursor: pointer;
+  box-shadow: var(--shadow-flat);
+  transition: all 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+
+.comic-btn:hover {
+  background-color: var(--color-yellow-hover);
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-flat-hover);
+}
+
+.comic-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: var(--shadow-flat-active);
+}
+
+.comic-btn.pink {
+  background-color: var(--color-pink);
+}
+.comic-btn.pink:hover {
+  background-color: var(--color-pink-hover);
+}
+
+.comic-btn.secondary {
+  background-color: var(--bg-secondary);
+}
+.comic-btn.secondary:hover {
+  background-color: var(--bg-primary);
+}
+
+.comic-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: var(--shadow-flat) !important;
+}
+
+/* --- FORM INPUTS --- */
+.comic-input {
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--text-primary);
+  width: 100%;
+  padding: 12px 16px;
+  border: var(--border-thick);
+  border-radius: 14px;
+  background-color: #FFFDF9;
+  outline: none;
+  box-shadow: inset 2px 2px 0px rgba(93, 74, 62, 0.1);
+  transition: border-color 0.2s;
+}
+
+.comic-input:focus {
+  background-color: #FFFFFF;
+  box-shadow: inset 2px 2px 0px rgba(93, 74, 62, 0.1), 0 0 0 3px rgba(229, 169, 110, 0.2);
+}
+
+.comic-select {
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--text-primary);
+  padding: 12px 16px;
+  border: var(--border-thick);
+  border-radius: 14px;
+  background-color: #FFFDF9;
+  outline: none;
+  cursor: pointer;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-3deg); }
+  75% { transform: rotate(3deg); }
+}
+
+@keyframes pop {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float 4s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+.animate-wiggle:hover {
+  animation: wiggle 0.3s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 12s linear infinite;
+}
+
+/* --- LAYOUT UTILITIES --- */
+.container {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 24px 16px 80px 16px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.title-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.title-icon {
+  width: 48px;
+  height: 48px;
+  animation: float 3s ease-in-out infinite;
+}
+
+.app-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  text-shadow: 2px 2px 0px #FFFFFF, 4px 4px 0px rgba(93, 74, 62, 0.15);
+  letter-spacing: -0.5px;
+}
+
+.badge {
+  background: var(--text-primary);
+  color: #FFFFFF;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+/* Tab controls */
+.tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  background: #FFFFFF;
+  border: var(--border-thick);
+  border-radius: 12px;
+  padding: 8px 16px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tab-btn.active {
+  background: var(--text-primary);
+  color: #FFFFFF;
+  box-shadow: 2px 2px 0 var(--color-brown);
+}
+
+/* Cute Toast alert */
+.toast-alert {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--bg-secondary);
+  border: var(--border-thick);
+  box-shadow: var(--shadow-flat);
+  border-radius: 16px;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 1000;
+  animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border: 3px solid var(--bg-primary);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-primary);
+}
