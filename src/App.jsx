@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Cloud, CloudOff, RefreshCw } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -22,6 +22,12 @@ export default function App() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
 
+  // --- REFS: always hold latest values so async callbacks don't capture stale closures ---
+  const syncConfigRef = useRef({ token: '', gistId: '' });
+  const recordsRef = useRef([]);
+  const partnersRef = useRef({ p1: { name: '伴侶一', role: 'white_dog', deviceId: '' }, p2: { name: '伴侶二', role: 'brown_dog', deviceId: '' } });
+  const offlineModeRef = useRef(false);
+
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || (!import.meta.env.VITE_GIST_TOKEN);
 
   // Fixed Exchange Rates for multi-currency conversion
@@ -42,6 +48,12 @@ export default function App() {
     p1: { name: '伴侶一', role: 'white_dog', deviceId: '' },
     p2: { name: '伴侶二', role: 'brown_dog', deviceId: '' }
   });
+
+  // Keep refs in sync with state so async functions always read fresh values
+  useEffect(() => { syncConfigRef.current = syncConfig; }, [syncConfig]);
+  useEffect(() => { recordsRef.current = records; }, [records]);
+  useEffect(() => { partnersRef.current = partners; }, [partners]);
+  useEffect(() => { offlineModeRef.current = offlineMode; }, [offlineMode]);
 
   // --- TOAST NOTIFICATIONS ---
   const showToast = (message, type = 'info') => {
@@ -168,35 +180,43 @@ export default function App() {
   };
 
   // --- PULL (CLOUD -> LOCAL) ---
-  const pullCloudData = async (token = syncConfig.token, gistId = syncConfig.gistId, fallbackRecords = records) => {
+  // Always reads from refs to avoid stale closure values
+  const pullCloudData = async (
+    token = syncConfigRef.current.token,
+    gistId = syncConfigRef.current.gistId
+  ) => {
     if (!token || !gistId) return;
+    // Snapshot the current records at the moment pull starts (for new-record detection)
+    const fallbackRecords = recordsRef.current;
+    const currentMyIdentity = localStorage.getItem('my_identity') || '';
+
     setIsSyncing(true);
     setSyncStatus('正在同步...');
     try {
       const cloudData = await fetchGistData(token, gistId);
-      
-      // Update local state and cache
-      if (cloudData && Array.isArray(cloudData.records)) {
-        // Compare with current records to find newly added records by companion
-        if (fallbackRecords && fallbackRecords.length > 0) {
-          const currentIds = new Set(fallbackRecords.map(r => r.id));
-          const newPartnerRecords = cloudData.records.filter(r => {
-            return !currentIds.has(r.id) && r.by !== myIdentity;
-          });
 
+      if (cloudData && Array.isArray(cloudData.records)) {
+        // Detect newly added records by companion (not by self)
+        if (fallbackRecords.length > 0) {
+          const currentIds = new Set(fallbackRecords.map(r => r.id));
+          const newPartnerRecords = cloudData.records.filter(
+            r => !currentIds.has(r.id) && r.by !== currentMyIdentity
+          );
           if (newPartnerRecords.length > 0) {
-            triggerPwaNotification(newPartnerRecords, cloudData.partners || partners);
+            triggerPwaNotification(newPartnerRecords, cloudData.partners || partnersRef.current);
           }
         }
 
         setRecords(cloudData.records);
+        recordsRef.current = cloudData.records;
         localStorage.setItem('cached_records', JSON.stringify(cloudData.records));
-        
+
         if (cloudData.partners) {
           setPartners(cloudData.partners);
+          partnersRef.current = cloudData.partners;
           localStorage.setItem('partners_config', JSON.stringify(cloudData.partners));
         }
-        
+
         const now = new Date();
         const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
         setSyncStatus(`已同步 (${timeStr})`);
@@ -208,15 +228,21 @@ export default function App() {
       console.error(err);
       setSyncStatus('連線失敗，已載入本機');
       showToast(`同步失敗：${err.message || '連線錯誤'}`, 'error');
-      setRecords(fallbackRecords);
+      // Do NOT override records on failure — keep whatever is currently in state
     } finally {
       setIsSyncing(false);
     }
   };
 
   // --- PUSH (LOCAL -> CLOUD) ---
-  const pushCloudData = async (newRecords, token = syncConfig.token, gistId = syncConfig.gistId, customPartners = partners) => {
-    if (!token || !gistId || offlineMode) return;
+  // Always reads config from refs to avoid stale closure values
+  const pushCloudData = async (
+    newRecords,
+    token = syncConfigRef.current.token,
+    gistId = syncConfigRef.current.gistId,
+    customPartners = partnersRef.current
+  ) => {
+    if (!token || !gistId || offlineModeRef.current) return;
     
     setIsSyncing(true);
     setSyncStatus('正在上傳...');

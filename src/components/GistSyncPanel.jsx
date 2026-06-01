@@ -63,58 +63,68 @@ export default function GistSyncPanel({
     };
   };
 
+  // Offline start — skip Gist entirely
+  const handleOfflineStart = () => {
+    const customPartners = getCustomPartnersPayload();
+    if (onUpdateMyIdentity) onUpdateMyIdentity('p1');
+    onUpdatePartners(customPartners);
+    setShowWizard(false);
+  };
+
   // Complete onboarding and start App (Create Mode)
   const handleStart = async () => {
     const customPartners = getCustomPartnersPayload();
-    
+
     // Automatically set default identity to p1 on the creator device
     if (onUpdateMyIdentity) {
       onUpdateMyIdentity('p1');
     }
-    
+
     const gistIdClean = wizardGistId.trim();
     const finalToken = (import.meta.env.VITE_GIST_TOKEN || localStorage.getItem('gist_token') || '').trim();
-    
-    if (gistIdClean) {
-      if (!finalToken) {
-        setLocalError('⚠️ 系統未檢測到 GIST_TOKEN，請先確認您的環境變數或專案 Secrets 中已正確設定 GIST_TOKEN！');
-        return;
+
+    if (!finalToken) {
+      setLocalError('⚠️ 系統未設定 GIST_TOKEN，無法建立雲端同步。請點選「先離線使用」。');
+      return;
+    }
+
+    // Token exists — always use cloud sync
+    setIsCreatingGistInWizard(true);
+    setLocalError('');
+    setLocalSuccess('正在建立您的專屬雲端天秤...');
+
+    try {
+      const currentDevId = localStorage.getItem('device_id') || '';
+      customPartners.p1.deviceId = currentDevId;
+
+      const initialPayload = {
+        meta: { updated_at: new Date().toISOString(), version: '1.0' },
+        records: [],
+        partners: customPartners
+      };
+
+      let finalGistId = gistIdClean;
+
+      if (finalGistId) {
+        // User provided a specific Gist ID → initialise it
+        await updateGistData(finalToken, finalGistId, initialPayload);
+      } else {
+        // No Gist ID provided → auto-create a new one
+        finalGistId = await createSecretGist(finalToken, initialPayload);
+        setWizardGistId(finalGistId); // show it in the UI
       }
-      
-      // User wants to initialize cloud sync on this specific Gist ID during onboarding!
-      setIsCreatingGistInWizard(true);
-      setLocalError('');
-      setLocalSuccess('正在初始化您的雲端天秤資料庫...');
-      try {
-        const currentDevId = localStorage.getItem('device_id') || '';
-        customPartners.p1.deviceId = currentDevId;
-        
-        const initialPayload = {
-          meta: { updated_at: new Date().toISOString(), version: '1.0' },
-          records: [],
-          partners: customPartners
-        };
-        
-        // Write the initial payload to the existing Gist ID
-        await updateGistData(finalToken, gistIdClean, initialPayload);
-        
-        // Save config in parent
-        saveConfig(finalToken, gistIdClean, customPartners, 'p1');
-        
-        const inviteMsg = `Hi！我已經在 HeartSync 建立了我們的專屬生活付出天秤囉！⚖️\n\n🔗 天秤連線網址（點擊直接開啟）：\nhttps://winnie-lin.space/couple-balance/\n\n🔑 我們的專屬 Gist ID：\n${gistIdClean}\n\n請在你的裝置開啟網頁，在引導精靈中選擇「連結現有天秤」並貼上此 Gist ID，即可自動連線並即時同步！`;
-        setInvitationText(inviteMsg);
-        
-        setShowWizard(false);
-      } catch (err) {
-        console.error(err);
-        setLocalError(`初始化雲端天秤失敗：${err.message || '連線錯誤，請確認該 Gist ID 存在且具有讀寫權限。'}`);
-        setIsCreatingGistInWizard(false);
-        return; // Don't close wizard if cloud initialization failed
-      }
-    } else {
-      // Standard local/offline onboarding
-      onUpdatePartners(customPartners);
+
+      // Save config in parent
+      saveConfig(finalToken, finalGistId, customPartners, 'p1');
+
+      const inviteMsg = `Hi！我已經在 HeartSync 建立了我們的專屬生活付出天秤囉！⚖️\n\n🔗 天秤連線網址（點擊直接開啟）：\nhttps://winnie-lin.space/couple-balance/\n\n🔑 我們的專屬 Gist ID：\n${finalGistId}\n\n請在你的裝置開啟網頁，在引導精靈中選擇「連結現有天秤」並貼上此 Gist ID，即可自動連線並即時同步！`;
+      setInvitationText(inviteMsg);
+
       setShowWizard(false);
+    } catch (err) {
+      console.error(err);
+      setLocalError(`建立雲端天秤失敗：${err.message || '連線錯誤，請稍後再試。'}`);
+      setIsCreatingGistInWizard(false);
     }
   };
 
@@ -540,33 +550,64 @@ export default function GistSyncPanel({
                       </div>
                     </div>
 
-                    {/* Optional Gist ID for Wizard Gist Creation */}
+                    {/* Cloud sync section — auto-create Gist */}
                     <div style={{ marginTop: '20px', borderTop: '2px dashed #000000', paddingTop: '16px' }}>
-                      <label style={styles.label}>🌐 啟用雲端同步備份 (選填)</label>
-                      <p style={{ fontSize: '0.78rem', color: '#666666', marginBottom: '8px', fontWeight: 'bold' }}>
-                        填入您在 GitHub 上創建的 Gist ID，開始體驗時將自動在此 Gist ID 中初始化並建立新的天秤，並立即產生邀請伴侶的連線文字！
+                      <label style={styles.label}>☁️ 雲端同步備份</label>
+                      <p style={{ fontSize: '0.78rem', color: '#444', marginBottom: '10px', fontWeight: 'bold', lineHeight: '1.55' }}>
+                        點擊「開始體驗」後系統將<b>自動建立</b>您的專屬同步空間，無需任何 GitHub 操作！
+                        建立完成後系統會產生邀請碼，傳給伴侶即可即時雙向同步。
                       </p>
-                      <input 
-                        type="text" 
-                        value={wizardGistId} 
-                        onChange={(e) => setWizardGistId(e.target.value)} 
-                        className="comic-input" 
-                        placeholder="請貼上您的 Gist ID (可空白，先離線使用)"
-                        disabled={isCreatingGistInWizard}
-                      />
+
+                      {/* Show generated Gist ID if already created */}
+                      {wizardGistId ? (
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '6px' }}>
+                          <input
+                            type="text"
+                            value={wizardGistId}
+                            readOnly
+                            onClick={(e) => e.target.select()}
+                            style={{ flex: 1, backgroundColor: '#F0FFF0', padding: '8px', border: '2.5px solid #000', fontFamily: 'monospace', fontWeight: '800', fontSize: '0.82rem' }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => { navigator.clipboard.writeText(wizardGistId); alert('Gist ID 已複製！'); }}
+                            className="comic-btn secondary"
+                            style={{ padding: '8px 12px', fontSize: '0.78rem', whiteSpace: 'nowrap' }}
+                          >
+                            複製 ID
+                          </button>
+                        </div>
+                      ) : (
+                        <p style={{ fontSize: '0.75rem', color: '#888', fontWeight: '700', marginTop: '4px' }}>
+                          💡 如已有伴侶建立的 Gist ID，可直接貼入下方：
+                        </p>
+                      )}
+
+                      {/* Allow manual override */}
+                      {!wizardGistId && (
+                        <input
+                          type="text"
+                          value={wizardGistId}
+                          onChange={(e) => setWizardGistId(e.target.value)}
+                          className="comic-input"
+                          placeholder="（選填）貼上現有 Gist ID，否則自動建立新的"
+                          disabled={isCreatingGistInWizard}
+                          style={{ marginTop: '6px' }}
+                        />
+                      )}
                     </div>
 
                     {localError && <div style={styles.localErrorText}>{localError}</div>}
                     {localSuccess && <div style={styles.localSuccessText}>{localSuccess}</div>}
                   </div>
 
-                  <button 
-                    onClick={handleStart} 
-                    className="comic-btn" 
+                  <button
+                    onClick={handleStart}
+                    className="comic-btn"
                     disabled={isCreatingGistInWizard}
-                    style={{ width: '100%', marginTop: '10px', padding: '12px 16px', fontSize: '1.05rem', backgroundColor: '#000000', color: '#FFFFFF' }}
+                    style={{ width: '100%', marginTop: '14px', padding: '13px 16px', fontSize: '1.05rem', backgroundColor: '#000000', color: '#FFFFFF' }}
                   >
-                    {isCreatingGistInWizard ? '正在建立雲端天秤...' : '開始體驗 HeartSync'}
+                    {isCreatingGistInWizard ? '⏳ 正在自動建立雲端天秤...' : '🚀 開始體驗 HeartSync（自動建立同步空間）'}
                   </button>
                 </>
               )}
