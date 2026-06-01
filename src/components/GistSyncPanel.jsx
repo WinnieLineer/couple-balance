@@ -169,14 +169,6 @@ export default function GistSyncPanel({
     
     const customPartners = getCustomPartnersPayload();
     
-    // Perform verification to block 3rd-party join even in regular settings save
-    const currentDevId = localStorage.getItem('device_id') || '';
-    const p1Dev = customPartners.p1?.deviceId || '';
-    const p2Dev = customPartners.p2?.deviceId || '';
-    if (p1Dev && p2Dev && p1Dev !== currentDevId && p2Dev !== currentDevId) {
-      setLocalError(`⚠️ 連線失敗：目前現有使用者為「${customPartners.p1.name}」與「${customPartners.p2.name}」已經額滿。`);
-      return;
-    }
 
     saveConfig(finalToken, finalGistId, customPartners, myIdentity || 'p1');
     setLocalSuccess('雲端設定已儲存並載入！');
@@ -246,15 +238,6 @@ export default function GistSyncPanel({
       
       const cloudData = await fetchGistData(finalToken, finalGistId);
       if (cloudData && cloudData.partners) {
-        // Block 3rd-party join if both spots are taken by other deviceIds
-        const currentDevId = localStorage.getItem('device_id') || '';
-        const p1Dev = cloudData.partners.p1?.deviceId || '';
-        const p2Dev = cloudData.partners.p2?.deviceId || '';
-        
-        if (p1Dev && p2Dev && p1Dev !== currentDevId && p2Dev !== currentDevId) {
-          throw new Error(`目前現有使用者為「${cloudData.partners.p1.name}」與「${cloudData.partners.p2.name}」已經額滿`);
-        }
-        
         setFetchedPartners(cloudData.partners);
         setLocalSuccess('連線成功！請選擇您的身份。');
       } else {
