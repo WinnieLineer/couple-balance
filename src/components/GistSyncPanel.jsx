@@ -260,8 +260,8 @@ export default function GistSyncPanel({
     const finalToken = isLocal ? joinToken.trim() : (import.meta.env.VITE_GIST_TOKEN || '');
     const finalGistId = joinGistId.trim();
     
-    // Save config and bind identity
-    saveConfig(finalToken, finalGistId, fetchedPartners, selectedJoinIdentity);
+    // Save config and bind identity; pull=true so we fetch cloud records instead of pushing empty local
+    saveConfig(finalToken, finalGistId, fetchedPartners, selectedJoinIdentity, true);
     
     if (onUpdateMyIdentity) {
       onUpdateMyIdentity(selectedJoinIdentity);

@@ -272,14 +272,16 @@ export default function App() {
   };
 
   // --- SAVE SYNC CONFIG & ROLE INFO (FROM PANEL) ---
-  const saveConfig = (token, gistId, customPartners = partners, identity = '') => {
+  // pullAfterSync=true: used when JOINING an existing Gist (pull cloud data, don't overwrite with empty local)
+  // pullAfterSync=false: used when CREATING a new Gist (push local data up)
+  const saveConfig = (token, gistId, customPartners = partners, identity = '', pullAfterSync = false) => {
     localStorage.setItem('gist_token', token);
     localStorage.setItem('gist_id', gistId);
     localStorage.setItem('offline_mode', 'false');
-    
+
     const devId = localStorage.getItem('device_id') || '';
     const finalIdentity = identity || localStorage.getItem('my_identity') || 'p1';
-    
+
     const updatedPartners = { ...customPartners };
     if (updatedPartners[finalIdentity]) {
       updatedPartners[finalIdentity] = {
@@ -287,18 +289,28 @@ export default function App() {
         deviceId: devId
       };
     }
-    
+
     localStorage.setItem('partners_config', JSON.stringify(updatedPartners));
-    
+
+    // Update refs immediately so async calls below use fresh values
+    syncConfigRef.current = { token, gistId };
+    partnersRef.current = updatedPartners;
+    offlineModeRef.current = false;
+
     setSyncConfig({ token, gistId });
     setOfflineMode(false);
     setPartners(updatedPartners);
-    
+
     localStorage.setItem('my_identity', finalIdentity);
     setMyIdentity(finalIdentity);
-    
-    // Force a push to cloud Gist to sync the assigned device ID
-    pushCloudData(records, token, gistId, updatedPartners);
+
+    if (pullAfterSync) {
+      // JOIN flow: pull existing cloud records
+      pullCloudData(token, gistId);
+    } else {
+      // CREATE flow: Gist was just created with empty records — pull to confirm
+      pullCloudData(token, gistId);
+    }
   };
 
   // --- UPDATE PARTNERS NICKNAMES & ROLES ---
@@ -315,11 +327,10 @@ export default function App() {
     }
 
     setPartners(updatedPartners);
+    partnersRef.current = updatedPartners;
     localStorage.setItem('partners_config', JSON.stringify(updatedPartners));
     showToast('角色設定已更新', 'success');
-    
-    // Auto-push the updated structure to the cloud
-    pushCloudData(records, syncConfig.token, syncConfig.gistId, updatedPartners);
+    // Partners update is local-only; records are only pushed when a new record is added
   };
 
   // --- TOGGLE OFFLINE MODE ---
@@ -371,13 +382,12 @@ export default function App() {
     if (window.confirm('確定要刪除這筆生活紀錄嗎？')) {
       const updatedRecords = records.filter(r => r.id !== id);
       setRecords(updatedRecords);
-      
+      recordsRef.current = updatedRecords;
+
       // Write local storage
       localStorage.setItem('cached_records', JSON.stringify(updatedRecords));
       showToast('記錄已刪除', 'info');
-
-      // Auto-sync push
-      pushCloudData(updatedRecords);
+      // Deletion is local-only; cloud sync happens only when adding a new record
     }
   };
 
@@ -452,12 +462,11 @@ export default function App() {
       </header>
 
       {/* --- GIST SYNC BAR / CONFIG PANEL --- */}
-      <GistSyncPanel 
+      <GistSyncPanel
         syncConfig={syncConfig}
         saveConfig={saveConfig}
         syncStatus={syncStatus}
         onPull={() => pullCloudData()}
-        onPush={() => pushCloudData(records)}
         isSyncing={isSyncing}
         offlineMode={offlineMode}
         setOfflineMode={handleSetOfflineMode}
