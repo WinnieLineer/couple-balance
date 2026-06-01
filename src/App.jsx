@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Landmark, Heart, Plus, Cloud, CloudOff, Info, HelpCircle, Footprints } from 'lucide-react';
+import { Plus, Cloud, CloudOff, RefreshCw } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 import GistSyncPanel from './components/GistSyncPanel';
@@ -16,9 +16,23 @@ export default function App() {
   const [syncStatus, setSyncStatus] = useState('未連接');
   const [isSyncing, setIsSyncing] = useState(false);
   const [offlineMode, setOfflineMode] = useState(false);
-  
+  const [displayCurrency, setDisplayCurrency] = useState('TWD');
+  const [myIdentity, setMyIdentity] = useState('p1');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
+
+  // Fixed Exchange Rates for multi-currency conversion
+  const EXCHANGE_RATES = {
+    TWD: 1.0,
+    USD: 32.5,
+    SGD: 24.0,
+  };
+
+  const convertValue = (val, from = 'TWD', to = 'TWD') => {
+    const fromRate = EXCHANGE_RATES[from] || 1.0;
+    const toRate = EXCHANGE_RATES[to] || 1.0;
+    return (val * fromRate) / toRate;
+  };
 
   // Default partner details (overwritten on mount by cache or wizard)
   const [partners, setPartners] = useState({
@@ -77,6 +91,14 @@ export default function App() {
       }
     }
 
+    // 3. Load my identity
+    const savedMyIdentity = localStorage.getItem('my_identity') || 'p1';
+    setMyIdentity(savedMyIdentity);
+
+    // 4. Load cached display currency
+    const savedCurrency = localStorage.getItem('display_currency') || 'TWD';
+    setDisplayCurrency(savedCurrency);
+
     // 4. Trigger initial cloud sync if applicable
     if (savedToken && savedGistId && !savedOffline) {
       pullCloudData(savedToken, savedGistId, loadedRecords);
@@ -106,14 +128,14 @@ export default function App() {
         const now = new Date();
         const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
         setSyncStatus(`已同步 (${timeStr})`);
-        showToast('✨ 雲端同步完成！', 'success');
+        showToast('雲端資料同步完成', 'success');
       } else {
         throw new Error('資料結構不符合規定');
       }
     } catch (err) {
       console.error(err);
       setSyncStatus('連線失敗，已載入本機');
-      showToast(`⚠️ 同步失敗：${err.message || '連線錯誤'}`, 'error');
+      showToast(`同步失敗：${err.message || '連線錯誤'}`, 'error');
       setRecords(fallbackRecords);
     } finally {
       setIsSyncing(false);
@@ -141,11 +163,11 @@ export default function App() {
       const now = new Date();
       const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
       setSyncStatus(`已同步 (${timeStr})`);
-      showToast('✨ 數據已自動備份至雲端！', 'success');
+      showToast('數據已自動備份至雲端', 'success');
     } catch (err) {
       console.error(err);
       setSyncStatus('備份失敗');
-      showToast(`⚠️ 備份失敗：${err.message || '連線錯誤'}`, 'error');
+      showToast(`備份失敗：${err.message || '連線錯誤'}`, 'error');
     } finally {
       setIsSyncing(false);
     }
@@ -169,7 +191,7 @@ export default function App() {
   const handleUpdatePartners = (customPartners) => {
     setPartners(customPartners);
     localStorage.setItem('partners_config', JSON.stringify(customPartners));
-    showToast('✨ 角色設定已更新！', 'success');
+    showToast('角色設定已更新', 'success');
     
     // Auto-push the updated structure to the cloud
     pushCloudData(records, syncConfig.token, syncConfig.gistId, customPartners);
@@ -181,7 +203,7 @@ export default function App() {
     const envToken = import.meta.env.VITE_GIST_TOKEN || '';
     const envGistId = import.meta.env.VITE_GIST_ID || '';
     if (envToken && envGistId) {
-      showToast('🔒 雲端同步已由 GitHub Secrets 託管', 'info');
+      showToast('雲端同步已由 Secrets 託管', 'info');
       return;
     }
 
@@ -189,7 +211,7 @@ export default function App() {
     setOfflineMode(val);
     if (val) {
       setSyncStatus('本機離線運作中');
-      showToast('🤍 已切換至離線體驗模式', 'info');
+      showToast('已切換至離線體驗模式', 'info');
     } else {
       if (syncConfig.token && syncConfig.gistId) {
         pullCloudData(syncConfig.token, syncConfig.gistId);
@@ -207,13 +229,13 @@ export default function App() {
 
     // Confetti pop!
     confetti({
-      particleCount: 100,
-      spread: 70,
+      particleCount: 80,
+      spread: 60,
       origin: { y: 0.85 },
-      colors: ['#FFEFA6', '#FFD3D3', '#E1ECC8', '#D7E9F7', '#E5A96E']
+      colors: ['#000000', '#666666', '#CCCCCC', '#FFFFFF']
     });
 
-    showToast(`✨ 記錄成功：${record.title}`, 'success');
+    showToast(`記錄成功：${record.title}`, 'success');
 
     // Auto-sync push
     pushCloudData(updatedRecords);
@@ -221,13 +243,13 @@ export default function App() {
 
   // --- DELETE RECORD ---
   const handleDeleteRecord = (id) => {
-    if (window.confirm('確定要刪除這筆心意記錄嗎？ 🤍')) {
+    if (window.confirm('確定要刪除這筆生活紀錄嗎？')) {
       const updatedRecords = records.filter(r => r.id !== id);
       setRecords(updatedRecords);
       
       // Write local storage
       localStorage.setItem('cached_records', JSON.stringify(updatedRecords));
-      showToast('🗑️ 記錄已刪除', 'info');
+      showToast('記錄已刪除', 'info');
 
       // Auto-sync push
       pushCloudData(updatedRecords);
@@ -235,9 +257,13 @@ export default function App() {
   };
 
   // --- CALCULATE BALANCES FOR SCALES ---
-  // Money
-  const p1Money = records.filter(r => r.type === 'money' && r.by === 'p1').reduce((acc, r) => acc + r.value, 0);
-  const p2Money = records.filter(r => r.type === 'money' && r.by === 'p2').reduce((acc, r) => acc + r.value, 0);
+  // Money (dynamically converted to displayCurrency)
+  const p1Money = records
+    .filter(r => r.type === 'money' && r.by === 'p1')
+    .reduce((acc, r) => acc + convertValue(r.value, r.currency || 'TWD', displayCurrency), 0);
+  const p2Money = records
+    .filter(r => r.type === 'money' && r.by === 'p2')
+    .reduce((acc, r) => acc + convertValue(r.value, r.currency || 'TWD', displayCurrency), 0);
   // Love/Effort
   const p1Love = records.filter(r => r.type === 'love' && r.by === 'p1').reduce((acc, r) => acc + r.value, 0);
   const p2Love = records.filter(r => r.type === 'love' && r.by === 'p2').reduce((acc, r) => acc + r.value, 0);
@@ -245,23 +271,70 @@ export default function App() {
   return (
     <div className="container">
       {/* --- APP HEADER --- */}
-      <header className="header">
+      <header className="header" style={styles.header}>
         <div className="title-container">
-          {/* Animated SVG title heart */}
-          <svg viewBox="0 0 100 80" className="title-icon" style={{ animation: 'float 3s ease-in-out infinite' }}>
-            {/* Outer heart outline */}
-            <path d="M 50 25 C 38 10, 18 10, 18 32 C 18 50, 42 68, 50 72 C 58 68, 82 50, 82 32 C 82 10, 62 10, 50 25 Z" fill="#FFD3D3" stroke="#5D4A3E" strokeWidth="3" strokeLinejoin="round" />
-            {/* Sparkle */}
-            <g transform="translate(62, 10)">
-              <path d="M 8,0 L 10,6 L 16,8 L 10,10 L 8,16 L 6,10 L 0,8 L 6,6 Z" fill="#FFEFA6" stroke="#5D4A3E" strokeWidth="1.5" />
-            </g>
+          {/* Authentic peeking Maltese line dog from the user's image */}
+          <svg viewBox="0 0 160 80" className="title-icon" style={{ animation: 'float 4s ease-in-out infinite' }}>
+            {/* White fluffy head contour */}
+            <path 
+              d="M 35,65 C 26,60 16,45 22,25 C 25,12 38,7 53,14 C 63,4 83,4 93,14 C 108,7 120,12 123,25 C 129,45 119,60 109,65 Z" 
+              fill="#FFFFFF" 
+              stroke="#000000" 
+              strokeWidth="3.5" 
+              strokeLinejoin="round" 
+            />
+            {/* Fluffy ears outline details */}
+            <path d="M 24,20 Q 18,15 22,8 Q 28,2 34,12" fill="none" stroke="#000000" strokeWidth="3.5" strokeLinecap="round" />
+            <path d="M 120,20 Q 126,15 122,8 Q 116,2 110,12" fill="none" stroke="#000000" strokeWidth="3.5" strokeLinecap="round" />
+            
+            {/* Eyes (farther apart and extremely cute dot eyes peeking) */}
+            <circle cx="53" cy="36" r="3.2" fill="#000000" />
+            <circle cx="91" cy="36" r="3.2" fill="#000000" />
+            
+            {/* Nose (small rounded triangle) */}
+            <ellipse cx="72" cy="39" rx="3.8" ry="2.6" fill="#000000" />
+            
+            {/* Wide happy curving mouth (w shape peeking look) */}
+            <path d="M 58,46 Q 65,51 72,46 Q 79,51 86,46" fill="none" stroke="#000000" strokeWidth="3.5" strokeLinecap="round" />
+            
+            {/* Desk Line */}
+            <line x1="2" y1="76" x2="158" y2="76" stroke="#000000" strokeWidth="4.5" strokeLinecap="round" />
+            
+            {/* Left Paw */}
+            <path d="M 26,76 C 26,66 44,66 44,76" fill="#FFFFFF" stroke="#000000" strokeWidth="3.5" />
+            {/* Right Paw */}
+            <path d="M 100,76 C 100,66 118,66 118,76" fill="#FFFFFF" stroke="#000000" strokeWidth="3.5" />
           </svg>
           <div>
             <h1 className="app-title">HeartSync</h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span className="badge" style={{ backgroundColor: '#FFD3D3', color: '#5D4A3E', border: '2px solid #5D4A3E', boxShadow: '1.5px 1.5px 0px #5D4A3E' }}>🤍 Co-Life Balance</span>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '700' }}>✨ 雙向奔赴，記錄我們的生活心意平衡</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className="badge">HeartSync</span>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: '800' }}>✨ 雙向奔赴，記錄我們的生活心意平衡</span>
             </div>
+          </div>
+        </div>
+
+        {/* Global Currency View Selector */}
+        <div style={styles.currencySelectorContainer}>
+          <span style={styles.currencyLabel}>💱 顯示幣別：</span>
+          <div style={styles.currencyRow}>
+            {['TWD', 'SGD', 'USD'].map((curr) => (
+              <button
+                key={curr}
+                onClick={() => {
+                  setDisplayCurrency(curr);
+                  localStorage.setItem('display_currency', curr);
+                  showToast(`💱 顯示幣別切換為 ${curr === 'TWD' ? '台幣 TWD' : curr === 'SGD' ? '新幣 SGD' : '美金 USD'}！`, 'success');
+                }}
+                style={{
+                  ...styles.currencyTabBtn,
+                  backgroundColor: displayCurrency === curr ? '#000000' : '#FFFFFF',
+                  color: displayCurrency === curr ? '#FFFFFF' : '#666666',
+                }}
+              >
+                {curr}
+              </button>
+            ))}
           </div>
         </div>
       </header>
@@ -278,6 +351,11 @@ export default function App() {
         setOfflineMode={handleSetOfflineMode}
         partners={partners}
         onUpdatePartners={handleUpdatePartners}
+        myIdentity={myIdentity}
+        onUpdateMyIdentity={(val) => {
+          setMyIdentity(val);
+          localStorage.setItem('my_identity', val);
+        }}
       />
 
       {/* --- WINNER DASHBOARD --- */}
@@ -290,6 +368,7 @@ export default function App() {
         p2Name={partners.p2.name}
         p1Role={partners.p1.role}
         p2Role={partners.p2.role}
+        currency={displayCurrency}
       />
 
       {/* --- DUAL SCALES SECTION --- */}
@@ -302,8 +381,9 @@ export default function App() {
           p2Name={partners.p2.name}
           p1Role={partners.p1.role}
           p2Role={partners.p2.role}
-          unit="元"
-          label="共同金錢天秤 💸"
+          unit={displayCurrency === 'TWD' ? '元' : displayCurrency === 'SGD' ? 'SGD' : 'USD'}
+          currency={displayCurrency}
+          label={`共同金錢天秤 (${displayCurrency === 'TWD' ? 'NT$' : displayCurrency === 'SGD' ? 'S$' : 'US$'}) 💸`}
         />
 
         <BalanceScale 
@@ -326,6 +406,7 @@ export default function App() {
           onDeleteRecord={handleDeleteRecord}
           p1Name={partners.p1.name}
           p2Name={partners.p2.name}
+          displayCurrency={displayCurrency}
         />
       </div>
 
@@ -336,8 +417,8 @@ export default function App() {
           className="comic-btn"
           style={styles.floatingBtn}
         >
-          <Plus size={24} strokeWidth={3} />
-          <span>新增心意記錄 🤍</span>
+          <Plus size={20} strokeWidth={3} />
+          <span>新增付出紀錄</span>
         </button>
       </div>
 
@@ -348,6 +429,7 @@ export default function App() {
         onAddRecord={handleAddRecord}
         p1Name={partners.p1.name}
         p2Name={partners.p2.name}
+        defaultByPartner={myIdentity}
       />
 
       {/* --- SYSTEM CUTE TOAST ALERT --- */}
@@ -355,9 +437,9 @@ export default function App() {
         <div className="toast-alert" style={styles.toast}>
           <div style={{
             ...styles.toastDot,
-            backgroundColor: toast.type === 'success' ? '#A1C298' : toast.type === 'error' ? '#D67D3E' : 'var(--color-yellow)'
+            backgroundColor: toast.type === 'success' ? '#000000' : '#666666'
           }} />
-          <span style={{ fontWeight: '700', fontSize: '0.9rem' }}>{toast.message}</span>
+          <span style={{ fontWeight: '800', fontSize: '0.9rem' }}>{toast.message}</span>
         </div>
       )}
     </div>
@@ -365,6 +447,43 @@ export default function App() {
 }
 
 const styles = {
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    flexWrap: 'wrap',
+    gap: '16px',
+    borderBottom: '3px solid #000000',
+    paddingBottom: '20px',
+    marginBottom: '28px',
+  },
+  currencySelectorContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    marginBottom: '4px',
+  },
+  currencyLabel: {
+    fontSize: '0.82rem',
+    fontWeight: '800',
+    color: '#666666',
+    letterSpacing: '0.5px',
+  },
+  currencyRow: {
+    display: 'flex',
+    gap: '6px',
+  },
+  currencyTabBtn: {
+    border: '2.5px solid #000000',
+    padding: '6px 12px',
+    borderRadius: '8px',
+    fontWeight: '800',
+    fontSize: '0.8rem',
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    boxShadow: '1.5px 1.5px 0px #000000',
+    transition: 'all 0.1s ease',
+  },
   scalesGrid: {
     display: 'flex',
     gap: '24px',
@@ -379,20 +498,24 @@ const styles = {
   },
   floatingBtn: {
     padding: '16px 28px',
-    fontSize: '1.15rem',
-    borderRadius: '24px',
-    boxShadow: '0px 10px 0px #5D4A3E',
-    backgroundColor: '#FFEFA6',
-    border: '3px solid #5D4A3E',
+    fontSize: '1.05rem',
+    borderRadius: '0px',
+    boxShadow: '4px 4px 0px #000000',
+    backgroundColor: '#FFFFFF',
+    color: '#000000',
+    border: '3px solid #000000',
+    fontWeight: '800',
   },
   toast: {
-    border: '3px solid #5D4A3E',
-    boxShadow: '4px 4px 0px #5D4A3E',
+    border: '3px solid #000000',
+    boxShadow: '4px 4px 0px #000000',
+    backgroundColor: '#FFFFFF',
+    color: '#000000',
   },
   toastDot: {
-    width: '10px',
-    height: '10px',
+    width: '8px',
+    height: '8px',
     borderRadius: '50%',
-    border: '1.5px solid #5D4A3E',
+    border: '1px solid #000000',
   }
 };

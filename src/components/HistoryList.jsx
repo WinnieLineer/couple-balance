@@ -1,11 +1,24 @@
 import React, { useState } from 'react';
-import { Trash2, Calendar, User, DollarSign, Heart, Footprints } from 'lucide-react';
+import { Trash2, Calendar, User, Footprints } from 'lucide-react';
+
+const EXCHANGE_RATES = {
+  TWD: 1.0,
+  USD: 32.5,
+  SGD: 24.0,
+};
+
+const convertValue = (val, from = 'TWD', to = 'TWD') => {
+  const fromRate = EXCHANGE_RATES[from] || 1.0;
+  const toRate = EXCHANGE_RATES[to] || 1.0;
+  return (val * fromRate) / toRate;
+};
 
 export default function HistoryList({ 
   records = [], 
   onDeleteRecord, 
   p1Name = '老公', 
-  p2Name = '老婆' 
+  p2Name = '老婆',
+  displayCurrency = 'TWD'
 }) {
   const [activeTab, setActiveTab] = useState('money'); // 'money' or 'love'
 
@@ -24,26 +37,45 @@ export default function HistoryList({
     }
   };
 
+  const getCurrencySymbol = (code) => {
+    if (code === 'TWD') return 'NT$';
+    if (code === 'SGD') return 'S$';
+    if (code === 'USD') return 'US$';
+    return 'NT$';
+  };
+
   return (
     <div className="comic-card" style={styles.container}>
       {/* Tab Selectors inside the history panel */}
       <div style={styles.header}>
-        <h3 style={styles.title}>🐾 付出足跡歷史紀錄</h3>
+        <h3 style={styles.title}>付出足跡歷史紀錄</h3>
         
         <div style={styles.tabContainer}>
           <button
             onClick={() => setActiveTab('money')}
             className={`tab-btn ${activeTab === 'money' ? 'active' : ''}`}
-            style={styles.tab}
+            style={{
+              ...styles.tab,
+              backgroundColor: activeTab === 'money' ? '#000000' : '#FFFFFF',
+              color: activeTab === 'money' ? '#FFFFFF' : '#666666',
+              border: '2.5px solid #000000',
+              boxShadow: activeTab === 'money' ? '2px 2px 0px #FFFFFF' : 'none',
+            }}
           >
-            💰 金錢支出 ({records.filter(r => r.type === 'money').length})
+            金錢支出 ({records.filter(r => r.type === 'money').length})
           </button>
           <button
             onClick={() => setActiveTab('love')}
             className={`tab-btn ${activeTab === 'love' ? 'active' : ''}`}
-            style={styles.tab}
+            style={{
+              ...styles.tab,
+              backgroundColor: activeTab === 'love' ? '#000000' : '#FFFFFF',
+              color: activeTab === 'love' ? '#FFFFFF' : '#666666',
+              border: '2.5px solid #000000',
+              boxShadow: activeTab === 'love' ? '2px 2px 0px #FFFFFF' : 'none',
+            }}
           >
-            💝 家事心意 ({records.filter(r => r.type === 'love').length})
+            家事心意 ({records.filter(r => r.type === 'love').length})
           </button>
         </div>
       </div>
@@ -52,14 +84,19 @@ export default function HistoryList({
       <div style={styles.listWrapper}>
         {filteredRecords.length === 0 ? (
           <div style={styles.emptyState}>
-            <Footprints size={48} color="var(--text-muted)" style={{ marginBottom: '10px' }} className="animate-float" />
-            <p style={styles.emptyText}>還沒有這類的付出足跡汪！</p>
-            <p style={styles.emptySubtext}>快點擊下方的「新增生活記錄」來踏出第一步吧 🐾</p>
+            <Footprints size={40} color="#666666" style={{ marginBottom: '12px' }} className="animate-float" />
+            <p style={styles.emptyText}>暫無付出歷史足跡</p>
+            <p style={styles.emptySubtext}>點擊下方的「新增生活記錄」來留下點滴紀錄吧</p>
           </div>
         ) : (
           filteredRecords.map((record) => {
             const isP1 = record.by === 'p1';
             const name = isP1 ? p1Name : p2Name;
+
+            // Money conversions display
+            const origCurrency = record.currency || 'TWD';
+            const showConverted = record.type === 'money' && origCurrency !== displayCurrency;
+            const convertedVal = showConverted ? convertValue(record.value, origCurrency, displayCurrency) : 0;
             
             return (
               <div 
@@ -67,30 +104,33 @@ export default function HistoryList({
                 className="comic-card animate-pop" 
                 style={{ 
                   ...styles.itemCard,
-                  borderLeft: isP1 ? '8px solid var(--color-yellow)' : '8px solid var(--color-pink)',
+                  borderLeft: isP1 ? '8px solid #000000' : '8px solid #D2D2D2',
                   backgroundColor: '#FFFFFF'
                 }}
               >
                 {/* Left side: Avatar & Info */}
                 <div style={styles.itemLeft}>
-                  {/* Miniature Dog badge */}
+                  {/* Miniature Dog typographic label */}
                   <div style={{ 
                     ...styles.dogBadge, 
-                    backgroundColor: isP1 ? '#FFFFFF' : 'var(--color-brown)',
-                    borderColor: 'var(--text-primary)'
+                    backgroundColor: isP1 ? '#FFFFFF' : '#D2D2D2',
+                    borderColor: '#000000',
+                    color: '#000000',
+                    fontWeight: '900',
+                    fontSize: '0.78rem'
                   }}>
-                    🐶
+                    {isP1 ? '白' : '灰'}
                   </div>
 
                   <div style={styles.itemMeta}>
                     <div style={styles.itemTitle}>{record.title}</div>
                     <div style={styles.itemDetails}>
                       <span style={styles.userSpan}>
-                        <User size={12} style={{ marginRight: '2px' }} />
+                        <User size={12} style={{ marginRight: '4px' }} />
                         {name}
                       </span>
                       <span style={styles.dateSpan}>
-                        <Calendar size={12} style={{ marginRight: '2px' }} />
+                        <Calendar size={12} style={{ marginRight: '4px' }} />
                         {formatDate(record.date)}
                       </span>
                     </div>
@@ -99,14 +139,18 @@ export default function HistoryList({
 
                 {/* Right side: Value & Delete */}
                 <div style={styles.itemRight}>
-                  <div style={{ 
-                    ...styles.valueText, 
-                    color: record.type === 'money' ? 'var(--text-primary)' : 'var(--text-primary)' 
-                  }}>
+                  <div style={styles.valueText}>
                     {record.type === 'money' ? (
-                      <span style={styles.moneyVal}>NT$ {record.value.toLocaleString()}</span>
+                      <div style={styles.moneyContainer}>
+                        <span style={styles.moneyVal}>{getCurrencySymbol(origCurrency)} {record.value.toLocaleString()}</span>
+                        {showConverted && (
+                          <span style={styles.convertedVal}>
+                            ({getCurrencySymbol(displayCurrency)} {convertedVal.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })})
+                          </span>
+                        )}
+                      </div>
                     ) : (
-                      <span style={styles.loveVal}>+{record.value} 💖</span>
+                      <span style={styles.loveVal}>+{record.value} 點</span>
                     )}
                   </div>
 
@@ -116,7 +160,7 @@ export default function HistoryList({
                     style={styles.deleteBtn}
                     title="刪除此筆記錄"
                   >
-                    <Trash2 size={14} color="#C0392B" />
+                    <Trash2 size={13} color="#000000" />
                   </button>
                 </div>
               </div>
@@ -130,8 +174,10 @@ export default function HistoryList({
 
 const styles = {
   container: {
-    backgroundColor: '#FFFDF9',
-    padding: '20px',
+    backgroundColor: '#FFFFFF',
+    padding: '24px',
+    border: '3px solid #000000',
+    boxShadow: '4px 4px 0px #000000',
   },
   header: {
     display: 'flex',
@@ -139,23 +185,27 @@ const styles = {
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: '12px',
-    borderBottom: '2.5px dashed var(--border-color)',
+    borderBottom: '2.5px dashed #000000',
     paddingBottom: '16px',
-    marginBottom: '16px',
+    marginBottom: '20px',
   },
   title: {
     fontSize: '1.2rem',
-    fontWeight: '700',
-    color: 'var(--text-primary)',
+    fontWeight: '800',
+    color: '#000000',
+    letterSpacing: '0.5px',
   },
   tabContainer: {
     display: 'flex',
     gap: '8px',
   },
   tab: {
-    fontSize: '0.85rem',
-    padding: '6px 12px',
-    borderRadius: '10px',
+    fontSize: '0.8rem',
+    padding: '6px 14px',
+    borderRadius: '8px',
+    fontWeight: '800',
+    cursor: 'pointer',
+    transition: 'all 0.1s ease',
   },
   listWrapper: {
     display: 'flex',
@@ -174,21 +224,21 @@ const styles = {
     justifyContent: 'center',
   },
   emptyText: {
-    fontWeight: '700',
-    fontSize: '1rem',
-    color: 'var(--text-primary)',
-    marginBottom: '4px',
+    fontWeight: '800',
+    fontSize: '0.95rem',
+    color: '#000000',
+    marginBottom: '6px',
   },
   emptySubtext: {
-    fontSize: '0.82rem',
-    color: 'var(--text-muted)',
-    fontWeight: '600',
+    fontSize: '0.8rem',
+    color: '#666666',
+    fontWeight: '700',
   },
   itemCard: {
-    padding: '12px 16px',
-    boxShadow: '2px 2px 0px #5D4A3E',
-    border: '2.5px solid #5D4A3E',
-    borderRadius: '16px',
+    padding: '14px 18px',
+    boxShadow: '3px 3px 0px #000000',
+    border: '3px solid #000000',
+    borderRadius: '0px', // clean layout blocks
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -197,19 +247,18 @@ const styles = {
   itemLeft: {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
+    gap: '14px',
     flex: 1,
   },
   dogBadge: {
-    width: '32px',
-    height: '32px',
+    width: '28px',
+    height: '28px',
     borderRadius: '50%',
-    border: '2px solid',
+    border: '2.5px solid #000000',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '1.1rem',
-    boxShadow: '1px 1px 0px var(--text-primary)',
+    boxShadow: '1.5px 1.5px 0px #000000',
   },
   itemMeta: {
     display: 'flex',
@@ -217,16 +266,16 @@ const styles = {
     gap: '4px',
   },
   itemTitle: {
-    fontWeight: '700',
+    fontWeight: '800',
     fontSize: '0.98rem',
-    color: 'var(--text-primary)',
+    color: '#000000',
   },
   itemDetails: {
     display: 'flex',
     gap: '12px',
     fontSize: '0.78rem',
-    color: 'var(--text-muted)',
-    fontWeight: '600',
+    color: '#666666',
+    fontWeight: '700',
   },
   userSpan: {
     display: 'inline-flex',
@@ -239,22 +288,39 @@ const styles = {
   itemRight: {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
+    gap: '14px',
   },
   valueText: {
-    fontWeight: '700',
+    fontWeight: '800',
     fontSize: '1.05rem',
   },
+  moneyContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    gap: '2px',
+  },
   moneyVal: {
-    color: 'var(--text-primary)',
+    color: '#000000',
+    fontSize: '1.02rem',
+  },
+  convertedVal: {
+    fontSize: '0.75rem',
+    color: '#666666',
+    fontWeight: '700',
   },
   loveVal: {
-    color: 'var(--text-primary)',
+    color: '#000000',
   },
   deleteBtn: {
     padding: '6px',
     borderRadius: '8px',
-    boxShadow: '1.5px 1.5px 0px #5D4A3E',
+    boxShadow: '1.5px 1.5px 0px #000000',
     backgroundColor: '#FFFFFF',
+    border: '2px solid #000000',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   }
 };

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Trophy, Heart, Flame } from 'lucide-react';
+import { Trophy, Heart, Flame } from 'lucide-react';
 
 export default function WinnerDashboard({ 
   p1Money = 0, 
@@ -9,7 +9,8 @@ export default function WinnerDashboard({
   p1Name = '老公',
   p2Name = '老婆',
   p1Role = 'white_dog',
-  p2Role = 'brown_dog'
+  p2Role = 'brown_dog',
+  currency = 'TWD'
 }) {
   const moneyDiff = p1Money - p2Money; // > 0 means p1 spent more
   const loveDiff = p1Love - p2Love;   // > 0 means p1 did more chores
@@ -26,130 +27,154 @@ export default function WinnerDashboard({
     // Partner 1 did more and spent more
     winner = 'p2'; // P2 is pampered / spoiled!
     stateType = 'p2_spoiled';
-    statusTitle = `👑 ${p2Name} 是宇宙無敵受寵王！ 👑`;
-    statusDesc = `${p1Name} 默默包辦了金錢與家事，簡直是模範奉獻小狗！快給他一個大大的擁抱～`;
-    dialogP1 = '為了寶貝的笑容，我辛苦一點也超幸福的！汪嗚！💦🐾';
-    dialogP2 = '哼哼～我是被愛包圍的幸福女皇！謝謝親愛的！💖✨';
+    statusTitle = `${p2Name} 目前備受寵愛`;
+    statusDesc = `${p1Name} 默默包辦了金錢與家事，簡直是模範奉獻代表！快給他一個溫馨的感謝吧。`;
+    dialogP1 = '默默為我們的生活付出，看到你的笑容我就感到非常值得。';
+    dialogP2 = '能感受到你無比真摯的心意與照顧，謝謝你為我們做的一切。';
   } else if (moneyDiff < 0 && loveDiff < 0) {
     // Partner 2 did more and spent more
     winner = 'p1'; // P1 is pampered / spoiled!
     stateType = 'p1_spoiled';
-    statusTitle = `👑 ${p1Name} 是宇宙無敵受寵王！ 👑`;
-    statusDesc = `${p2Name} 默默包辦了金錢與家事，簡直是模範奉獻小狗！快去幫她搥搥背～`;
-    dialogP1 = '耶～我是最幸福的國王！謝謝親愛的！抱一個！👑🐶';
-    dialogP2 = '看你開心的樣子，我付出的汗水和金錢都值了！汪！💖✨';
+    statusTitle = `${p1Name} 目前備受寵愛`;
+    statusDesc = `${p2Name} 默默包辦了金錢與家事，簡直是模範奉獻代表！快去幫她搥搥背表達心意吧。`;
+    dialogP1 = '能感受到你無比真摯的心意與照顧，謝謝你為我們做的一切。';
+    dialogP2 = '默默為我們的生活付出，看到你的笑容我就感到非常值得。';
   } else if ((moneyDiff > 0 && loveDiff < 0) || (moneyDiff < 0 && loveDiff > 0)) {
     // Split! One spent more, one did more chores
     winner = 'both';
     stateType = 'split';
-    statusTitle = '🤝 默契金牌！最強生活合夥人 🤝';
+    statusTitle = '生活分工默契無間';
     const moneyLeader = moneyDiff > 0 ? p1Name : p2Name;
     const choreLeader = loveDiff > 0 ? p1Name : p2Name;
-    statusDesc = `太讚了！由 ${moneyLeader} 主攻生活經濟 💰，${choreLeader} 主攻溫馨家事 🧹。分工合作，完美互補！`;
-    dialogP1 = '你出資、我出力，我們的生活天秤超級穩！🐾';
-    dialogP2 = '沒錯！強強聯手，這就是我們完美的共同生活方式！💖';
+    statusDesc = `目前由 ${moneyLeader} 主力負責生活開銷，${choreLeader} 主力打理溫馨家事，相互扶持，完美互補！`;
+    dialogP1 = '你出資、我出力，我們的生活維持著完美的默契平衡。';
+    dialogP2 = '沒錯！相互配合，這就是我們最舒適、最自在的共同生活型態。';
   } else {
     // Perfect tie
     winner = 'both';
     stateType = 'harmony';
-    statusTitle = '🌸 心有靈犀！神仙眷侶平衡大師 🌸';
-    statusDesc = '太不可思議了！你們的金錢與家事付出達到近乎完美的平衡！這絕對是靈魂伴侶的最高境界！';
-    dialogP1 = '我們居然剛好一模一樣！這就是心意相通嗎？';
-    dialogP2 = '天啊～太有默契了！小白和小棕永遠在一起！💖';
+    statusTitle = '生活心意完美平衡';
+    statusDesc = '太令人高興了！你們在金錢與家事上的付出達到了高度理想的平衡，互相為彼此著想，是絕佳的伴侶。';
+    dialogP1 = '我們在生活的各項付出上剛好一致，真的是太有默契了。';
+    dialogP2 = '是的，互相體貼、平分秋色，這就是我們攜手經營生活的最佳證明。';
   }
 
-  // White Dog SVG Nodes
-  const renderWhiteDogSvg = (isSpoiled, isDevoted) => (
+  // Beautiful Minimal Custom SVG Crown instead of cartoon emoji
+  const renderCrownSvg = () => (
+    <svg viewBox="0 0 40 30" style={styles.crownSvgElement}>
+      <path 
+        d="M 5,25 L 5,10 L 13,18 L 20,7 L 27,18 L 35,10 L 35,25 Z" 
+        fill="#FFFFFF" 
+        stroke="#000000" 
+        strokeWidth="3" 
+        strokeLinejoin="round" 
+      />
+      <circle cx="5" cy="8" r="2" fill="#000000" />
+      <circle cx="20" cy="5" r="2" fill="#000000" />
+      <circle cx="35" cy="8" r="2" fill="#000000" />
+      <line x1="2" y1="25" x2="38" y2="25" stroke="#000000" strokeWidth="2.5" />
+    </svg>
+  );
+
+  // White Dog SVG Nodes (Black & White line-art sketch style)
+  const renderWhiteDogSvg = (isWinning, isDevoted) => (
     <svg viewBox="0 0 100 80" style={styles.dogSvg}>
       {/* Body */}
-      <ellipse cx="50" cy="55" rx="20" ry="15" fill="#FFFFFF" stroke="#5D4A3E" strokeWidth="3" />
+      <ellipse cx="50" cy="55" rx="20" ry="15" fill="#FFFFFF" stroke="#000000" strokeWidth="3" />
       {/* Back leg & tail */}
-      <circle cx="34" cy="62" r="7" fill="#FFFFFF" stroke="#5D4A3E" strokeWidth="2.5" />
-      <path d="M 30 55 Q 20 50 25 42" fill="none" stroke="#5D4A3E" strokeWidth="3" strokeLinecap="round" />
+      <circle cx="34" cy="62" r="7" fill="#FFFFFF" stroke="#000000" strokeWidth="2.5" />
+      <path d="M 30 55 Q 20 50 25 42" fill="none" stroke="#000000" strokeWidth="3" strokeLinecap="round" />
       
       {/* Ears */}
-      <ellipse cx="30" cy="28" rx="6" ry="10" fill="#FFFFFF" stroke="#5D4A3E" strokeWidth="3" />
-      <ellipse cx="70" cy="28" rx="6" ry="10" fill="#FFFFFF" stroke="#5D4A3E" strokeWidth="3" />
+      <ellipse cx="30" cy="28" rx="6" ry="10" fill="#FFFFFF" stroke="#000000" strokeWidth="3" />
+      <ellipse cx="70" cy="28" rx="6" ry="10" fill="#FFFFFF" stroke="#000000" strokeWidth="3" />
       {/* Head */}
-      <ellipse cx="50" cy="35" rx="20" ry="17" fill="#FFFFFF" stroke="#5D4A3E" strokeWidth="3" />
+      <ellipse cx="50" cy="35" rx="20" ry="17" fill="#FFFFFF" stroke="#000000" strokeWidth="3" />
       {/* Eyes */}
-      <circle cx="43" cy="33" r="3" fill="#5D4A3E" />
-      <circle cx="57" cy="33" r="3" fill="#5D4A3E" />
-      {/* Blush */}
-      <circle cx="35" cy="39" r="3" fill="#FFC4C4" />
-      <circle cx="65" cy="39" r="3" fill="#FFC4C4" />
+      <circle cx="43" cy="33" r="3" fill="#000000" />
+      <circle cx="57" cy="33" r="3" fill="#000000" />
+      {/* Blush (Elegant black lines/slashes instead of pink!) */}
+      <line x1="32" y1="39" x2="35" y2="41" stroke="#000000" strokeWidth="1.5" />
+      <line x1="33" y1="41" x2="36" y2="43" stroke="#000000" strokeWidth="1.5" />
+      <line x1="64" y1="39" x2="67" y2="41" stroke="#000000" strokeWidth="1.5" />
+      <line x1="65" y1="41" x2="68" y2="43" stroke="#000000" strokeWidth="1.5" />
       {/* Nose & Mouth */}
-      <polygon points="48,37 52,37 50,40" fill="#5D4A3E" />
-      <path d="M 47 43 Q 50 46 53 43" fill="none" stroke="#5D4A3E" strokeWidth="2" strokeLinecap="round" />
+      <polygon points="48,37 52,37 50,40" fill="#000000" />
+      <path d="M 47 43 Q 50 46 53 43" fill="none" stroke="#000000" strokeWidth="2" strokeLinecap="round" />
       {/* Front paws */}
-      <circle cx="44" cy="68" r="6" fill="#FFFFFF" stroke="#5D4A3E" strokeWidth="2.5" />
-      <circle cx="56" cy="68" r="6" fill="#FFFFFF" stroke="#5D4A3E" strokeWidth="2.5" />
+      <circle cx="44" cy="68" r="6" fill="#FFFFFF" stroke="#000000" strokeWidth="2.5" />
+      <circle cx="56" cy="68" r="6" fill="#FFFFFF" stroke="#000000" strokeWidth="2.5" />
       
-      {/* Sweat droplet if devoting */}
+      {/* Sweat droplet if devoting (B&W minimal line representation) */}
       {isDevoted && (
-        <path d="M 72 20 Q 75 25 72 27 Q 70 25 72 20" fill="#D7E9F7" stroke="#5D4A3E" strokeWidth="1.5" />
+        <path d="M 72 20 Q 75 25 72 27 Q 70 25 72 20" fill="#FFFFFF" stroke="#000000" strokeWidth="1.5" />
       )}
     </svg>
   );
 
-  // Brown Dog SVG Nodes
-  const renderBrownDogSvg = (isSpoiled, isDevoted) => (
+  // Brown Dog SVG Nodes (Chic Designer Gray (#D2D2D2) line-art sketch style)
+  const renderBrownDogSvg = (isWinning, isDevoted) => (
     <svg viewBox="0 0 100 80" style={styles.dogSvg}>
       {/* Body */}
-      <ellipse cx="50" cy="55" rx="20" ry="15" fill="#E5A96E" stroke="#5D4A3E" strokeWidth="3" />
+      <ellipse cx="50" cy="55" rx="20" ry="15" fill="#D2D2D2" stroke="#000000" strokeWidth="3" />
       {/* Back leg & tail */}
-      <circle cx="34" cy="62" r="7" fill="#E5A96E" stroke="#5D4A3E" strokeWidth="2.5" />
-      <path d="M 30 55 Q 20 50 25 42" fill="none" stroke="#5D4A3E" strokeWidth="3" strokeLinecap="round" />
+      <circle cx="34" cy="62" r="7" fill="#D2D2D2" stroke="#000000" strokeWidth="2.5" />
+      <path d="M 30 55 Q 20 50 25 42" fill="none" stroke="#000000" strokeWidth="3" strokeLinecap="round" />
       
       {/* Ears */}
-      <ellipse cx="30" cy="28" rx="6" ry="10" fill="#E5A96E" stroke="#5D4A3E" strokeWidth="3" />
-      <ellipse cx="70" cy="28" rx="6" ry="10" fill="#E5A96E" stroke="#5D4A3E" strokeWidth="3" />
+      <ellipse cx="30" cy="28" rx="6" ry="10" fill="#D2D2D2" stroke="#000000" strokeWidth="3" />
+      <ellipse cx="70" cy="28" rx="6" ry="10" fill="#D2D2D2" stroke="#000000" strokeWidth="3" />
       {/* Head */}
-      <ellipse cx="50" cy="35" rx="20" ry="17" fill="#E5A96E" stroke="#5D4A3E" strokeWidth="3" />
+      <ellipse cx="50" cy="35" rx="20" ry="17" fill="#D2D2D2" stroke="#000000" strokeWidth="3" />
       {/* Eyes */}
-      <circle cx="43" cy="33" r="3" fill="#5D4A3E" />
-      <circle cx="57" cy="33" r="3" fill="#5D4A3E" />
-      {/* Blush */}
-      <circle cx="35" cy="39" r="3" fill="#FF8B8B" />
-      <circle cx="65" cy="39" r="3" fill="#FF8B8B" />
+      <circle cx="43" cy="33" r="3" fill="#000000" />
+      <circle cx="57" cy="33" r="3" fill="#000000" />
+      {/* Blush (B&W slashes) */}
+      <line x1="32" y1="39" x2="35" y2="41" stroke="#000000" strokeWidth="1.5" />
+      <line x1="33" y1="41" x2="36" y2="43" stroke="#000000" strokeWidth="1.5" />
+      <line x1="64" y1="39" x2="67" y2="41" stroke="#000000" strokeWidth="1.5" />
+      <line x1="65" y1="41" x2="68" y2="43" stroke="#000000" strokeWidth="1.5" />
       {/* Nose & Mouth */}
-      <polygon points="48,37 52,37 50,40" fill="#5D4A3E" />
-      <path d="M 47 43 Q 50 46 53 43" fill="none" stroke="#5D4A3E" strokeWidth="2" strokeLinecap="round" />
+      <polygon points="48,37 52,37 50,40" fill="#000000" />
+      <path d="M 47 43 Q 50 46 53 43" fill="none" stroke="#000000" strokeWidth="2" strokeLinecap="round" />
       {/* Front paws */}
-      <circle cx="44" cy="68" r="6" fill="#E5A96E" stroke="#5D4A3E" strokeWidth="2.5" />
-      <circle cx="56" cy="68" r="6" fill="#E5A96E" stroke="#5D4A3E" strokeWidth="2.5" />
+      <circle cx="44" cy="68" r="6" fill="#D2D2D2" stroke="#000000" strokeWidth="2.5" />
+      <circle cx="56" cy="68" r="6" fill="#D2D2D2" stroke="#000000" strokeWidth="2.5" />
       
       {/* Sweat droplet if devoting */}
       {isDevoted && (
-        <path d="M 72 20 Q 75 25 72 27 Q 70 25 72 20" fill="#D7E9F7" stroke="#5D4A3E" strokeWidth="1.5" />
+        <path d="M 72 20 Q 75 25 72 27 Q 70 25 72 20" fill="#FFFFFF" stroke="#000000" strokeWidth="1.5" />
       )}
     </svg>
   );
 
   return (
     <div className="comic-card" style={styles.container}>
-      {/* Sparkly header banner */}
+      {/* Sleek Minimal High-Contrast B&W Banner */}
       <div style={styles.banner}>
-        <Sparkles size={18} color="var(--text-primary)" className="animate-spin-slow" />
-        <span style={styles.bannerText}>🏆 共同生活心意分析看板 🏆</span>
-        <Sparkles size={18} color="var(--text-primary)" className="animate-spin-slow" />
+        <span style={styles.bannerText}>生活付出心意分析看板</span>
       </div>
 
       <div style={styles.dashboardBody}>
-        {/* Adorable Visual Display */}
+        {/* Designer Visual Display */}
         <div style={styles.visualRow}>
           {/* Partner 1 Dog */}
           <div style={styles.dogWrapper}>
-            <div style={styles.nameTag}>{p1Role === 'white_dog' ? '🤍' : '🤎'} {p1Name}</div>
+            <div style={styles.nameTag}>
+              {p1Role === 'white_dog' ? '白狗' : '灰狗'} {p1Name}
+            </div>
             
             <div style={{
               ...styles.dogAvatar,
               transform: stateType === 'p1_spoiled' ? 'scale(1.15) translateY(-5px)' : 'scale(1)',
-              filter: stateType === 'p2_spoiled' ? 'grayscale(15%) opacity(85%)' : 'none'
+              filter: stateType === 'p2_spoiled' ? 'grayscale(30%) opacity(80%)' : 'none'
             }} className={stateType === 'p1_spoiled' ? 'animate-float' : ''}>
-              {/* Crown for crowned spoiled dog */}
+              
+              {/* Custom SVG crown instead of emoji */}
               {stateType === 'p1_spoiled' && (
-                <div style={styles.crown}>👑</div>
+                <div style={styles.crownContainer}>
+                  {renderCrownSvg()}
+                </div>
               )}
               
               {p1Role === 'white_dog' 
@@ -167,24 +192,33 @@ export default function WinnerDashboard({
 
           {/* Verses indicator in middle */}
           <div style={styles.versusColumn}>
-            <div style={{ ...styles.vsCircle, backgroundColor: stateType === 'split' ? 'var(--color-green)' : 'var(--color-pink)' }}>
-              {stateType === 'split' ? <Flame size={20} color="var(--text-primary)" /> : <Heart size={20} color="var(--text-primary)" fill="var(--text-primary)" />}
+            <div style={styles.vsCircle}>
+              {stateType === 'split' ? (
+                <Flame size={18} color="#FFFFFF" strokeWidth={2.5} />
+              ) : (
+                <Heart size={18} color="#FFFFFF" fill="#FFFFFF" strokeWidth={2.5} />
+              )}
             </div>
             <div style={styles.vsLine} />
           </div>
 
           {/* Partner 2 Dog */}
           <div style={styles.dogWrapper}>
-            <div style={{ ...styles.nameTag, alignSelf: 'flex-end' }}>{p2Role === 'white_dog' ? '🤍' : '🤎'} {p2Name}</div>
+            <div style={{ ...styles.nameTag, alignSelf: 'flex-end' }}>
+              {p2Role === 'white_dog' ? '白狗' : '灰狗'} {p2Name}
+            </div>
             
             <div style={{
               ...styles.dogAvatar,
               transform: stateType === 'p2_spoiled' ? 'scale(1.15) translateY(-5px)' : 'scale(1)',
-              filter: stateType === 'p1_spoiled' ? 'grayscale(15%) opacity(85%)' : 'none'
+              filter: stateType === 'p1_spoiled' ? 'grayscale(30%) opacity(80%)' : 'none'
             }} className={stateType === 'p2_spoiled' ? 'animate-float' : ''}>
-              {/* Crown for crowned spoiled dog */}
+              
+              {/* Custom SVG crown instead of emoji */}
               {stateType === 'p2_spoiled' && (
-                <div style={styles.crownRight}>👑</div>
+                <div style={styles.crownContainerRight}>
+                  {renderCrownSvg()}
+                </div>
               )}
               
               {p2Role === 'white_dog' 
@@ -204,7 +238,7 @@ export default function WinnerDashboard({
         {/* Textual Evaluation and Award */}
         <div style={styles.awardCard}>
           <div style={styles.awardHeader}>
-            <Trophy size={18} color="var(--text-primary)" />
+            <Trophy size={18} color="#000000" strokeWidth={2.5} />
             <h4 style={styles.statusTitle}>{statusTitle}</h4>
           </div>
           <p style={styles.statusDesc}>{statusDesc}</p>
@@ -216,39 +250,39 @@ export default function WinnerDashboard({
 
 const styles = {
   container: {
-    backgroundColor: '#FFFDF9',
+    backgroundColor: '#FFFFFF',
     marginBottom: '24px',
-    padding: '20px',
+    padding: '24px',
+    border: '3px solid #000000',
+    boxShadow: '4px 4px 0px #000000',
   },
   banner: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '12px',
-    backgroundColor: '#FFEFA6',
-    border: '2.5px solid var(--text-primary)',
-    borderRadius: '12px',
-    padding: '6px 16px',
-    marginBottom: '20px',
-    boxShadow: '2px 2px 0px var(--text-primary)',
+    backgroundColor: '#000000',
+    borderRadius: '8px',
+    padding: '8px 16px',
+    marginBottom: '24px',
   },
   bannerText: {
-    fontWeight: '700',
+    fontWeight: '800',
     fontSize: '0.95rem',
-    letterSpacing: '1px',
-    color: 'var(--text-primary)',
+    letterSpacing: '1.5px',
+    color: '#FFFFFF',
+    textTransform: 'uppercase',
   },
   dashboardBody: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '20px',
+    gap: '24px',
   },
   visualRow: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     flexWrap: 'wrap',
-    gap: '20px',
+    gap: '24px',
   },
   dogWrapper: {
     flex: 1,
@@ -256,17 +290,17 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '10px',
+    gap: '12px',
   },
   nameTag: {
-    backgroundColor: 'var(--text-primary)',
+    backgroundColor: '#000000',
     color: '#FFFFFF',
-    padding: '4px 12px',
-    borderRadius: '99px',
-    fontSize: '0.85rem',
-    fontWeight: '700',
-    border: '2px solid #5D4A3E',
-    boxShadow: '1.5px 1.5px 0px #5D4A3E',
+    padding: '4px 14px',
+    borderRadius: '0px', // Straight architect styling
+    fontSize: '0.8rem',
+    fontWeight: '800',
+    border: '2px solid #000000',
+    letterSpacing: '0.5px',
   },
   dogAvatar: {
     width: '120px',
@@ -278,20 +312,18 @@ const styles = {
     width: '100%',
     height: '100%',
   },
-  crown: {
+  crownContainer: {
     position: 'absolute',
-    top: '-15px',
+    top: '-20px',
     left: '20px',
-    fontSize: '1.8rem',
     transform: 'rotate(-15deg)',
     zIndex: 10,
     animation: 'float 3s ease-in-out infinite',
   },
-  crownRight: {
+  crownContainerRight: {
     position: 'absolute',
-    top: '-15px',
+    top: '-20px',
     right: '20px',
-    fontSize: '1.8rem',
     transform: 'rotate(15deg)',
     zIndex: 10,
     animation: 'float 3s ease-in-out infinite',
@@ -305,30 +337,30 @@ const styles = {
     justifyContent: 'center',
   },
   vsCircle: {
-    width: '40px',
-    height: '40px',
+    width: '36px',
+    height: '36px',
     borderRadius: '50%',
-    border: '2.5px solid var(--text-primary)',
+    border: '3px solid #000000',
+    backgroundColor: '#000000',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '2px 2px 0px var(--text-primary)',
     zIndex: 2,
   },
   vsLine: {
     width: '2px',
     height: '50px',
-    borderLeft: '2px dashed var(--border-color)',
+    borderLeft: '2px dashed #000000',
     marginTop: '-10px',
   },
   bubble: {
     position: 'relative',
     backgroundColor: '#FFFFFF',
-    border: '2.5px solid var(--text-primary)',
-    borderRadius: '16px',
+    border: '3px solid #000000',
+    borderRadius: '0px', // pure block style
     padding: '10px 14px',
-    boxShadow: '3.5px 3.5px 0px var(--text-primary)',
-    maxWidth: '220px',
+    boxShadow: '4px 4px 0px #000000',
+    maxWidth: '230px',
   },
   bubbleArrowLeft: {
     content: '""',
@@ -340,16 +372,16 @@ const styles = {
     height: '0',
     borderLeft: '10px solid transparent',
     borderRight: '10px solid transparent',
-    borderBottom: '10px solid var(--text-primary)',
+    borderBottom: '10px solid #000000',
   },
   bubbleRight: {
     position: 'relative',
     backgroundColor: '#FFFFFF',
-    border: '2.5px solid var(--text-primary)',
-    borderRadius: '16px',
+    border: '3px solid #000000',
+    borderRadius: '0px',
     padding: '10px 14px',
-    boxShadow: '3.5px 3.5px 0px var(--text-primary)',
-    maxWidth: '220px',
+    boxShadow: '4px 4px 0px #000000',
+    maxWidth: '230px',
   },
   bubbleArrowRight: {
     content: '""',
@@ -361,37 +393,38 @@ const styles = {
     height: '0',
     borderLeft: '10px solid transparent',
     borderRight: '10px solid transparent',
-    borderBottom: '10px solid var(--text-primary)',
+    borderBottom: '10px solid #000000',
   },
   bubbleText: {
-    fontSize: '0.82rem',
+    fontSize: '0.8rem',
     fontWeight: '700',
-    color: 'var(--text-primary)',
-    lineHeight: '1.4',
+    color: '#000000',
+    lineHeight: '1.5',
     textAlign: 'center',
   },
   awardCard: {
     backgroundColor: '#FFFFFF',
-    border: '2.5px solid var(--text-primary)',
-    borderRadius: '16px',
-    padding: '12px 18px',
-    boxShadow: '2.5px 2.5px 0px var(--text-primary)',
+    border: '3px solid #000000',
+    borderRadius: '0px',
+    padding: '16px 20px',
+    boxShadow: '3px 3px 0px #000000',
   },
   awardHeader: {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
-    marginBottom: '6px',
+    marginBottom: '8px',
   },
   statusTitle: {
     fontSize: '1.05rem',
-    fontWeight: '700',
-    color: 'var(--text-primary)',
+    fontWeight: '800',
+    color: '#000000',
+    letterSpacing: '0.5px',
   },
   statusDesc: {
     fontSize: '0.88rem',
     color: 'var(--text-muted)',
-    lineHeight: '1.5',
-    fontWeight: '600',
+    lineHeight: '1.6',
+    fontWeight: '700',
   }
 };

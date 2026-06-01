@@ -1,22 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Landmark, Heart, Sparkles, User, Tag, Plus, Check } from 'lucide-react';
 
 const MONEY_PRESETS = [
-  { tag: '🛒 買菜與日用品', val: '' },
-  { tag: '🔌 水電瓦斯網路', val: '' },
-  { tag: '🍱 甜蜜約會大餐', val: '' },
-  { tag: '🏠 房租與家居費', val: '' },
-  { tag: '🚗 交通與加油費', val: '' },
-  { tag: '🧸 零食飲料生活', val: '' },
+  { tag: '買菜與日用品', val: '' },
+  { tag: '水電瓦斯網路', val: '' },
+  { tag: '約會大餐', val: '' },
+  { tag: '房租與家居費', val: '' },
+  { tag: '交通與加油費', val: '' },
+  { tag: '零食飲料生活', val: '' },
 ];
 
 const LOVE_PRESETS = [
-  { tag: '🧼 辛苦洗碗盤', points: 10 },
-  { tag: '🧹 掃地倒垃圾', points: 10 },
-  { tag: '🍳 煮一頓好料', points: 20 },
-  { tag: '💆 對方馬殺雞', points: 15 },
-  { tag: '🎁 送甜蜜小驚喜', points: 20 },
-  { tag: '🚗 熱心專車接送', points: 15 },
+  { tag: '辛苦洗碗盤', points: 10 },
+  { tag: '日常打掃', points: 10 },
+  { tag: '烹調下廚', points: 20 },
+  { tag: '按摩放鬆', points: 15 },
+  { tag: '準備心意驚喜', points: 20 },
+  { tag: '專車接送', points: 15 },
 ];
 
 export default function RecordModal({ 
@@ -24,13 +24,21 @@ export default function RecordModal({
   onClose, 
   onAddRecord, 
   p1Name = '老公', 
-  p2Name = '老婆' 
+  p2Name = '老婆',
+  defaultByPartner = 'p1'
 }) {
   const [recordType, setRecordType] = useState('money'); // 'money' or 'love'
-  const [byPartner, setByPartner] = useState('p1'); // 'p1' (husband) or 'p2' (wife)
+  const [byPartner, setByPartner] = useState(defaultByPartner); // 'p1' (husband) or 'p2' (wife)
   const [title, setTitle] = useState('');
   const [value, setValue] = useState('');
+  const [currency, setCurrency] = useState('TWD');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setByPartner(defaultByPartner);
+    }
+  }, [isOpen, defaultByPartner]);
 
   if (!isOpen) return null;
 
@@ -66,12 +74,14 @@ export default function RecordModal({
       by: byPartner,
       title: title.trim(),
       value: numVal,
+      currency: recordType === 'money' ? currency : undefined,
       date: new Date().toISOString()
     });
 
     // Reset Form
     setTitle('');
     setValue('');
+    setCurrency('TWD');
     onClose();
   };
 
@@ -92,7 +102,7 @@ export default function RecordModal({
           </button>
         </div>
 
-        <h2 style={styles.title}>🐾 新增生活付出記錄 🐾</h2>
+        <h2 style={styles.title}>新增生活付出記錄</h2>
         
         {/* Type selector tabs */}
         <div style={styles.typeSelector}>
@@ -101,12 +111,12 @@ export default function RecordModal({
             onClick={() => { setRecordType('money'); setValue(''); setError(''); }}
             style={{ 
               ...styles.typeBtn, 
-              backgroundColor: recordType === 'money' ? 'var(--color-yellow)' : '#FFFFFF',
+              backgroundColor: recordType === 'money' ? 'var(--color-light-gray)' : '#FFFFFF',
               borderColor: 'var(--text-primary)'
             }}
           >
             <Landmark size={18} />
-            <span>💰 金錢帳單</span>
+            <span>金錢帳單</span>
           </button>
 
           <button 
@@ -114,12 +124,12 @@ export default function RecordModal({
             onClick={() => { setRecordType('love'); setValue(''); setError(''); }}
             style={{ 
               ...styles.typeBtn, 
-              backgroundColor: recordType === 'love' ? 'var(--color-pink)' : '#FFFFFF',
+              backgroundColor: recordType === 'love' ? 'var(--color-light-gray)' : '#FFFFFF',
               borderColor: 'var(--text-primary)'
             }}
           >
             <Heart size={18} fill={recordType === 'love' ? 'var(--text-primary)' : 'none'} />
-            <span>💖 家事與貼心</span>
+            <span>家事與心意</span>
           </button>
         </div>
 
@@ -140,7 +150,6 @@ export default function RecordModal({
                   borderWidth: byPartner === 'p1' ? '3px' : '2px'
                 }}
               >
-                <div style={styles.dogIndicator}>🐶</div>
                 <span style={styles.partnerName}>{p1Name} (白狗)</span>
                 {byPartner === 'p1' && <Check size={16} color="var(--text-primary)" strokeWidth={3} />}
               </div>
@@ -154,8 +163,7 @@ export default function RecordModal({
                   borderWidth: byPartner === 'p2' ? '3px' : '2px'
                 }}
               >
-                <div style={{ ...styles.dogIndicator, color: 'var(--color-brown)' }}>🐶</div>
-                <span style={styles.partnerName}>{p2Name} (棕狗)</span>
+                <span style={styles.partnerName}>{p2Name} (灰狗)</span>
                 {byPartner === 'p2' && <Check size={16} color="var(--text-primary)" strokeWidth={3} />}
               </div>
             </div>
@@ -179,7 +187,7 @@ export default function RecordModal({
 
           {/* Quick presets */}
           <div style={styles.formGroup}>
-            <label style={styles.presetLabel}>✨ 快捷小幫手標籤：</label>
+            <label style={styles.presetLabel}>推薦快捷標籤：</label>
             <div style={styles.presetsList}>
               {(recordType === 'money' ? MONEY_PRESETS : LOVE_PRESETS).map((item, idx) => (
                 <button
@@ -195,22 +203,56 @@ export default function RecordModal({
             </div>
           </div>
 
+          {/* Currency selection for money */}
+          {recordType === 'money' && (
+            <div style={styles.formGroup}>
+              <label style={styles.label}>
+                交易幣別
+              </label>
+              <div style={styles.currencyRow}>
+                {[
+                  { code: 'TWD', name: 'TWD (NT$)' },
+                  { code: 'SGD', name: 'SGD (S$)' },
+                  { code: 'USD', name: 'USD (US$)' }
+                ].map((curr) => (
+                  <button
+                    key={curr.code}
+                    type="button"
+                    onClick={() => setCurrency(curr.code)}
+                    style={{
+                      ...styles.currencyBtn,
+                      backgroundColor: currency === curr.code ? '#000000' : '#FFFFFF',
+                      color: currency === curr.code ? '#FFFFFF' : '#000000',
+                      border: '2.5px solid #000000',
+                    }}
+                  >
+                    {curr.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Amount / Hearts value */}
           <div style={styles.formGroup}>
             <label style={styles.label}>
-              {recordType === 'money' ? '💰 付出金額 (新台幣元)' : '💖 努力點數 (心意值)'}
+              {recordType === 'money' ? '付出金額' : '努力點數 (心意值)'}
             </label>
             <div style={styles.valueInputRow}>
               <input 
                 type="number" 
-                placeholder={recordType === 'money' ? 'NT$ 金額' : '點數值'} 
+                placeholder={recordType === 'money' ? `${currency === 'TWD' ? 'NT$' : currency === 'SGD' ? 'S$' : 'US$'} 金額` : '點數值'} 
                 value={value} 
                 onChange={(e) => setValue(e.target.value)} 
                 className="comic-input" 
                 min="1"
                 step="any"
               />
-              {recordType === 'money' && <span style={styles.unitText}>元</span>}
+              {recordType === 'money' && (
+                <span style={styles.unitText}>
+                  {currency === 'TWD' ? '元 (TWD)' : currency === 'SGD' ? '元 (SGD)' : '元 (USD)'}
+                </span>
+              )}
             </div>
 
             {/* Quick point triggers for chores */}
@@ -234,20 +276,20 @@ export default function RecordModal({
               <div style={styles.guideWrapper}>
                 <details style={styles.guideDetails}>
                   <summary style={styles.guideSummary}>
-                    💡 不知道心意點數怎麼評估？點我看對照指南
+                    不知道點數如何評估？點我看對照指南
                   </summary>
                   <div style={styles.guideContent}>
-                    <div style={styles.guideRow}>🌸 <strong>+5 點 (輕微心意)</strong>：倒垃圾、順手倒溫水、買咖啡、洗水果</div>
-                    <div style={styles.guideRow}>🧼 <strong>+10 點 (日常付出)</strong>：辛苦洗碗、吸地拖地、洗曬衣服、整理房間</div>
-                    <div style={styles.guideRow}>🍳 <strong>+20 點 (深度奉獻)</strong>：親自下廚做飯、專車接送、搥背按摩半小時</div>
-                    <div style={styles.guideRow}>👑 <strong>+30 點 (史詩級寵愛)</strong>：大掃除整理全家、生病通宵照顧、驚喜手工禮</div>
+                    <div style={styles.guideRow}><strong>+5 點 (輕微心意)</strong>：倒垃圾、順手倒溫水、買咖啡、洗水果</div>
+                    <div style={styles.guideRow}><strong>+10 點 (日常付出)</strong>：辛苦洗碗、吸地拖地、洗曬衣服、整理房間</div>
+                    <div style={styles.guideRow}><strong>+20 點 (深度奉獻)</strong>：親自下廚做飯、專車接送、搥背按摩半小時</div>
+                    <div style={styles.guideRow}><strong>+30 點 (史詩級寵愛)</strong>：大掃除整理全家、生病通宵照顧、驚喜手工禮</div>
                   </div>
                 </details>
               </div>
             )}
           </div>
 
-          {error && <div style={styles.errorText}>⚠️ {error}</div>}
+          {error && <div style={styles.errorText}>{error}</div>}
 
           {/* Action row */}
           <div style={styles.actionRow}>
@@ -265,7 +307,7 @@ export default function RecordModal({
               style={{ flex: 2 }}
             >
               <Plus size={16} />
-              <span>快樂記錄！ ✨</span>
+              <span>儲存紀錄</span>
             </button>
           </div>
         </form>
@@ -506,5 +548,25 @@ const styles = {
     color: '#8E7E73',
     lineHeight: '1.4',
     textAlign: 'left',
+  },
+  currencyRow: {
+    display: 'flex',
+    gap: '8px',
+    flexWrap: 'wrap',
+    marginTop: '4px',
+  },
+  currencyBtn: {
+    flex: 1,
+    padding: '8px 12px',
+    borderRadius: '10px',
+    fontFamily: 'inherit',
+    fontWeight: '700',
+    fontSize: '0.82rem',
+    cursor: 'pointer',
+    boxShadow: '2px 2px 0px #000000',
+    transition: 'transform 0.1s, background-color 0.1s',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   }
 };

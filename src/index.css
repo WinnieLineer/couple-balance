@@ -1,30 +1,28 @@
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Nunito:wght@300..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300..900&family=Nunito:wght@300..800&display=swap');
 
-/* --- DESIGN SYSTEM & CSS VARIABLES --- */
+/* --- PREMIUM BLACK & WHITE DESIGN SYSTEM --- */
 :root {
-  --bg-primary: #FAF6EE;      /* Warm Oats & Milk background */
-  --bg-secondary: #FFFFFF;    /* Clean White for cards */
-  --text-primary: #5D4A3E;    /* Cozy Deep Chocolate Brown */
-  --text-muted: #8E7E73;      /* Lighter Cocoa Brown */
-  --border-color: #E6DDD0;    /* Soft beige lines */
-  --border-thick: 3px solid #5D4A3E; /* Signature hand-drawn outline */
+  --bg-primary: #F4F4F3;      /* Sleek off-white/light gray */
+  --bg-secondary: #FFFFFF;    /* Pure White */
+  --text-primary: #000000;    /* Solid Black */
+  --text-muted: #666666;      /* Charcoal Gray */
+  --border-color: #E2E2E0;    /* Light Gray lines */
+  --border-thick: 3px solid #000000; /* Signature bold comic outline */
   
-  /* Pastel Accent Colors */
-  --color-pink: #FFD3D3;      /* Warm Blush Pink */
-  --color-pink-hover: #FFAFAF;
-  --color-yellow: #FFEFA6;    /* Sunlit Pastel Yellow */
-  --color-yellow-hover: #FFE275;
-  --color-green: #E1ECC8;     /* Mint Pastel Green */
-  --color-blue: #D7E9F7;      /* Clear Sky Blue */
-  --color-brown: #E5A96E;     /* Little Brown Dog Brown */
+  /* Black & White Accent Palette */
+  --color-accent: #000000;
+  --color-accent-hover: #222222;
+  --color-light-gray: #EDEDED;
+  --color-light-gray-hover: #DCDCDC;
+  --color-love-gray: #E0E0E0; /* Charcoal gray for Effort Dog */
 
-  /* Shadows */
-  --shadow-flat: 4px 4px 0px #5D4A3E;
-  --shadow-flat-large: 8px 8px 0px #5D4A3E;
-  --shadow-flat-hover: 6px 6px 0px #5D4A3E;
-  --shadow-flat-active: 1px 1px 0px #5D4A3E;
+  /* Flat Shadows */
+  --shadow-flat: 4px 4px 0px #000000;
+  --shadow-flat-large: 8px 8px 0px #000000;
+  --shadow-flat-hover: 6px 6px 0px #000000;
+  --shadow-flat-active: 1px 1px 0px #000000;
 
-  font-family: 'Fredoka', 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Outfit', 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color: var(--text-primary);
@@ -44,24 +42,23 @@ body {
   min-height: 100vh;
   background-color: var(--bg-primary);
   background-image: 
-    radial-gradient(#5D4A3E 1px, transparent 1px), 
-    radial-gradient(#5D4A3E 1px, transparent 1px);
-  background-size: 40px 40px;
-  background-position: 0 0, 20px 20px;
-  background-opacity: 0.05; /* Fallback using tiny opacity in color instead */
+    radial-gradient(#000000 1px, transparent 1px), 
+    radial-gradient(#000000 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: 0 0, 24px 24px;
   background-image: 
-    radial-gradient(rgba(93, 74, 62, 0.03) 1.5px, transparent 1.5px), 
-    radial-gradient(rgba(93, 74, 62, 0.03) 1.5px, transparent 1.5px);
+    radial-gradient(rgba(0, 0, 0, 0.02) 1.5px, transparent 1.5px), 
+    radial-gradient(rgba(0, 0, 0, 0.02) 1.5px, transparent 1.5px);
 }
 
-/* --- HAND-DRAWN COMIC STYLING --- */
+/* --- HIGH-CONTRAST COMIC STYLING --- */
 .comic-card {
   background: var(--bg-secondary);
   border: var(--border-thick);
-  border-radius: 24px;
+  border-radius: 16px;
   padding: 24px;
   box-shadow: var(--shadow-flat);
-  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
+  transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.15), box-shadow 0.15s ease;
 }
 
 .comic-card:hover {
@@ -71,16 +68,18 @@ body {
 
 .comic-btn {
   font-family: inherit;
-  font-weight: 700;
-  font-size: 1rem;
-  color: var(--text-primary);
-  background-color: var(--color-yellow);
+  font-weight: 800;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #FFFFFF;
+  background-color: #000000;
   border: var(--border-thick);
-  border-radius: 16px;
+  border-radius: 12px;
   padding: 10px 20px;
   cursor: pointer;
   box-shadow: var(--shadow-flat);
-  transition: all 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.1s ease;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -88,7 +87,7 @@ body {
 }
 
 .comic-btn:hover {
-  background-color: var(--color-yellow-hover);
+  background-color: var(--color-accent-hover);
   transform: translate(-2px, -2px);
   box-shadow: var(--shadow-flat-hover);
 }
@@ -98,22 +97,16 @@ body {
   box-shadow: var(--shadow-flat-active);
 }
 
-.comic-btn.pink {
-  background-color: var(--color-pink);
+.comic-btn.pink, .comic-btn.secondary {
+  background-color: #FFFFFF;
+  color: #000000;
 }
-.comic-btn.pink:hover {
-  background-color: var(--color-pink-hover);
-}
-
-.comic-btn.secondary {
-  background-color: var(--bg-secondary);
-}
-.comic-btn.secondary:hover {
-  background-color: var(--bg-primary);
+.comic-btn.pink:hover, .comic-btn.secondary:hover {
+  background-color: var(--color-light-gray);
 }
 
 .comic-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.4;
   cursor: not-allowed;
   transform: none !important;
   box-shadow: var(--shadow-flat) !important;
@@ -123,30 +116,28 @@ body {
 .comic-input {
   font-family: inherit;
   font-size: 1rem;
-  color: var(--text-primary);
+  color: #000000;
   width: 100%;
   padding: 12px 16px;
   border: var(--border-thick);
-  border-radius: 14px;
-  background-color: #FFFDF9;
+  border-radius: 10px;
+  background-color: #FFFFFF;
   outline: none;
-  box-shadow: inset 2px 2px 0px rgba(93, 74, 62, 0.1);
-  transition: border-color 0.2s;
+  box-shadow: inset 2px 2px 0px rgba(0, 0, 0, 0.05);
 }
 
 .comic-input:focus {
-  background-color: #FFFFFF;
-  box-shadow: inset 2px 2px 0px rgba(93, 74, 62, 0.1), 0 0 0 3px rgba(229, 169, 110, 0.2);
+  box-shadow: inset 2px 2px 0px rgba(0, 0, 0, 0.05), 0 0 0 3px rgba(0, 0, 0, 0.1);
 }
 
 .comic-select {
   font-family: inherit;
   font-size: 1rem;
-  color: var(--text-primary);
+  color: #000000;
   padding: 12px 16px;
   border: var(--border-thick);
-  border-radius: 14px;
-  background-color: #FFFDF9;
+  border-radius: 10px;
+  background-color: #FFFFFF;
   outline: none;
   cursor: pointer;
 }
@@ -154,18 +145,18 @@ body {
 /* --- ANIMATIONS --- */
 @keyframes float {
   0% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
+  50% { transform: translateY(-6px); }
   100% { transform: translateY(0px); }
 }
 
 @keyframes wiggle {
   0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-3deg); }
-  75% { transform: rotate(3deg); }
+  25% { transform: rotate(-2deg); }
+  75% { transform: rotate(2deg); }
 }
 
 @keyframes pop {
-  0% { transform: scale(0.9); opacity: 0; }
+  0% { transform: scale(0.95); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
 
@@ -184,16 +175,16 @@ body {
 }
 
 .animate-wiggle:hover {
-  animation: wiggle 0.3s ease-in-out infinite;
+  animation: wiggle 0.4s ease-in-out infinite;
 }
 
 .animate-spin-slow {
-  animation: spin-slow 12s linear infinite;
+  animation: spin-slow 15s linear infinite;
 }
 
 /* --- LAYOUT UTILITIES --- */
 .container {
-  max-width: 1024px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 24px 16px 80px 16px;
 }
@@ -201,65 +192,71 @@ body {
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
+  align-items: flex-end;
+  margin-bottom: 28px;
+  border-bottom: var(--border-thick);
+  padding-bottom: 20px;
 }
 
 .title-container {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: flex-end;
+  gap: 16px;
 }
 
 .title-icon {
-  width: 48px;
-  height: 48px;
-  animation: float 3s ease-in-out infinite;
+  width: 130px;
+  height: 65px;
+  align-self: flex-end;
+  margin-bottom: -22px; /* Pull peeking dog onto the bottom line! */
+  z-index: 5;
 }
 
 .app-title {
-  font-size: 2.2rem;
-  font-weight: 700;
-  text-shadow: 2px 2px 0px #FFFFFF, 4px 4px 0px rgba(93, 74, 62, 0.15);
-  letter-spacing: -0.5px;
+  font-size: 2.8rem;
+  font-weight: 900;
+  letter-spacing: -1px;
+  text-transform: uppercase;
 }
 
 .badge {
-  background: var(--text-primary);
+  background: #000000;
   color: #FFFFFF;
-  padding: 4px 10px;
-  border-radius: 99px;
-  font-size: 0.85rem;
-  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 /* Tab controls */
 .tabs {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   margin-bottom: 20px;
 }
 
 .tab-btn {
   background: #FFFFFF;
   border: var(--border-thick);
-  border-radius: 12px;
-  padding: 8px 16px;
+  border-radius: 8px;
+  padding: 6px 12px;
   font-family: inherit;
-  font-weight: 700;
-  font-size: 0.95rem;
+  font-weight: 800;
+  font-size: 0.85rem;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.1s ease;
 }
 
 .tab-btn.active {
-  background: var(--text-primary);
+  background: #000000;
   color: #FFFFFF;
-  box-shadow: 2px 2px 0 var(--color-brown);
+  box-shadow: 2px 2px 0 #FFFFFF;
 }
 
-/* Cute Toast alert */
+/* Toast alert */
 .toast-alert {
   position: fixed;
   bottom: 24px;
@@ -267,27 +264,24 @@ body {
   background: var(--bg-secondary);
   border: var(--border-thick);
   box-shadow: var(--shadow-flat);
-  border-radius: 16px;
+  border-radius: 12px;
   padding: 12px 20px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   z-index: 1000;
-  animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: pop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.15);
 }
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
 }
 ::-webkit-scrollbar-track {
   background: var(--bg-primary);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--text-muted);
-  border: 3px solid var(--bg-primary);
-  border-radius: 10px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-primary);
+  background: #000000;
+  border: 2px solid var(--bg-primary);
+  border-radius: 4px;
 }

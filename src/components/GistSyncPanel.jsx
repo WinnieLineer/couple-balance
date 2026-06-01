@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings, RefreshCw, Cloud, CloudOff, ArrowLeftRight, CheckCircle2 } from 'lucide-react';
+import { Settings, RefreshCw, Cloud, CloudOff, ArrowLeftRight, Check } from 'lucide-react';
 
 export default function GistSyncPanel({ 
   syncConfig, 
@@ -10,7 +10,9 @@ export default function GistSyncPanel({
   isSyncing,
   offlineMode,
   partners,
-  onUpdatePartners
+  onUpdatePartners,
+  myIdentity = 'p1',
+  onUpdateMyIdentity
 }) {
   const [isOpen, setIsOpen] = useState(false);
   
@@ -59,49 +61,59 @@ export default function GistSyncPanel({
           <div className="comic-card animate-float" style={styles.wizardCard}>
             <div style={styles.wizardHeader}>
               <div style={styles.dogContainer}>
-                {/* SVG AUTHENTIC MALTESE FLUFFY DOGS HUGGING */}
+                {/* SVG AUTHENTIC MALTESE FLUFFY DOGS HUGGING (Pure B&W Line Art) */}
                 <svg viewBox="0 0 100 50" style={styles.wizardDogsSvg}>
                   {/* Left fluffy white dog */}
-                  <ellipse cx="18" cy="24" rx="7" ry="10" fill="#FFFFFF" stroke="#5D4A3E" strokeWidth="2.5" />
-                  <ellipse cx="42" cy="24" rx="7" ry="10" fill="#FFFFFF" stroke="#5D4A3E" strokeWidth="2.5" />
-                  <ellipse cx="30" cy="30" rx="16" ry="13" fill="#FFFFFF" stroke="#5D4A3E" strokeWidth="2.5" />
-                  <circle cx="25" cy="28" r="2.2" fill="#5D4A3E" />
-                  <circle cx="35" cy="28" r="2.2" fill="#5D4A3E" />
-                  <ellipse cx="20" cy="32" rx="2.5" ry="1.5" fill="#FFC4C4" />
-                  <ellipse cx="40" cy="32" rx="2.5" ry="1.5" fill="#FFC4C4" />
-                  <ellipse cx="30" cy="31" rx="2" ry="1.2" fill="#5D4A3E" />
-                  <path d="M 28,34 Q 30,36 32,34" fill="none" stroke="#5D4A3E" strokeWidth="1.5" strokeLinecap="round" />
+                  <ellipse cx="18" cy="24" rx="7" ry="10" fill="#FFFFFF" stroke="#000000" strokeWidth="2.5" />
+                  <ellipse cx="42" cy="24" rx="7" ry="10" fill="#FFFFFF" stroke="#000000" strokeWidth="2.5" />
+                  <ellipse cx="30" cy="30" rx="16" ry="13" fill="#FFFFFF" stroke="#000000" strokeWidth="2.5" />
+                  <circle cx="25" cy="28" r="2.2" fill="#000000" />
+                  <circle cx="35" cy="28" r="2.2" fill="#000000" />
+                  
+                  {/* B&W slash blush */}
+                  <line x1="18" y1="31" x2="21" y2="33" stroke="#000000" strokeWidth="1" />
+                  <line x1="19" y1="33" x2="22" y2="35" stroke="#000000" strokeWidth="1" />
+                  <line x1="38" y1="31" x2="41" y2="33" stroke="#000000" strokeWidth="1" />
+                  <line x1="39" y1="33" x2="42" y2="35" stroke="#000000" strokeWidth="1" />
 
-                  {/* Right golden-brown puppy */}
-                  <path d="M 58,22 Q 52,26 56,38 Q 60,42 62,34 Z" fill="#E5A96E" stroke="#5D4A3E" strokeWidth="2.5" />
-                  <path d="M 82,22 Q 88,26 84,38 Q 80,42 78,34 Z" fill="#E5A96E" stroke="#5D4A3E" strokeWidth="2.5" />
-                  <ellipse cx="70" cy="30" rx="15" ry="13" fill="#E5A96E" stroke="#5D4A3E" strokeWidth="2.5" />
-                  <circle cx="65" cy="28" r="2.2" fill="#5D4A3E" />
-                  <circle cx="75" cy="28" r="2.2" fill="#5D4A3E" />
-                  <ellipse cx="61" cy="32" rx="2.5" ry="1.5" fill="#FF8B8B" />
-                  <ellipse cx="79" cy="32" rx="2.5" ry="1.5" fill="#FF8B8B" />
-                  <ellipse cx="70" cy="31" rx="2" ry="1.2" fill="#5D4A3E" />
-                  <path d="M 67,33 Q 70,37 73,33 Z" fill="#C0392B" stroke="#5D4A3E" strokeWidth="1.5" />
+                  <ellipse cx="30" cy="31" rx="2" ry="1.2" fill="#000000" />
+                  <path d="M 28,34 Q 30,36 32,34" fill="none" stroke="#000000" strokeWidth="1.5" strokeLinecap="round" />
 
-                  {/* Red Heart */}
-                  <path d="M 50,33 Q 47,28 43,29 Q 39,31 43,37 L 50,44 L 57,37 Q 61,31 57,29 Q 53,28 50,33 Z" fill="#FF8B8B" stroke="#5D4A3E" strokeWidth="2" className="animate-float" />
+                  {/* Right chic designer gray puppy */}
+                  <path d="M 58,22 Q 52,26 56,38 Q 60,42 62,34 Z" fill="#D2D2D2" stroke="#000000" strokeWidth="2.5" />
+                  <path d="M 82,22 Q 88,26 84,38 Q 80,42 78,34 Z" fill="#D2D2D2" stroke="#000000" strokeWidth="2.5" />
+                  <ellipse cx="70" cy="30" rx="15" ry="13" fill="#D2D2D2" stroke="#000000" strokeWidth="2.5" />
+                  <circle cx="65" cy="28" r="2.2" fill="#000000" />
+                  <circle cx="75" cy="28" r="2.2" fill="#000000" />
+                  
+                  {/* B&W slash blush for gray pup */}
+                  <line x1="59" y1="31" x2="62" y2="33" stroke="#000000" strokeWidth="1" />
+                  <line x1="60" y1="33" x2="63" y2="35" stroke="#000000" strokeWidth="1" />
+                  <line x1="77" y1="31" x2="80" y2="33" stroke="#000000" strokeWidth="1" />
+                  <line x1="78" y1="33" x2="81" y2="35" stroke="#000000" strokeWidth="1" />
+
+                  <ellipse cx="70" cy="31" rx="2" ry="1.2" fill="#000000" />
+                  <path d="M 67,33 Q 70,36 73,33" fill="none" stroke="#000000" strokeWidth="1.5" strokeLinecap="round" />
+
+                  {/* B&W Heart Outline */}
+                  <path d="M 50,33 Q 47,28 43,29 Q 39,31 43,37 L 50,44 L 57,37 Q 61,31 57,29 Q 53,28 50,33 Z" fill="#000000" stroke="#000000" strokeWidth="2" className="animate-float" />
                 </svg>
               </div>
-              <h2 style={styles.wizardTitle}>🤍 歡迎來到 HeartSync 🤍</h2>
-              <p style={styles.wizardSubtitle}>設定您們的專屬暱稱與代表的線條小狗，開啟雙向奔赴的心意平衡之旅！</p>
+              <h2 style={styles.wizardTitle}>歡迎來到 HeartSync</h2>
+              <p style={styles.wizardSubtitle}>設定您們的代表名稱，開啟共同生活付出的極簡天秤紀錄之旅。</p>
             </div>
 
             <div style={styles.wizardBody}>
               <div style={styles.wizardSection}>
-                <h3 style={styles.sectionHeader}>🐶 設定雙方暱稱與小狗角色</h3>
+                <h3 style={styles.sectionHeader}>設定伴侶名稱與小狗角色</h3>
                 
                 <div style={styles.namesRow}>
                   {/* Partner 1 Input */}
                   <div style={styles.inputCol}>
                     <label style={styles.label}>
                       伴侶一 姓名
-                      <span style={{ fontSize: '0.75rem', color: p1Role === 'white_dog' ? 'var(--text-muted)' : 'var(--color-brown)', marginLeft: '6px', fontWeight: '700' }}>
-                        ({p1Role === 'white_dog' ? '🤍 白色小狗' : '棕色小狗'})
+                      <span style={{ fontSize: '0.75rem', color: '#666666', marginLeft: '6px', fontWeight: '800' }}>
+                        ({p1Role === 'white_dog' ? '白狗' : '灰狗'})
                       </span>
                     </label>
                     <input 
@@ -109,7 +121,7 @@ export default function GistSyncPanel({
                       value={p1Name} 
                       onChange={(e) => setP1Name(e.target.value)} 
                       className="comic-input" 
-                      placeholder="例如：老公、小明..."
+                      placeholder="例如：小明、伴侶A..."
                     />
                   </div>
 
@@ -120,7 +132,7 @@ export default function GistSyncPanel({
                       onClick={handleSwapRoles} 
                       className="comic-btn secondary"
                       style={styles.swapBtn}
-                      title="互換代表小狗"
+                      title="互換代表角色"
                     >
                       <ArrowLeftRight size={16} />
                     </button>
@@ -130,8 +142,8 @@ export default function GistSyncPanel({
                   <div style={styles.inputCol}>
                     <label style={styles.label}>
                       伴侶二 姓名
-                      <span style={{ fontSize: '0.75rem', color: p2Role === 'white_dog' ? 'var(--text-muted)' : 'var(--color-brown)', marginLeft: '6px', fontWeight: '700' }}>
-                        ({p2Role === 'white_dog' ? '🤍 白色小狗' : '棕色小狗'})
+                      <span style={{ fontSize: '0.75rem', color: '#666666', marginLeft: '6px', fontWeight: '800' }}>
+                        ({p2Role === 'white_dog' ? '白狗' : '灰狗'})
                       </span>
                     </label>
                     <input 
@@ -139,18 +151,47 @@ export default function GistSyncPanel({
                       value={p2Name} 
                       onChange={(e) => setP2Name(e.target.value)} 
                       className="comic-input" 
-                      placeholder="例如：老婆、小美..."
+                      placeholder="例如：小美、伴侶B..."
                     />
+                  </div>
+                </div>
+
+                {/* Who am I device selection */}
+                <div style={{ marginTop: '20px' }}>
+                  <label style={styles.label}>這台裝置主要使用者是誰？（預設為該使用者記帳）</label>
+                  <div style={styles.identityRow}>
+                    <button
+                      type="button"
+                      onClick={() => onUpdateMyIdentity('p1')}
+                      style={{
+                        ...styles.identityBtn,
+                        backgroundColor: myIdentity === 'p1' ? '#000000' : '#FFFFFF',
+                        color: myIdentity === 'p1' ? '#FFFFFF' : '#000000',
+                      }}
+                    >
+                      {p1Name} ({p1Role === 'white_dog' ? '白狗' : '灰狗'})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onUpdateMyIdentity('p2')}
+                      style={{
+                        ...styles.identityBtn,
+                        backgroundColor: myIdentity === 'p2' ? '#000000' : '#FFFFFF',
+                        color: myIdentity === 'p2' ? '#FFFFFF' : '#000000',
+                      }}
+                    >
+                      {p2Name} ({p2Role === 'white_dog' ? '白狗' : '灰狗'})
+                    </button>
                   </div>
                 </div>
               </div>
 
               <button 
                 onClick={handleStart} 
-                className="comic-btn pink" 
-                style={{ width: '100%', marginTop: '10px', padding: '12px 16px', fontSize: '1.05rem' }}
+                className="comic-btn" 
+                style={{ width: '100%', marginTop: '10px', padding: '12px 16px', fontSize: '1.05rem', backgroundColor: '#000000', color: '#FFFFFF' }}
               >
-                🤍 開始體驗 HeartSync ✨
+                開始體驗 HeartSync
               </button>
             </div>
           </div>
@@ -161,21 +202,21 @@ export default function GistSyncPanel({
       <div style={styles.statusContainer}>
         <div style={styles.statusBadges}>
           {syncConfig.token && syncConfig.gistId && !offlineMode ? (
-            <div style={{ ...styles.badge, backgroundColor: '#E1ECC8' }}>
+            <div style={{ ...styles.badge, backgroundColor: '#FFFFFF' }}>
               <Cloud size={16} />
-              <span>雲端已同步</span>
+              <span>雲端已連線</span>
               <span style={styles.dotPulse} />
             </div>
           ) : (
-            <div style={{ ...styles.badge, backgroundColor: '#FFF0B5' }}>
+            <div style={{ ...styles.badge, backgroundColor: '#FFFFFF' }}>
               <CloudOff size={16} />
-              <span>本機離線模式</span>
+              <span>離線體驗中</span>
             </div>
           )}
 
           {/* Sync Status Texts */}
           <span style={styles.syncStatusText}>
-            狀態: {isSyncing ? '✨ 正在同步心意...' : syncStatus}
+            {isSyncing ? '正在同步中...' : syncStatus}
           </span>
         </div>
 
@@ -186,7 +227,6 @@ export default function GistSyncPanel({
               className="comic-btn secondary" 
               disabled={isSyncing}
               style={styles.actionBtn}
-              title="手動下拉最新數據"
             >
               <RefreshCw size={14} className={isSyncing ? 'animate-spin-slow' : ''} />
               <span>手動同步</span>
@@ -198,20 +238,20 @@ export default function GistSyncPanel({
             className="comic-btn secondary"
             style={styles.actionBtn}
           >
-            <span>修改角色暱稱</span>
+            <span>修改暱稱與使用者</span>
           </button>
         </div>
       </div>
 
-      {/* --- COLLAPSIBLE SETTINGS PANEL (NAMES & ROLES ONLY) --- */}
+      {/* --- COLLAPSIBLE SETTINGS PANEL --- */}
       {isOpen && (
         <div className="comic-card" style={styles.settingsPanel}>
-          <h3 style={styles.panelTitle}>🐾 雙方暱稱與角色設定</h3>
+          <h3 style={styles.panelTitle}>雙方暱稱與角色設定</h3>
           
           <div style={{ ...styles.wizardSection, border: 'none', padding: 0, boxShadow: 'none' }}>
             <div style={styles.namesRow}>
               <div style={styles.inputCol}>
-                <label style={styles.label}>伴侶一 姓名 ({p1Role === 'white_dog' ? '🤍 白狗' : '棕狗'})</label>
+                <label style={styles.label}>伴侶一 姓名 ({p1Role === 'white_dog' ? '白狗' : '灰狗'})</label>
                 <input 
                   type="text" 
                   value={p1Name} 
@@ -232,7 +272,7 @@ export default function GistSyncPanel({
               </div>
 
               <div style={styles.inputCol}>
-                <label style={styles.label}>伴侶二 姓名 ({p2Role === 'white_dog' ? '🤍 白狗' : '棕狗'})</label>
+                <label style={styles.label}>伴侶二 姓名 ({p2Role === 'white_dog' ? '白狗' : '灰狗'})</label>
                 <input 
                   type="text" 
                   value={p2Name} 
@@ -241,15 +281,44 @@ export default function GistSyncPanel({
                 />
               </div>
             </div>
+
+            {/* Who am I device selection */}
+            <div style={{ marginTop: '20px' }}>
+              <label style={styles.label}>這台裝置主要使用者是誰？（預設為該使用者記帳）</label>
+              <div style={styles.identityRow}>
+                <button
+                  type="button"
+                  onClick={() => onUpdateMyIdentity('p1')}
+                  style={{
+                    ...styles.identityBtn,
+                    backgroundColor: myIdentity === 'p1' ? '#000000' : '#FFFFFF',
+                    color: myIdentity === 'p1' ? '#FFFFFF' : '#000000',
+                  }}
+                >
+                  {p1Name} ({p1Role === 'white_dog' ? '白狗' : '灰狗'})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onUpdateMyIdentity('p2')}
+                  style={{
+                    ...styles.identityBtn,
+                    backgroundColor: myIdentity === 'p2' ? '#000000' : '#FFFFFF',
+                    color: myIdentity === 'p2' ? '#FFFFFF' : '#000000',
+                  }}
+                >
+                  {p2Name} ({p2Role === 'white_dog' ? '白狗' : '灰狗'})
+                </button>
+              </div>
+            </div>
           </div>
 
           <div style={styles.panelActions}>
             <button 
               onClick={handleSaveSettings} 
-              className="comic-btn pink" 
-              style={{ marginLeft: 'auto', width: '100%', marginTop: '16px' }}
+              className="comic-btn" 
+              style={{ marginLeft: 'auto', width: '100%', marginTop: '16px', backgroundColor: '#000000', color: '#FFFFFF' }}
             >
-              儲存並更新角色
+              儲存並更新
             </button>
           </div>
         </div>
@@ -265,7 +334,7 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(93, 74, 62, 0.4)',
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
     backdropFilter: 'blur(6px)',
     display: 'flex',
     alignItems: 'center',
@@ -278,17 +347,19 @@ const styles = {
     width: '100%',
     maxHeight: '92vh',
     overflowY: 'auto',
-    backgroundColor: '#FAF6EE',
-    padding: '24px',
+    backgroundColor: '#FFFFFF',
+    padding: '28px',
+    border: '3px solid #000000',
+    boxShadow: '8px 8px 0px #000000',
   },
   wizardHeader: {
     textAlign: 'center',
-    marginBottom: '16px',
+    marginBottom: '20px',
   },
   dogContainer: {
     width: '140px',
     height: '70px',
-    margin: '0 auto 6px auto',
+    margin: '0 auto 8px auto',
   },
   wizardDogsSvg: {
     width: '100%',
@@ -296,14 +367,16 @@ const styles = {
   },
   wizardTitle: {
     fontSize: '1.4rem',
-    fontWeight: '700',
-    color: '#5D4A3E',
-    marginBottom: '6px',
+    fontWeight: '800',
+    color: '#000000',
+    marginBottom: '8px',
+    letterSpacing: '0.5px',
   },
   wizardSubtitle: {
     fontSize: '0.9rem',
-    color: '#8E7E73',
-    lineHeight: '1.4',
+    color: '#666666',
+    lineHeight: '1.5',
+    fontWeight: '700',
   },
   wizardBody: {
     display: 'flex',
@@ -312,23 +385,23 @@ const styles = {
   },
   wizardSection: {
     backgroundColor: '#FFFFFF',
-    border: '3px solid #5D4A3E',
-    borderRadius: '16px',
-    padding: '16px',
-    boxShadow: '3px 3px 0px #5D4A3E',
+    border: '3px solid #000000',
+    borderRadius: '0px',
+    padding: '20px',
+    boxShadow: '4px 4px 0px #000000',
   },
   sectionHeader: {
     fontSize: '1rem',
-    fontWeight: '700',
-    color: '#5D4A3E',
-    marginBottom: '12px',
-    borderBottom: '2px dashed var(--border-color)',
+    fontWeight: '800',
+    color: '#000000',
+    marginBottom: '16px',
+    borderBottom: '2px dashed #000000',
     paddingBottom: '8px',
   },
   namesRow: {
     display: 'flex',
     alignItems: 'flex-end',
-    gap: '10px',
+    gap: '12px',
   },
   inputCol: {
     flex: 1,
@@ -344,13 +417,14 @@ const styles = {
   swapBtn: {
     padding: '10px',
     borderRadius: '12px',
-    boxShadow: '2px 2px 0px #5D4A3E',
-    backgroundColor: '#FAF6EE',
+    boxShadow: '2px 2px 0px #000000',
+    backgroundColor: '#FFFFFF',
+    border: '2.5px solid #000000',
   },
   label: {
     fontSize: '0.82rem',
-    fontWeight: '700',
-    color: '#5D4A3E',
+    fontWeight: '800',
+    color: '#000000',
     display: 'flex',
     alignItems: 'center',
   },
@@ -359,10 +433,10 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    border: '3px solid #5D4A3E',
-    borderRadius: '16px',
+    border: '3px solid #000000',
+    borderRadius: '0px',
     padding: '8px 16px',
-    boxShadow: '2px 2px 0px #5D4A3E',
+    boxShadow: '3px 3px 0px #000000',
     flexWrap: 'wrap',
     gap: '12px',
   },
@@ -375,50 +449,70 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '6px',
-    padding: '4px 10px',
-    borderRadius: '99px',
-    fontSize: '0.85rem',
-    fontWeight: '700',
-    border: '2px solid #5D4A3E',
+    padding: '4px 12px',
+    borderRadius: '0px',
+    fontSize: '0.8rem',
+    fontWeight: '800',
+    border: '2.5px solid #000000',
     position: 'relative',
   },
   dotPulse: {
     width: '6px',
     height: '6px',
-    backgroundColor: '#4E9F3D',
+    backgroundColor: '#000000',
     borderRadius: '50%',
     display: 'inline-block',
-    animation: 'pulse 1.5s infinite',
   },
   syncStatusText: {
     fontSize: '0.85rem',
-    fontWeight: '700',
-    color: '#8E7E73',
+    fontWeight: '800',
+    color: '#666666',
   },
   buttonGroup: {
     display: 'flex',
     gap: '8px',
   },
   actionBtn: {
-    padding: '6px 12px',
-    fontSize: '0.85rem',
-    borderRadius: '10px',
-    boxShadow: '2px 2px 0px #5D4A3E',
+    padding: '6px 14px',
+    fontSize: '0.82rem',
+    borderRadius: '8px',
+    boxShadow: '2px 2px 0px #000000',
+    backgroundColor: '#FFFFFF',
+    border: '2.5px solid #000000',
   },
   settingsPanel: {
     marginTop: '12px',
-    animation: 'pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+    border: '3px solid #000000',
+    boxShadow: '4px 4px 0px #000000',
+    borderRadius: '0px',
   },
   panelTitle: {
     fontSize: '1.2rem',
-    fontWeight: '700',
-    marginBottom: '14px',
-    color: '#5D4A3E',
+    fontWeight: '800',
+    marginBottom: '16px',
+    color: '#000000',
   },
   panelActions: {
     display: 'flex',
     gap: '8px',
     alignItems: 'center',
     marginTop: '16px',
+  },
+  identityRow: {
+    display: 'flex',
+    gap: '10px',
+    marginTop: '8px',
+  },
+  identityBtn: {
+    flex: 1,
+    padding: '8px 12px',
+    borderRadius: '8px',
+    fontFamily: 'inherit',
+    fontWeight: '800',
+    fontSize: '0.82rem',
+    cursor: 'pointer',
+    border: '2.5px solid #000000',
+    boxShadow: '2px 2px 0px #000000',
+    transition: 'all 0.1s ease',
   }
 };
