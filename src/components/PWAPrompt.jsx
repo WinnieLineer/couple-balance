@@ -81,25 +81,19 @@ export default function PWAPrompt() {
       <div className="comic-card" style={styles.card}>
         <div style={styles.header}>
           <div style={styles.titleArea}>
-            <svg viewBox="0 0 160 80" style={styles.titleIcon}>
-              {/* White fluffy dog head peeking */}
-              <path 
-                d="M 35,65 C 26,60 16,45 22,25 C 25,12 38,7 53,14 C 63,4 83,4 93,14 C 108,7 120,12 123,25 C 129,45 119,60 109,65 Z" 
-                fill="#FFFFFF" 
-                stroke="#000000" 
-                strokeWidth="3.5" 
-                strokeLinejoin="round" 
-              />
-              <path d="M 24,20 Q 18,15 22,8 Q 28,2 34,12" fill="none" stroke="#000000" strokeWidth="3.5" />
-              <path d="M 120,20 Q 126,15 122,8 Q 116,2 110,12" fill="none" stroke="#000000" strokeWidth="3.5" />
-              <circle cx="53" cy="36" r="3.2" fill="#000000" />
-              <circle cx="91" cy="36" r="3.2" fill="#000000" />
-              <ellipse cx="72" cy="39" rx="3.8" ry="2.6" fill="#000000" />
-              <path d="M 58,46 Q 65,51 72,46 Q 79,51 86,46" fill="none" stroke="#000000" strokeWidth="3.5" />
-              <line x1="2" y1="76" x2="158" y2="76" stroke="#000000" strokeWidth="4.5" />
-              <path d="M 26,76 C 26,66 44,66 44,76" fill="#FFFFFF" stroke="#000000" strokeWidth="3.5" />
-              <path d="M 100,76 C 100,66 118,66 118,76" fill="#FFFFFF" stroke="#000000" strokeWidth="3.5" />
-            </svg>
+            <img 
+              src="./favicon.png" 
+              alt="Mascot" 
+              style={{
+                width: '32px',
+                height: '32px',
+                objectFit: 'contain',
+                border: '2px solid #000000',
+                borderRadius: '6px',
+                backgroundColor: '#FFFFFF',
+                boxShadow: '1.5px 1.5px 0px #000000',
+              }}
+            />
             <h3 style={styles.title}>安裝 HeartSync App 📱</h3>
           </div>
           <button onClick={handleDismiss} style={styles.closeBtn} className="comic-btn secondary">

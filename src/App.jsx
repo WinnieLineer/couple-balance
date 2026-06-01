@@ -372,38 +372,24 @@ export default function App() {
       {/* --- APP HEADER --- */}
       <header className="header" style={styles.header}>
         <div className="title-container">
-          {/* Authentic peeking Maltese line dog from the user's image */}
-          <svg viewBox="0 0 160 80" className="title-icon" style={{ animation: 'float 4s ease-in-out infinite' }}>
-            {/* White fluffy head contour */}
-            <path 
-              d="M 35,65 C 26,60 16,45 22,25 C 25,12 38,7 53,14 C 63,4 83,4 93,14 C 108,7 120,12 123,25 C 129,45 119,60 109,65 Z" 
-              fill="#FFFFFF" 
-              stroke="#000000" 
-              strokeWidth="3.5" 
-              strokeLinejoin="round" 
-            />
-            {/* Fluffy ears outline details */}
-            <path d="M 24,20 Q 18,15 22,8 Q 28,2 34,12" fill="none" stroke="#000000" strokeWidth="3.5" strokeLinecap="round" />
-            <path d="M 120,20 Q 126,15 122,8 Q 116,2 110,12" fill="none" stroke="#000000" strokeWidth="3.5" strokeLinecap="round" />
-            
-            {/* Eyes (farther apart and extremely cute dot eyes peeking) */}
-            <circle cx="53" cy="36" r="3.2" fill="#000000" />
-            <circle cx="91" cy="36" r="3.2" fill="#000000" />
-            
-            {/* Nose (small rounded triangle) */}
-            <ellipse cx="72" cy="39" rx="3.8" ry="2.6" fill="#000000" />
-            
-            {/* Wide happy curving mouth (w shape peeking look) */}
-            <path d="M 58,46 Q 65,51 72,46 Q 79,51 86,46" fill="none" stroke="#000000" strokeWidth="3.5" strokeLinecap="round" />
-            
-            {/* Desk Line */}
-            <line x1="2" y1="76" x2="158" y2="76" stroke="#000000" strokeWidth="4.5" strokeLinecap="round" />
-            
-            {/* Left Paw */}
-            <path d="M 26,76 C 26,66 44,66 44,76" fill="#FFFFFF" stroke="#000000" strokeWidth="3.5" />
-            {/* Right Paw */}
-            <path d="M 100,76 C 100,66 118,66 118,76" fill="#FFFFFF" stroke="#000000" strokeWidth="3.5" />
-          </svg>
+          {/* Authentic peeking Maltese dog mascot image from the favicon */}
+          <img 
+            src="./favicon.png" 
+            alt="Mascot" 
+            className="animate-float"
+            style={{ 
+              width: '64px', 
+              height: '64px', 
+              alignSelf: 'flex-end', 
+              marginBottom: '-6px', 
+              zIndex: 5,
+              border: '3.5px solid #000000',
+              borderRadius: '12px',
+              backgroundColor: '#FFFFFF',
+              boxShadow: '3px 3px 0px #000000',
+              objectFit: 'contain'
+            }} 
+          />
           <div>
             <h1 className="app-title">HeartSync</h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
