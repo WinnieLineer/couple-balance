@@ -683,45 +683,43 @@ export default function GistSyncPanel({
             </div>
           </div>
 
-          {/* --- CONDITIONALLY RENDER CLOUD GIST INPUT FIELDS (LOCAL / DEV MODE ONLY) --- */}
-          {isLocal && (
-            <div style={styles.localGistCard}>
-              <h4 style={styles.localGistTitle}>雲端備份設定 (本地模式專用)</h4>
-              
-              <div style={styles.inputCol}>
-                <label style={styles.label}>Gist ID (可空白，點選一鍵自動新建)</label>
-                <input 
-                  type="text" 
-                  value={gistIdInput} 
-                  onChange={(e) => setGistIdInput(e.target.value)} 
-                  className="comic-input" 
-                  placeholder="自訂的 Gist ID"
-                />
-              </div>
-
-              {localError && <div style={styles.localErrorText}>{localError}</div>}
-              {localSuccess && <div style={styles.localSuccessText}>{localSuccess}</div>}
-
-              <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
-                <button
-                  type="button"
-                  onClick={handleSaveCloudConfig}
-                  className="comic-btn"
-                  style={{ flex: 1, backgroundColor: '#000000', color: '#FFFFFF', padding: '8px 12px', fontSize: '0.8rem' }}
-                >
-                  儲存並連線
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCreateNewGist}
-                  className="comic-btn secondary"
-                  style={{ flex: 1, padding: '8px 12px', fontSize: '0.8rem' }}
-                >
-                  一鍵自動新建
-                </button>
-              </div>
+          {/* --- CLOUD GIST CONFIGURATION CARD --- */}
+          <div style={styles.localGistCard}>
+            <h4 style={styles.localGistTitle}>🌐 雲端同步天秤設定</h4>
+            
+            <div style={styles.inputCol}>
+              <label style={styles.label}>Gist ID (貼上現有天秤 ID，或點選下方自動新建)</label>
+              <input 
+                type="text" 
+                value={gistIdInput} 
+                onChange={(e) => setGistIdInput(e.target.value)} 
+                className="comic-input" 
+                placeholder="請貼上您的 Gist ID"
+              />
             </div>
-          )}
+
+            {localError && <div style={styles.localErrorText}>{localError}</div>}
+            {localSuccess && <div style={styles.localSuccessText}>{localSuccess}</div>}
+
+            <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+              <button
+                type="button"
+                onClick={handleSaveCloudConfig}
+                className="comic-btn"
+                style={{ flex: 1, backgroundColor: '#000000', color: '#FFFFFF', padding: '8px 12px', fontSize: '0.8rem' }}
+              >
+                儲存並連線
+              </button>
+              <button
+                type="button"
+                onClick={handleCreateNewGist}
+                className="comic-btn secondary"
+                style={{ flex: 1, padding: '8px 12px', fontSize: '0.8rem' }}
+              >
+                一鍵自動新建
+              </button>
+            </div>
+          </div>
 
           {/* --- GIST ID SHARING AND COPY CARD --- */}
           {syncConfig.gistId && (
