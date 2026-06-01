@@ -101,7 +101,7 @@ export default function App() {
         const now = new Date();
         const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
         setSyncStatus(`已同步 (${timeStr})`);
-        showToast('☁️ 雲端同步完成！', 'success');
+        showToast('✨ 雲端同步完成！', 'success');
       } else {
         throw new Error('資料結構不符合規定');
       }
@@ -136,7 +136,7 @@ export default function App() {
       const now = new Date();
       const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
       setSyncStatus(`已同步 (${timeStr})`);
-      showToast('☁️ 數據已自動備份至雲端！', 'success');
+      showToast('✨ 數據已自動備份至雲端！', 'success');
     } catch (err) {
       console.error(err);
       setSyncStatus('備份失敗');
@@ -164,7 +164,7 @@ export default function App() {
   const handleUpdatePartners = (customPartners) => {
     setPartners(customPartners);
     localStorage.setItem('partners_config', JSON.stringify(customPartners));
-    showToast('🐾 角色設定已更新！', 'success');
+    showToast('✨ 角色設定已更新！', 'success');
     
     // Auto-push the updated structure to the cloud
     pushCloudData(records, syncConfig.token, syncConfig.gistId, customPartners);
@@ -176,7 +176,7 @@ export default function App() {
     setOfflineMode(val);
     if (val) {
       setSyncStatus('本機離線運作中');
-      showToast('🐾 已切換至離線體驗模式', 'info');
+      showToast('🤍 已切換至離線體驗模式', 'info');
     } else {
       if (syncConfig.token && syncConfig.gistId) {
         pullCloudData(syncConfig.token, syncConfig.gistId);
@@ -200,7 +200,7 @@ export default function App() {
       colors: ['#FFEFA6', '#FFD3D3', '#E1ECC8', '#D7E9F7', '#E5A96E']
     });
 
-    showToast(`📝 記錄成功：${record.title}`, 'success');
+    showToast(`✨ 記錄成功：${record.title}`, 'success');
 
     // Auto-sync push
     pushCloudData(updatedRecords);
@@ -208,7 +208,7 @@ export default function App() {
 
   // --- DELETE RECORD ---
   const handleDeleteRecord = (id) => {
-    if (window.confirm('確定要刪除這筆心意記錄嗎？🐾')) {
+    if (window.confirm('確定要刪除這筆心意記錄嗎？ 🤍')) {
       const updatedRecords = records.filter(r => r.id !== id);
       setRecords(updatedRecords);
       
@@ -234,23 +234,20 @@ export default function App() {
       {/* --- APP HEADER --- */}
       <header className="header">
         <div className="title-container">
-          {/* Animated SVG title puppy */}
-          <svg viewBox="0 0 100 80" className="title-icon">
-            <ellipse cx="50" cy="45" rx="20" ry="17" fill="#FFFFFF" stroke="#5D4A3E" strokeWidth="3" />
-            <ellipse cx="32" cy="38" rx="6" ry="10" fill="#FFFFFF" stroke="#5D4A3E" strokeWidth="3" />
-            <ellipse cx="68" cy="38" rx="6" ry="10" fill="#FFFFFF" stroke="#5D4A3E" strokeWidth="3" />
-            <circle cx="43" cy="43" r="3" fill="#5D4A3E" />
-            <circle cx="57" cy="43" r="3" fill="#5D4A3E" />
-            <circle cx="35" cy="48" r="3.5" fill="#FFC4C4" />
-            <circle cx="65" cy="48" r="3.5" fill="#FFC4C4" />
-            <polygon points="48,47 52,47 50,50" fill="#5D4A3E" />
-            <path d="M 47 53 Q 50 56 53 53" fill="none" stroke="#5D4A3E" strokeWidth="2.5" strokeLinecap="round" />
+          {/* Animated SVG title heart */}
+          <svg viewBox="0 0 100 80" className="title-icon" style={{ animation: 'float 3s ease-in-out infinite' }}>
+            {/* Outer heart outline */}
+            <path d="M 50 25 C 38 10, 18 10, 18 32 C 18 50, 42 68, 50 72 C 58 68, 82 50, 82 32 C 82 10, 62 10, 50 25 Z" fill="#FFD3D3" stroke="#5D4A3E" strokeWidth="3" strokeLinejoin="round" />
+            {/* Sparkle */}
+            <g transform="translate(62, 10)">
+              <path d="M 8,0 L 10,6 L 16,8 L 10,10 L 8,16 L 6,10 L 0,8 L 6,6 Z" fill="#FFEFA6" stroke="#5D4A3E" strokeWidth="1.5" />
+            </g>
           </svg>
           <div>
-            <h1 className="app-title">夫妻生活付出天秤</h1>
+            <h1 className="app-title">HeartSync</h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span className="badge">線條小狗風格</span>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '700' }}>🐾 記錄甜蜜生活，讓愛永續平衡</span>
+              <span className="badge" style={{ backgroundColor: '#FFD3D3', color: '#5D4A3E', border: '2px solid #5D4A3E', boxShadow: '1.5px 1.5px 0px #5D4A3E' }}>🤍 Co-Life Balance</span>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '700' }}>✨ 雙向奔赴，記錄我們的生活心意平衡</span>
             </div>
           </div>
         </div>
@@ -327,7 +324,7 @@ export default function App() {
           style={styles.floatingBtn}
         >
           <Plus size={24} strokeWidth={3} />
-          <span>新增生活記錄 🐾</span>
+          <span>新增心意記錄 🤍</span>
         </button>
       </div>
 
