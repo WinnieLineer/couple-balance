@@ -11,6 +11,8 @@ import ActivityLog from './components/ActivityLog';
 import PWAPrompt from './components/PWAPrompt';
 import { fetchGistData, updateGistData } from './utils/githubGist';
 
+const APP_VERSION_CODE = 1;
+
 export default function App() {
   // --- STATES ---
   const [records, setRecords] = useState([]);
@@ -23,6 +25,7 @@ export default function App() {
   const [myIdentity, setMyIdentity] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
+  const [needsUpdate, setNeedsUpdate] = useState(false);
 
   // --- REFS: always hold latest values so async callbacks don't capture stale closures ---
   const syncConfigRef = useRef({ token: '', gistId: '' });
@@ -51,6 +54,24 @@ export default function App() {
     p1: { name: '伴侶一', role: 'white_dog', deviceId: '' },
     p2: { name: '伴侶二', role: 'brown_dog', deviceId: '' }
   });
+
+  // --- VERSION CHECK ---
+  useEffect(() => {
+    const checkVersion = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.BASE_URL}version.json?t=${Date.now()}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.versionCode && data.versionCode > APP_VERSION_CODE) {
+            setNeedsUpdate(true);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to check app version', err);
+      }
+    };
+    checkVersion();
+  }, []);
 
   // Keep refs in sync with state so async functions always read fresh values
   useEffect(() => { syncConfigRef.current = syncConfig; }, [syncConfig]);
@@ -487,6 +508,39 @@ export default function App() {
   const p1Love = records.filter(r => r.type === 'love' && r.by === 'p1').reduce((acc, r) => acc + r.value, 0);
   const p2Love = records.filter(r => r.type === 'love' && r.by === 'p2').reduce((acc, r) => acc + r.value, 0);
 
+  // --- RENDER EARLY RETURN: UPDATE NEEDED ---
+  if (needsUpdate) {
+    return (
+      <div style={styles.updateOverlay}>
+        <div className="comic-card animate-pop" style={{ maxWidth: '400px', width: '90%', padding: '30px 20px', textAlign: 'center', backgroundColor: '#fff', border: '4px solid #000', borderRadius: '16px', boxShadow: '6px 6px 0 #000' }}>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '16px', fontWeight: '900' }}>✨ 發現新版本</h2>
+          <p style={{ marginBottom: '24px', fontWeight: 'bold', lineHeight: '1.5', color: '#333' }}>
+            為了確保資料同步穩定與最新功能，請務必更新至最新版本！
+          </p>
+          <button 
+            className="comic-btn primary" 
+            style={{ width: '100%', fontSize: '1.1rem', padding: '14px', borderRadius: '8px' }}
+            onClick={() => {
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(regs => {
+                  regs.forEach(r => r.unregister());
+                });
+              }
+              caches.keys().then(names => {
+                names.forEach(n => caches.delete(n));
+              });
+              setTimeout(() => {
+                window.location.reload(true);
+              }, 300);
+            }}
+          >
+            🚀 立即更新並重新載入
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container">
       {/* --- APP HEADER --- */}
@@ -666,6 +720,20 @@ export default function App() {
 }
 
 const styles = {
+  updateOverlay: {
+    position: 'fixed',
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 9999,
+  },
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: '100vh',
+  },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
