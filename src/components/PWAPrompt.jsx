@@ -7,6 +7,7 @@ export default function PWAPrompt() {
   const [isIOS, setIsIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
   const [isSafari, setIsSafari] = useState(false);
+  const [isBraveBrowser, setIsBraveBrowser] = useState(false);
 
   useEffect(() => {
     // 1. Check if already running in standalone/installed mode
@@ -51,6 +52,20 @@ export default function PWAPrompt() {
     if (!standaloneMode && (isLineOrFb || (isApple && !safariMatched)) && !isCooldownActive) {
       setIsVisible(true);
     }
+
+    // 6. Detect Brave browser (or "baver", or manual navigator.brave checks)
+    const checkBrave = async () => {
+      const isBraveUa = /brave|baver/.test(ua);
+      const isBraveApi = navigator.brave && (typeof navigator.brave.isBrave === 'function') && (await navigator.brave.isBrave());
+      if (isBraveUa || isBraveApi) {
+        setIsBraveBrowser(true);
+        // Force the prompt to show if they are on Brave/Baver
+        if (!standaloneMode && !isCooldownActive) {
+          setIsVisible(true);
+        }
+      }
+    };
+    checkBrave().catch(() => {/* safe ignore */});
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -102,7 +117,7 @@ export default function PWAPrompt() {
         </div>
 
         <div style={styles.content}>
-          {deferredPrompt ? (
+          {deferredPrompt && !isBraveBrowser ? (
             /* 1. Natively installable browser (Chrome, Edge, Android Chrome, Desktop) */
             <div>
               <p style={styles.desc}>
@@ -139,33 +154,46 @@ export default function PWAPrompt() {
               </div>
             </div>
           ) : (
-            /* 3. Non-installable environment (iOS Chrome/Firefox, Line/FB Webview, etc.) */
+            /* 3. Non-installable environment (iOS Chrome/Firefox, Line/FB Webview, Brave, etc.) */
             <div>
               <div style={styles.warningBox}>
                 <AlertCircle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
                 <div>
                   <p style={{ fontWeight: '800', fontSize: '0.82rem', marginBottom: '2px' }}>
-                    目前瀏覽器不支援 PWA 安裝功能
+                    {isBraveBrowser ? 'Brave (Baver) 瀏覽器不支援 PWA 直接安裝' : '目前瀏覽器不支援 PWA 安裝功能'}
                   </p>
                   <p style={{ fontSize: '0.75rem', lineHeight: '1.4', opacity: 0.85 }}>
-                    請不要在社群 App 內嵌視窗 (LINE/FB) 或第三方瀏覽器中開啟本站。
+                    {isBraveBrowser 
+                      ? '由於 Brave 瀏覽器的安全盾牌限制，無法直接加到桌面。' 
+                      : '請不要在社群 App 內嵌視窗 (LINE/FB) 或第三方瀏覽器中開啟本站。'}
                   </p>
                 </div>
               </div>
               
               <div style={{ marginTop: '10px' }}>
                 <p style={{ ...styles.desc, marginBottom: '8px' }}>
-                  請更換推薦瀏覽器以加成桌面 App 使用：
+                  {isBraveBrowser 
+                    ? '請複製網址更換至 Google Chrome 瀏覽器以啟用安裝：'
+                    : '請更換推薦瀏覽器以加成桌面 App 使用：'}
                 </p>
                 <div style={styles.steps}>
-                  <div style={styles.stepItem}>
-                    <div style={styles.stepNum}>🍎</div>
-                    <span><b>iPhone / iPad：</b>請複製網址並更換至 <b>iOS Safari</b> 瀏覽器開啟，點選分享即可「加入主畫面」。</span>
-                  </div>
-                  <div style={styles.stepItem}>
-                    <div style={styles.stepNum}>🤖</div>
-                    <span><b>Android / 電腦：</b>請複製網址並更換至 <b>Google Chrome</b> 或 <b>Edge</b> 瀏覽器開啟以啟用安裝功能。</span>
-                  </div>
+                  {isBraveBrowser ? (
+                    <div style={styles.stepItem}>
+                      <div style={styles.stepNum}>🤖</div>
+                      <span>請點選下方複製網址，更換至 <b>Google Chrome</b> 瀏覽器開啟，即可看見一鍵安裝至桌面的引導提示！🌟</span>
+                    </div>
+                  ) : (
+                    <>
+                      <div style={styles.stepItem}>
+                        <div style={styles.stepNum}>🍎</div>
+                        <span><b>iPhone / iPad：</b>請複製網址並更換至 <b>iOS Safari</b> 瀏覽器開啟，點選分享即可「加入主畫面」。</span>
+                      </div>
+                      <div style={styles.stepItem}>
+                        <div style={styles.stepNum}>🤖</div>
+                        <span><b>Android / 電腦：</b>請複製網址並更換至 <b>Google Chrome</b> 或 <b>Edge</b> 瀏覽器開啟以啟用安裝功能。</span>
+                      </div>
+                    </>
+                  )}
                 </div>
                 
                 <button
