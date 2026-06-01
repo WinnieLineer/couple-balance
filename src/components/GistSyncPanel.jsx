@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Settings, RefreshCw, Cloud, CloudOff, ArrowLeftRight, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { RefreshCw, Cloud, CloudOff, ArrowLeftRight } from 'lucide-react';
+import { createSecretGist } from '../utils/githubGist';
 
 export default function GistSyncPanel({ 
   syncConfig, 
@@ -12,7 +13,8 @@ export default function GistSyncPanel({
   partners,
   onUpdatePartners,
   myIdentity = 'p1',
-  onUpdateMyIdentity
+  onUpdateMyIdentity,
+  isLocal = false
 }) {
   const [isOpen, setIsOpen] = useState(false);
   
@@ -24,6 +26,18 @@ export default function GistSyncPanel({
   const [p2Name, setP2Name] = useState(partners.p2.name || '老婆');
   const [p1Role, setP1Role] = useState(partners.p1.role || 'white_dog');
   const [p2Role, setP2Role] = useState(partners.p2.role || 'brown_dog');
+
+  // Gist credentials input states (Local Developer use)
+  const [tokenInput, setTokenInput] = useState(syncConfig.token || '');
+  const [gistIdInput, setGistIdInput] = useState(syncConfig.gistId || '');
+  const [localError, setLocalError] = useState('');
+  const [localSuccess, setLocalSuccess] = useState('');
+
+  // Sync inputs with config props
+  useEffect(() => {
+    setTokenInput(syncConfig.token || '');
+    setGistIdInput(syncConfig.gistId || '');
+  }, [syncConfig]);
 
   // Toggle roles (which dog represents who)
   const handleSwapRoles = () => {
@@ -51,6 +65,46 @@ export default function GistSyncPanel({
     const customPartners = getCustomPartnersPayload();
     onUpdatePartners(customPartners);
     setIsOpen(false);
+  };
+
+  // Save Gist credentials manually (Local mode)
+  const handleSaveCloudConfig = () => {
+    setLocalError('');
+    setLocalSuccess('');
+    if (!tokenInput.trim() || !gistIdInput.trim()) {
+      setLocalError('請填寫完整 Token 與 Gist ID！');
+      return;
+    }
+    const customPartners = getCustomPartnersPayload();
+    saveConfig(tokenInput.trim(), gistIdInput.trim(), customPartners);
+    setLocalSuccess('雲端設定已儲存並載入！');
+  };
+
+  // Auto create new Gist (Local mode)
+  const handleCreateNewGist = async () => {
+    setLocalError('');
+    setLocalSuccess('');
+    if (!tokenInput.trim()) {
+      setLocalError('一鍵建庫前請先輸入您的 GitHub Token！');
+      return;
+    }
+    try {
+      setLocalSuccess('正在建立雲端資料庫...');
+      const customPartners = getCustomPartnersPayload();
+      const initialPayload = {
+        meta: { updated_at: new Date().toISOString(), version: '1.0' },
+        records: [],
+        partners: customPartners
+      };
+      
+      const newGistId = await createSecretGist(tokenInput.trim(), initialPayload);
+      setGistIdInput(newGistId);
+      saveConfig(tokenInput.trim(), newGistId, customPartners);
+      setLocalSuccess('雲端資料庫建立成功！');
+    } catch (err) {
+      console.error(err);
+      setLocalError(`建立失敗：${err.message || '連線錯誤'}`);
+    }
   };
 
   return (
@@ -202,7 +256,7 @@ export default function GistSyncPanel({
             className="comic-btn secondary"
             style={styles.actionBtn}
           >
-            <span>修改暱稱與使用者</span>
+            <span>修改暱稱與雲端設定</span>
           </button>
         </div>
       </div>
@@ -276,13 +330,65 @@ export default function GistSyncPanel({
             </div>
           </div>
 
+          {/* --- CONDITIONALLY RENDER CLOUD GIST INPUT FIELDS (LOCAL / DEV MODE ONLY) --- */}
+          {isLocal && (
+            <div style={styles.localGistCard}>
+              <h4 style={styles.localGistTitle}>雲端備份設定 (本地模式專用)</h4>
+              
+              <div style={styles.inputCol}>
+                <label style={styles.label}>GitHub Token (PAT)</label>
+                <input 
+                  type="password" 
+                  value={tokenInput} 
+                  onChange={(e) => setTokenInput(e.target.value)} 
+                  className="comic-input" 
+                  placeholder="ghp_..."
+                />
+              </div>
+
+              <div style={{ ...styles.inputCol, marginTop: '12px' }}>
+                <label style={styles.label}>Gist ID (可空白，點選一鍵新建)</label>
+                <input 
+                  type="text" 
+                  value={gistIdInput} 
+                  onChange={(e) => setGistIdInput(e.target.value)} 
+                  className="comic-input" 
+                  placeholder="自訂的 Gist ID"
+                />
+              </div>
+
+              {localError && <div style={styles.localErrorText}>{localError}</div>}
+              {localSuccess && <div style={styles.localSuccessText}>{localSuccess}</div>}
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+                <button
+                  type="button"
+                  onClick={handleSaveCloudConfig}
+                  className="comic-btn"
+                  style={{ flex: 1, backgroundColor: '#000000', color: '#FFFFFF', padding: '8px 12px', fontSize: '0.8rem' }}
+                >
+                  儲存並連線
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCreateNewGist}
+                  className="comic-btn secondary"
+                  style={{ flex: 1, padding: '8px 12px', fontSize: '0.8rem' }}
+                  disabled={!tokenInput}
+                >
+                  一鍵自動新建
+                </button>
+              </div>
+            </div>
+          )}
+
           <div style={styles.panelActions}>
             <button 
               onClick={handleSaveSettings} 
               className="comic-btn" 
               style={{ marginLeft: 'auto', width: '100%', marginTop: '16px', backgroundColor: '#000000', color: '#FFFFFF' }}
             >
-              儲存並更新
+              儲存所有變更
             </button>
           </div>
         </div>
@@ -315,19 +421,7 @@ const styles = {
     padding: '28px',
     border: '3px solid #000000',
     boxShadow: '8px 8px 0px #000000',
-  },
-  wizardHeader: {
-    textAlign: 'center',
-    marginBottom: '20px',
-  },
-  dogContainer: {
-    width: '140px',
-    height: '70px',
-    margin: '0 auto 8px auto',
-  },
-  wizardDogsSvg: {
-    width: '100%',
-    height: '100%',
+    borderRadius: '0px',
   },
   wizardTitle: {
     fontSize: '1.4rem',
@@ -449,6 +543,7 @@ const styles = {
     border: '3px solid #000000',
     boxShadow: '4px 4px 0px #000000',
     borderRadius: '0px',
+    padding: '24px',
   },
   panelTitle: {
     fontSize: '1.2rem',
@@ -478,5 +573,37 @@ const styles = {
     border: '2.5px solid #000000',
     boxShadow: '2px 2px 0px #000000',
     transition: 'all 0.1s ease',
+  },
+  localGistCard: {
+    backgroundColor: '#F4F4F3',
+    border: '3px solid #000000',
+    padding: '16px 20px',
+    marginTop: '20px',
+    boxShadow: '3px 3px 0px #000000',
+  },
+  localGistTitle: {
+    fontSize: '0.9rem',
+    fontWeight: '900',
+    borderBottom: '2.5px dashed #000000',
+    paddingBottom: '8px',
+    marginBottom: '14px',
+  },
+  localErrorText: {
+    color: '#D8000C',
+    backgroundColor: '#FFD2D2',
+    border: '2px solid #D8000C',
+    padding: '6px 12px',
+    fontSize: '0.8rem',
+    fontWeight: '800',
+    marginTop: '12px',
+  },
+  localSuccessText: {
+    color: '#000000',
+    backgroundColor: '#E1ECC8',
+    border: '2px solid #000000',
+    padding: '6px 12px',
+    fontSize: '0.8rem',
+    fontWeight: '800',
+    marginTop: '12px',
   }
 };

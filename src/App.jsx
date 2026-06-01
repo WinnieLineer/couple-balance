@@ -21,6 +21,8 @@ export default function App() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
 
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || (!import.meta.env.VITE_GIST_TOKEN);
+
   // Fixed Exchange Rates for multi-currency conversion
   const EXCHANGE_RATES = {
     TWD: 1.0,
@@ -356,6 +358,7 @@ export default function App() {
           setMyIdentity(val);
           localStorage.setItem('my_identity', val);
         }}
+        isLocal={isLocal}
       />
 
       {/* --- WINNER DASHBOARD --- */}
