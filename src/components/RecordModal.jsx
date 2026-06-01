@@ -23,8 +23,10 @@ export default function RecordModal({
   isOpen, 
   onClose, 
   onAddRecord, 
-  p1Name = '老公', 
-  p2Name = '老婆',
+  p1Name = '伴侶一', 
+  p2Name = '伴侶二',
+  p1Role = 'white_dog',
+  p2Role = 'brown_dog',
   defaultByPartner = 'p1'
 }) {
   const [recordType, setRecordType] = useState('money'); // 'money' or 'love'
@@ -150,7 +152,7 @@ export default function RecordModal({
                   borderWidth: byPartner === 'p1' ? '3px' : '2px'
                 }}
               >
-                <span style={styles.partnerName}>{p1Name} (白狗)</span>
+                <span style={styles.partnerName}>{p1Name} ({p1Role === 'white_dog' ? '白狗' : '灰狗'})</span>
                 {byPartner === 'p1' && <Check size={16} color="var(--text-primary)" strokeWidth={3} />}
               </div>
 
@@ -163,7 +165,7 @@ export default function RecordModal({
                   borderWidth: byPartner === 'p2' ? '3px' : '2px'
                 }}
               >
-                <span style={styles.partnerName}>{p2Name} (灰狗)</span>
+                <span style={styles.partnerName}>{p2Name} ({p2Role === 'white_dog' ? '白狗' : '灰狗'})</span>
                 {byPartner === 'p2' && <Check size={16} color="var(--text-primary)" strokeWidth={3} />}
               </div>
             </div>

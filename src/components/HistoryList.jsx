@@ -16,8 +16,10 @@ const convertValue = (val, from = 'TWD', to = 'TWD') => {
 export default function HistoryList({ 
   records = [], 
   onDeleteRecord, 
-  p1Name = '老公', 
-  p2Name = '老婆',
+  p1Name = '伴侶一', 
+  p2Name = '伴侶二',
+  p1Role = 'white_dog',
+  p2Role = 'brown_dog',
   displayCurrency = 'TWD'
 }) {
   const [activeTab, setActiveTab] = useState('money'); // 'money' or 'love'
@@ -92,6 +94,8 @@ export default function HistoryList({
           filteredRecords.map((record) => {
             const isP1 = record.by === 'p1';
             const name = isP1 ? p1Name : p2Name;
+            const role = isP1 ? p1Role : p2Role;
+            const isWhite = role === 'white_dog';
 
             // Money conversions display
             const origCurrency = record.currency || 'TWD';
@@ -104,7 +108,7 @@ export default function HistoryList({
                 className="comic-card animate-pop" 
                 style={{ 
                   ...styles.itemCard,
-                  borderLeft: isP1 ? '8px solid #000000' : '8px solid #D2D2D2',
+                  borderLeft: isWhite ? '8px solid #000000' : '8px solid #D2D2D2',
                   backgroundColor: '#FFFFFF'
                 }}
               >
@@ -113,13 +117,13 @@ export default function HistoryList({
                   {/* Miniature Dog typographic label */}
                   <div style={{ 
                     ...styles.dogBadge, 
-                    backgroundColor: isP1 ? '#FFFFFF' : '#D2D2D2',
+                    backgroundColor: isWhite ? '#FFFFFF' : '#D2D2D2',
                     borderColor: '#000000',
                     color: '#000000',
                     fontWeight: '900',
                     fontSize: '0.78rem'
                   }}>
-                    {isP1 ? '白' : '灰'}
+                    {isWhite ? '白' : '灰'}
                   </div>
 
                   <div style={styles.itemMeta}>

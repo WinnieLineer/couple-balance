@@ -38,8 +38,8 @@ export default function App() {
 
   // Default partner details (overwritten on mount by cache or wizard)
   const [partners, setPartners] = useState({
-    p1: { name: '老公', role: 'white_dog' },
-    p2: { name: '老婆', role: 'brown_dog' }
+    p1: { name: '伴侶一', role: 'white_dog' },
+    p2: { name: '伴侶二', role: 'brown_dog' }
   });
 
   // --- TOAST NOTIFICATIONS ---
@@ -409,6 +409,8 @@ export default function App() {
           onDeleteRecord={handleDeleteRecord}
           p1Name={partners.p1.name}
           p2Name={partners.p2.name}
+          p1Role={partners.p1.role}
+          p2Role={partners.p2.role}
           displayCurrency={displayCurrency}
         />
       </div>
@@ -432,6 +434,8 @@ export default function App() {
         onAddRecord={handleAddRecord}
         p1Name={partners.p1.name}
         p2Name={partners.p2.name}
+        p1Role={partners.p1.role}
+        p2Role={partners.p2.role}
         defaultByPartner={myIdentity}
       />
 
