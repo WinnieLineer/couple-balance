@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCw, Cloud, CloudOff, ArrowLeftRight } from 'lucide-react';
-import { createSecretGist, fetchGistData } from '../utils/githubGist';
+import { createSecretGist, fetchGistData, updateGistData } from '../utils/githubGist';
 
 export default function GistSyncPanel({ 
   syncConfig, 
@@ -29,21 +29,23 @@ export default function GistSyncPanel({
   const [p2Role, setP2Role] = useState(partners.p2.role || 'brown_dog');
 
   // Gist credentials input states (Local Developer use)
-  const [tokenInput, setTokenInput] = useState(syncConfig.token || '');
   const [gistIdInput, setGistIdInput] = useState(syncConfig.gistId || '');
   const [localError, setLocalError] = useState('');
   const [localSuccess, setLocalSuccess] = useState('');
 
   // Onboarding Wizard Modes & States
   const [wizardMode, setWizardMode] = useState('create'); // 'create' | 'join'
-  const [joinToken, setJoinToken] = useState('');
   const [joinGistId, setJoinGistId] = useState('');
   const [fetchedPartners, setFetchedPartners] = useState(null);
   const [selectedJoinIdentity, setSelectedJoinIdentity] = useState('');
 
+  // Wizard optional Gist ID creation & invitation text states
+  const [wizardGistId, setWizardGistId] = useState('');
+  const [invitationText, setInvitationText] = useState('');
+  const [isCreatingGistInWizard, setIsCreatingGistInWizard] = useState(false);
+
   // Sync inputs with config props
   useEffect(() => {
-    setTokenInput(syncConfig.token || '');
     setGistIdInput(syncConfig.gistId || '');
   }, [syncConfig]);
 
@@ -62,16 +64,58 @@ export default function GistSyncPanel({
   };
 
   // Complete onboarding and start App (Create Mode)
-  const handleStart = () => {
+  const handleStart = async () => {
     const customPartners = getCustomPartnersPayload();
-    onUpdatePartners(customPartners);
     
     // Automatically set default identity to p1 on the creator device
     if (onUpdateMyIdentity) {
       onUpdateMyIdentity('p1');
     }
     
-    setShowWizard(false);
+    const gistIdClean = wizardGistId.trim();
+    const finalToken = (import.meta.env.VITE_GIST_TOKEN || localStorage.getItem('gist_token') || '').trim();
+    
+    if (gistIdClean) {
+      if (!finalToken) {
+        setLocalError('⚠️ 系統未檢測到 GIST_TOKEN，請先確認您的環境變數或專案 Secrets 中已正確設定 GIST_TOKEN！');
+        return;
+      }
+      
+      // User wants to initialize cloud sync on this specific Gist ID during onboarding!
+      setIsCreatingGistInWizard(true);
+      setLocalError('');
+      setLocalSuccess('正在初始化您的雲端天秤資料庫...');
+      try {
+        const currentDevId = localStorage.getItem('device_id') || '';
+        customPartners.p1.deviceId = currentDevId;
+        
+        const initialPayload = {
+          meta: { updated_at: new Date().toISOString(), version: '1.0' },
+          records: [],
+          partners: customPartners
+        };
+        
+        // Write the initial payload to the existing Gist ID
+        await updateGistData(finalToken, gistIdClean, initialPayload);
+        
+        // Save config in parent
+        saveConfig(finalToken, gistIdClean, customPartners, 'p1');
+        
+        const inviteMsg = `Hi！我已經在 HeartSync 建立了我們的專屬生活付出天秤囉！⚖️\n請在你的裝置開啟 HeartSync 網頁，在引導精靈中選擇「連結現有天秤」，貼上我的 Gist ID 即可自動連線並同步！\n\n🔗 我們的天秤 Gist ID：\n${gistIdClean}`;
+        setInvitationText(inviteMsg);
+        
+        setShowWizard(false);
+      } catch (err) {
+        console.error(err);
+        setLocalError(`初始化雲端天秤失敗：${err.message || '連線錯誤，請確認該 Gist ID 存在且具有讀寫權限。'}`);
+        setIsCreatingGistInWizard(false);
+        return; // Don't close wizard if cloud initialization failed
+      }
+    } else {
+      // Standard local/offline onboarding
+      onUpdatePartners(customPartners);
+      setShowWizard(false);
+    }
   };
 
   // Save changes from collapsed settings panel
@@ -132,6 +176,9 @@ export default function GistSyncPanel({
       const newGistId = await createSecretGist(tokenInput.trim(), initialPayload);
       setGistIdInput(newGistId);
       saveConfig(tokenInput.trim(), newGistId, customPartners, finalIdentity);
+      
+      const inviteMsg = `Hi！我已經在 HeartSync 建立了我們的專屬生活付出天秤囉！⚖️\n請在你的裝置開啟 HeartSync 網頁，在引導精靈中選擇「連結現有天秤」，貼上我的 Gist ID 即可自動連線並同步！\n\n🔗 我們的天秤 Gist ID：\n${newGistId}`;
+      setInvitationText(inviteMsg);
       setLocalSuccess('雲端資料庫建立成功！');
     } catch (err) {
       console.error(err);
@@ -204,6 +251,67 @@ export default function GistSyncPanel({
 
   return (
     <div style={{ marginBottom: '24px' }}>
+      {/* --- CLOUD DATABASE INVITATION POPUP OVERLAY --- */}
+      {invitationText && (
+        <div style={styles.wizardOverlay}>
+          <div className="comic-card animate-float" style={{ ...styles.wizardCard, maxWidth: '480px' }}>
+            <div style={{ textAlign: 'center', marginBottom: '20px', borderBottom: '3px solid #000000', paddingBottom: '12px' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', border: '3px solid #000000', borderRadius: '50%', marginBottom: '8px', fontSize: '1.4rem', boxShadow: '2px 2px 0px #000000', backgroundColor: '#FFFFFF' }}>
+                🎉
+              </div>
+              <h2 style={styles.wizardTitle}>雲端天秤建立成功！</h2>
+              <p style={styles.wizardSubtitle}>專屬雲端資料庫已成功備份至 GitHub！邀請您的伴侶開始同步吧。</p>
+            </div>
+
+            <div style={styles.wizardBody}>
+              <div style={styles.wizardSection}>
+                <label style={styles.label}>✉️ 傳給伴侶的邀請訊息：</label>
+                <textarea
+                  readOnly
+                  value={invitationText}
+                  onClick={(e) => e.target.select()}
+                  rows={8}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    fontFamily: 'inherit',
+                    fontSize: '0.82rem',
+                    fontWeight: '800',
+                    lineHeight: '1.5',
+                    border: '2.5px solid #000000',
+                    backgroundColor: '#F8F8F8',
+                    resize: 'none',
+                    marginTop: '8px',
+                  }}
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(invitationText);
+                  alert('邀請訊息已成功複製到剪貼簿，快傳給伴侶吧！');
+                  setInvitationText('');
+                }}
+                className="comic-btn"
+                style={{ width: '100%', padding: '12px 16px', fontSize: '1rem', backgroundColor: '#000000', color: '#FFFFFF' }}
+              >
+                📋 複製邀請訊息並開始使用
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setInvitationText('')}
+                className="comic-btn secondary"
+                style={{ width: '100%', padding: '8px 12px', fontSize: '0.85rem' }}
+              >
+                直接關閉
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* --- INITIAL NICKNAMES WIZARD (FOR NEW USERS) --- */}
       {showWizard && (
         <div style={styles.wizardOverlay}>
@@ -260,20 +368,7 @@ export default function GistSyncPanel({
                       請輸入伴侶分享的 Gist ID。連結成功後，系統會自動載入伴侶設定，免手動重複輸入！
                     </p>
 
-                    {isLocal && (
-                      <div style={styles.inputCol}>
-                        <label style={styles.label}>GitHub Token (PAT)</label>
-                        <input 
-                          type="password" 
-                          value={joinToken} 
-                          onChange={(e) => setJoinToken(e.target.value)} 
-                          className="comic-input" 
-                          placeholder="ghp_..."
-                        />
-                      </div>
-                    )}
-
-                    <div style={{ ...styles.inputCol, marginTop: isLocal ? '12px' : '0px' }}>
+                    <div style={{ ...styles.inputCol, marginTop: '0px' }}>
                       <label style={styles.label}>Gist ID</label>
                       <input 
                         type="text" 
@@ -426,14 +521,34 @@ export default function GistSyncPanel({
                         </button>
                       </div>
                     </div>
+
+                    {/* Optional Gist ID for Wizard Gist Creation */}
+                    <div style={{ marginTop: '20px', borderTop: '2px dashed #000000', paddingTop: '16px' }}>
+                      <label style={styles.label}>🌐 啟用雲端同步備份 (選填)</label>
+                      <p style={{ fontSize: '0.78rem', color: '#666666', marginBottom: '8px', fontWeight: 'bold' }}>
+                        填入您在 GitHub 上創建的 Gist ID，開始體驗時將自動在此 Gist ID 中初始化並建立新的天秤，並立即產生邀請伴侶的連線文字！
+                      </p>
+                      <input 
+                        type="text" 
+                        value={wizardGistId} 
+                        onChange={(e) => setWizardGistId(e.target.value)} 
+                        className="comic-input" 
+                        placeholder="請貼上您的 Gist ID (可空白，先離線使用)"
+                        disabled={isCreatingGistInWizard}
+                      />
+                    </div>
+
+                    {localError && <div style={styles.localErrorText}>{localError}</div>}
+                    {localSuccess && <div style={styles.localSuccessText}>{localSuccess}</div>}
                   </div>
 
                   <button 
                     onClick={handleStart} 
                     className="comic-btn" 
+                    disabled={isCreatingGistInWizard}
                     style={{ width: '100%', marginTop: '10px', padding: '12px 16px', fontSize: '1.05rem', backgroundColor: '#000000', color: '#FFFFFF' }}
                   >
-                    開始體驗 HeartSync
+                    {isCreatingGistInWizard ? '正在建立雲端天秤...' : '開始體驗 HeartSync'}
                   </button>
                 </>
               )}
@@ -562,18 +677,7 @@ export default function GistSyncPanel({
               <h4 style={styles.localGistTitle}>雲端備份設定 (本地模式專用)</h4>
               
               <div style={styles.inputCol}>
-                <label style={styles.label}>GitHub Token (PAT)</label>
-                <input 
-                  type="password" 
-                  value={tokenInput} 
-                  onChange={(e) => setTokenInput(e.target.value)} 
-                  className="comic-input" 
-                  placeholder="ghp_..."
-                />
-              </div>
-
-              <div style={{ ...styles.inputCol, marginTop: '12px' }}>
-                <label style={styles.label}>Gist ID (可空白，點選一鍵新建)</label>
+                <label style={styles.label}>Gist ID (可空白，點選一鍵自動新建)</label>
                 <input 
                   type="text" 
                   value={gistIdInput} 
@@ -600,7 +704,6 @@ export default function GistSyncPanel({
                   onClick={handleCreateNewGist}
                   className="comic-btn secondary"
                   style={{ flex: 1, padding: '8px 12px', fontSize: '0.8rem' }}
-                  disabled={!tokenInput}
                 >
                   一鍵自動新建
                 </button>
@@ -635,6 +738,19 @@ export default function GistSyncPanel({
                   複製 ID
                 </button>
               </div>
+              
+              <button
+                type="button"
+                onClick={() => {
+                  const inviteMsg = `Hi！我已經在 HeartSync 建立了我們的專屬生活付出天秤囉！⚖️\n請在你的裝置開啟 HeartSync 網頁，在引導精靈中選擇「連結現有天秤」，貼上我的 Gist ID 即可自動連線並同步！\n\n🔗 我們的天秤 Gist ID：\n${syncConfig.gistId}`;
+                  navigator.clipboard.writeText(inviteMsg);
+                  alert('邀請文字已複製到剪貼簿，趕快傳給伴侶吧！');
+                }}
+                className="comic-btn"
+                style={{ width: '100%', marginTop: '12px', padding: '8px 12px', fontSize: '0.8rem', backgroundColor: '#000000', color: '#FFFFFF' }}
+              >
+                📋 複製給伴侶的邀請文字
+              </button>
             </div>
           )}
 
