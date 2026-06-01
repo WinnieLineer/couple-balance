@@ -20,7 +20,7 @@ export default function App() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
 
-  // Default partner details
+  // Default partner details (overwritten on mount by cache or wizard)
   const [partners, setPartners] = useState({
     p1: { name: '老公', role: 'white_dog' },
     p2: { name: '老婆', role: 'brown_dog' }
@@ -45,7 +45,22 @@ export default function App() {
     setSyncConfig(config);
     setOfflineMode(savedOffline);
 
-    // 2. Load cached local records
+    // 2. Load cached partners configuration
+    const savedPartners = localStorage.getItem('partners_config');
+    let loadedPartners = {
+      p1: { name: '老公', role: 'white_dog' },
+      p2: { name: '老婆', role: 'brown_dog' }
+    };
+    if (savedPartners) {
+      try {
+        loadedPartners = JSON.parse(savedPartners);
+        setPartners(loadedPartners);
+      } catch (e) {
+        console.error('Failed to parse cached partners', e);
+      }
+    }
+
+    // 3. Load cached local records
     const cachedRecords = localStorage.getItem('cached_records');
     let loadedRecords = [];
     if (cachedRecords) {
@@ -57,7 +72,7 @@ export default function App() {
       }
     }
 
-    // 3. Trigger initial cloud sync if applicable
+    // 4. Trigger initial cloud sync if applicable
     if (savedToken && savedGistId && !savedOffline) {
       pullCloudData(savedToken, savedGistId, loadedRecords);
     } else if (savedOffline) {
@@ -80,6 +95,7 @@ export default function App() {
         
         if (cloudData.partners) {
           setPartners(cloudData.partners);
+          localStorage.setItem('partners_config', JSON.stringify(cloudData.partners));
         }
         
         const now = new Date();
@@ -93,7 +109,6 @@ export default function App() {
       console.error(err);
       setSyncStatus('連線失敗，已載入本機');
       showToast(`⚠️ 同步失敗：${err.message || '連線錯誤'}`, 'error');
-      // If error, fall back to whatever local records we have
       setRecords(fallbackRecords);
     } finally {
       setIsSyncing(false);
@@ -101,7 +116,7 @@ export default function App() {
   };
 
   // --- PUSH (LOCAL -> CLOUD) ---
-  const pushCloudData = async (newRecords, token = syncConfig.token, gistId = syncConfig.gistId) => {
+  const pushCloudData = async (newRecords, token = syncConfig.token, gistId = syncConfig.gistId, customPartners = partners) => {
     if (!token || !gistId || offlineMode) return;
     
     setIsSyncing(true);
@@ -113,7 +128,7 @@ export default function App() {
           version: '1.0'
         },
         records: newRecords,
-        partners: partners
+        partners: customPartners
       };
 
       await updateGistData(token, gistId, payload);
@@ -131,17 +146,28 @@ export default function App() {
     }
   };
 
-  // --- SAVE SYNC CONFIG (FROM PANEL) ---
-  const saveConfig = (token, gistId) => {
+  // --- SAVE SYNC CONFIG & ROLE INFO (FROM PANEL) ---
+  const saveConfig = (token, gistId, customPartners = partners) => {
     localStorage.setItem('gist_token', token);
     localStorage.setItem('gist_id', gistId);
     localStorage.setItem('offline_mode', 'false');
+    localStorage.setItem('partners_config', JSON.stringify(customPartners));
     
     setSyncConfig({ token, gistId });
     setOfflineMode(false);
+    setPartners(customPartners);
     
-    // Pull right away to get Gist data
     pullCloudData(token, gistId);
+  };
+
+  // --- UPDATE PARTNERS NICKNAMES & ROLES ---
+  const handleUpdatePartners = (customPartners) => {
+    setPartners(customPartners);
+    localStorage.setItem('partners_config', JSON.stringify(customPartners));
+    showToast('🐾 角色設定已更新！', 'success');
+    
+    // Auto-push the updated structure to the cloud
+    pushCloudData(records, syncConfig.token, syncConfig.gistId, customPartners);
   };
 
   // --- TOGGLE OFFLINE MODE ---
@@ -152,7 +178,6 @@ export default function App() {
       setSyncStatus('本機離線運作中');
       showToast('🐾 已切換至離線體驗模式', 'info');
     } else {
-      // Pull if we have configs
       if (syncConfig.token && syncConfig.gistId) {
         pullCloudData(syncConfig.token, syncConfig.gistId);
       }
@@ -241,6 +266,8 @@ export default function App() {
         isSyncing={isSyncing}
         offlineMode={offlineMode}
         setOfflineMode={handleSetOfflineMode}
+        partners={partners}
+        onUpdatePartners={handleUpdatePartners}
       />
 
       {/* --- WINNER DASHBOARD --- */}
@@ -251,6 +278,8 @@ export default function App() {
         p2Love={p2Love}
         p1Name={partners.p1.name}
         p2Name={partners.p2.name}
+        p1Role={partners.p1.role}
+        p2Role={partners.p2.role}
       />
 
       {/* --- DUAL SCALES SECTION --- */}
@@ -261,6 +290,8 @@ export default function App() {
           p2Value={p2Money}
           p1Name={partners.p1.name}
           p2Name={partners.p2.name}
+          p1Role={partners.p1.role}
+          p2Role={partners.p2.role}
           unit="元"
           label="共同金錢天秤 💸"
         />
@@ -271,6 +302,8 @@ export default function App() {
           p2Value={p2Love}
           p1Name={partners.p1.name}
           p2Name={partners.p2.name}
+          p1Role={partners.p1.role}
+          p2Role={partners.p2.role}
           unit="點"
           label="家事與心意天秤 🧹"
         />
