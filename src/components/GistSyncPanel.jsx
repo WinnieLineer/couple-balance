@@ -59,45 +59,9 @@ export default function GistSyncPanel({
       {showWizard && (
         <div style={styles.wizardOverlay}>
           <div className="comic-card animate-float" style={styles.wizardCard}>
-            <div style={styles.wizardHeader}>
-              <div style={styles.dogContainer}>
-                {/* SVG AUTHENTIC MALTESE FLUFFY DOGS HUGGING (Pure B&W Line Art) */}
-                <svg viewBox="0 0 100 50" style={styles.wizardDogsSvg}>
-                  {/* Left fluffy white dog */}
-                  <ellipse cx="18" cy="24" rx="7" ry="10" fill="#FFFFFF" stroke="#000000" strokeWidth="2.5" />
-                  <ellipse cx="42" cy="24" rx="7" ry="10" fill="#FFFFFF" stroke="#000000" strokeWidth="2.5" />
-                  <ellipse cx="30" cy="30" rx="16" ry="13" fill="#FFFFFF" stroke="#000000" strokeWidth="2.5" />
-                  <circle cx="25" cy="28" r="2.2" fill="#000000" />
-                  <circle cx="35" cy="28" r="2.2" fill="#000000" />
-                  
-                  {/* B&W slash blush */}
-                  <line x1="18" y1="31" x2="21" y2="33" stroke="#000000" strokeWidth="1" />
-                  <line x1="19" y1="33" x2="22" y2="35" stroke="#000000" strokeWidth="1" />
-                  <line x1="38" y1="31" x2="41" y2="33" stroke="#000000" strokeWidth="1" />
-                  <line x1="39" y1="33" x2="42" y2="35" stroke="#000000" strokeWidth="1" />
-
-                  <ellipse cx="30" cy="31" rx="2" ry="1.2" fill="#000000" />
-                  <path d="M 28,34 Q 30,36 32,34" fill="none" stroke="#000000" strokeWidth="1.5" strokeLinecap="round" />
-
-                  {/* Right chic designer gray puppy */}
-                  <path d="M 58,22 Q 52,26 56,38 Q 60,42 62,34 Z" fill="#D2D2D2" stroke="#000000" strokeWidth="2.5" />
-                  <path d="M 82,22 Q 88,26 84,38 Q 80,42 78,34 Z" fill="#D2D2D2" stroke="#000000" strokeWidth="2.5" />
-                  <ellipse cx="70" cy="30" rx="15" ry="13" fill="#D2D2D2" stroke="#000000" strokeWidth="2.5" />
-                  <circle cx="65" cy="28" r="2.2" fill="#000000" />
-                  <circle cx="75" cy="28" r="2.2" fill="#000000" />
-                  
-                  {/* B&W slash blush for gray pup */}
-                  <line x1="59" y1="31" x2="62" y2="33" stroke="#000000" strokeWidth="1" />
-                  <line x1="60" y1="33" x2="63" y2="35" stroke="#000000" strokeWidth="1" />
-                  <line x1="77" y1="31" x2="80" y2="33" stroke="#000000" strokeWidth="1" />
-                  <line x1="78" y1="33" x2="81" y2="35" stroke="#000000" strokeWidth="1" />
-
-                  <ellipse cx="70" cy="31" rx="2" ry="1.2" fill="#000000" />
-                  <path d="M 67,33 Q 70,36 73,33" fill="none" stroke="#000000" strokeWidth="1.5" strokeLinecap="round" />
-
-                  {/* B&W Heart Outline */}
-                  <path d="M 50,33 Q 47,28 43,29 Q 39,31 43,37 L 50,44 L 57,37 Q 61,31 57,29 Q 53,28 50,33 Z" fill="#000000" stroke="#000000" strokeWidth="2" className="animate-float" />
-                </svg>
+            <div style={{ textAlign: 'center', marginBottom: '24px', borderBottom: '3px solid #000000', paddingBottom: '16px' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', border: '3px solid #000000', borderRadius: '50%', marginBottom: '12px', fontSize: '1.4rem', boxShadow: '2px 2px 0px #000000', backgroundColor: '#FFFFFF' }}>
+                🤍
               </div>
               <h2 style={styles.wizardTitle}>歡迎來到 HeartSync</h2>
               <p style={styles.wizardSubtitle}>設定您們的代表名稱，開啟共同生活付出的極簡天秤紀錄之旅。</p>
