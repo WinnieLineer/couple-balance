@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Trash2, Calendar, User, Footprints } from 'lucide-react';
+import { Trash2, Calendar, User, Footprints, Search } from 'lucide-react';
 
 const EXCHANGE_RATES = {
   TWD: 1.0,
@@ -23,10 +23,12 @@ export default function HistoryList({
   displayCurrency = 'TWD'
 }) {
   const [activeTab, setActiveTab] = useState('money'); // 'money' or 'love'
+  const [searchQuery, setSearchQuery] = useState('');
 
-  // Filter records based on tab
+  // Filter records based on tab and search query
   const filteredRecords = records
     .filter(r => r.type === activeTab)
+    .filter(r => searchQuery.trim() === '' || r.title.toLowerCase().includes(searchQuery.toLowerCase()))
     // Newest first
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
@@ -80,6 +82,18 @@ export default function HistoryList({
             家事心意 ({records.filter(r => r.type === 'love').length})
           </button>
         </div>
+      </div>
+
+      {/* Search Bar */}
+      <div style={styles.searchContainer}>
+        <Search size={18} style={styles.searchIcon} />
+        <input 
+          type="text" 
+          placeholder="搜尋紀錄名稱..." 
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={styles.searchInput}
+        />
       </div>
 
       {/* History Items list */}

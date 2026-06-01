@@ -244,6 +244,28 @@ export default function App() {
         const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
         setSyncStatus(`已同步 (${timeStr})`);
         showToast('雲端資料同步完成', 'success');
+
+        // Check if we need to log 'open' for today
+        const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+        const lastOpened = localStorage.getItem('last_opened_date');
+        if (lastOpened !== today && currentMyIdentity) {
+          localStorage.setItem('last_opened_date', today);
+          const logEntry = {
+            id: `log_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+            timestamp: new Date().toISOString(),
+            action: 'open',
+            by: currentMyIdentity,
+            recordId: 'open',
+            recordTitle: 'HeartSync 天秤',
+          };
+          const updatedLog = [...cloudLog, logEntry];
+          setActivityLog(updatedLog);
+          activityLogRef.current = updatedLog;
+          localStorage.setItem('cached_activity_log', JSON.stringify(updatedLog));
+          
+          // Push the new log to cloud silently
+          pushCloudData(cloudData.records);
+        }
       } else {
         throw new Error('資料結構不符合規定');
       }

@@ -32,7 +32,7 @@ export default function ActivityLog({ activityLog = [], p1Name = '伴侶一', p2
       >
         <ScrollText size={16} strokeWidth={2.5} />
         <span style={{ fontWeight: 900, fontSize: '0.92rem' }}>
-          修改紀錄 <span style={styles.badge}>{activityLog.length}</span>
+          活動紀錄 <span style={styles.badge}>{activityLog.length}</span>
         </span>
         <span style={{ marginLeft: 'auto', opacity: 0.6, fontSize: '0.75rem' }}>
           （僅記錄，不可刪除）
@@ -45,6 +45,7 @@ export default function ActivityLog({ activityLog = [], p1Name = '伴侶一', p2
         <div style={styles.logContainer}>
           {sorted.map((entry, idx) => {
             const isAdd = entry.action === 'add';
+            const isOpen = entry.action === 'open';
             const valueStr =
               entry.recordType === 'money'
                 ? `${entry.recordValue} ${entry.recordCurrency || 'TWD'}`
@@ -53,10 +54,14 @@ export default function ActivityLog({ activityLog = [], p1Name = '伴侶一', p2
             return (
               <div key={entry.id || idx} style={styles.entry}>
                 {/* Timeline dot */}
-                <div style={{ ...styles.dot, backgroundColor: isAdd ? '#000' : '#888' }}>
-                  {isAdd
-                    ? <Plus size={10} strokeWidth={3} color="#fff" />
-                    : <Trash2 size={10} strokeWidth={3} color="#fff" />}
+                <div style={{ ...styles.dot, backgroundColor: isAdd || isOpen ? '#000' : '#888' }}>
+                  {isOpen ? (
+                    <span style={{ fontSize: '10px' }}>👋</span>
+                  ) : isAdd ? (
+                    <Plus size={10} strokeWidth={3} color="#fff" />
+                  ) : (
+                    <Trash2 size={10} strokeWidth={3} color="#fff" />
+                  )}
                 </div>
 
                 {/* Vertical line (not on last item) */}
@@ -66,13 +71,19 @@ export default function ActivityLog({ activityLog = [], p1Name = '伴侶一', p2
                 <div style={styles.entryContent}>
                   <div style={styles.entryMain}>
                     <span style={styles.who}>{getPartnerName(entry.by)}</span>
-                    <span style={{ ...styles.action, color: isAdd ? '#000' : '#888' }}>
-                      {isAdd ? ' 新增了 ' : ' 刪除了 '}
+                    <span style={{ ...styles.action, color: isAdd || isOpen ? '#000' : '#888' }}>
+                      {isOpen ? ' 登入了 ' : isAdd ? ' 新增了 ' : ' 刪除了 '}
                     </span>
-                    <span style={styles.recordTitle}>「{entry.recordTitle}」</span>
-                    <span style={styles.value}>
-                      {entry.recordType === 'money' ? '💸' : '💝'} {valueStr}
-                    </span>
+                    {isOpen ? (
+                      <span style={styles.recordTitle}>「HeartSync 天秤」</span>
+                    ) : (
+                      <>
+                        <span style={styles.recordTitle}>「{entry.recordTitle}」</span>
+                        <span style={styles.value}>
+                          {entry.recordType === 'money' ? '💸' : '💝'} {valueStr}
+                        </span>
+                      </>
+                    )}
                   </div>
                   <div style={styles.timestamp}>{formatTime(entry.timestamp)}</div>
                 </div>
