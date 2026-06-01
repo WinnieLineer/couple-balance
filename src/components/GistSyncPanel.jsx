@@ -49,6 +49,20 @@ export default function GistSyncPanel({
     setGistIdInput(syncConfig.gistId || '');
   }, [syncConfig]);
 
+  // On mount: read ?gistId= from URL, auto-switch to join mode and pre-fill
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlGistId = params.get('gistId');
+    if (urlGistId && !localStorage.getItem('partners_config')) {
+      // New user arriving via invite link — switch to join mode and pre-fill
+      setWizardMode('join');
+      setJoinGistId(urlGistId);
+      // Clean the URL so the param doesn't persist after setup
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, '', cleanUrl);
+    }
+  }, []);
+
   // Toggle roles (which dog represents who)
   const handleSwapRoles = () => {
     const tempRole = p1Role;
@@ -117,7 +131,8 @@ export default function GistSyncPanel({
       // Save config in parent
       saveConfig(finalToken, finalGistId, customPartners, 'p1');
 
-      const inviteMsg = `Hi！我已經在 HeartSync 建立了我們的專屬生活付出天秤囉！⚖️\n\n🔗 天秤連線網址（點擊直接開啟）：\nhttps://winnie-lin.space/couple-balance/\n\n🔑 我們的專屬 Gist ID：\n${finalGistId}\n\n請在你的裝置開啟網頁，在引導精靈中選擇「連結現有天秤」並貼上此 Gist ID，即可自動連線並即時同步！`;
+      const inviteUrl = `https://winnie-lin.space/couple-balance/?gistId=${finalGistId}`;
+      const inviteMsg = `Hi！我已經在 HeartSync 建立了我們的專屬生活付出天秤囉！⚖️\n\n🔗 點擊此連結直接加入（免複製貼上）：\n${inviteUrl}\n\n開啟後在引導精靈中確認身份，即可即時雙向同步！✨`;
       setInvitationText(inviteMsg);
 
       setShowWizard(false);
@@ -199,7 +214,8 @@ export default function GistSyncPanel({
       setGistIdInput(newGistId);
       saveConfig(finalToken, newGistId, customPartners, finalIdentity);
       
-      const inviteMsg = `Hi！我已經在 HeartSync 建立了我們的專屬生活付出天秤囉！⚖️\n\n🔗 天秤連線網址（點擊直接開啟）：\nhttps://winnie-lin.space/couple-balance/\n\n🔑 我們的專屬 Gist ID：\n${newGistId}\n\n請在你的裝置開啟網頁，在引導精靈中選擇「連結現有天秤」並貼上此 Gist ID，即可自動連線並即時同步！`;
+      const inviteUrl = `https://winnie-lin.space/couple-balance/?gistId=${newGistId}`;
+      const inviteMsg = `Hi！我已經在 HeartSync 建立了我們的專屬生活付出天秤囉！⚖️\n\n🔗 點擊此連結直接加入（免複製貼上）：\n${inviteUrl}\n\n開啟後在引導精靈中確認身份，即可即時雙向同步！✨`;
       setInvitationText(inviteMsg);
       setLocalSuccess('雲端資料庫建立成功！');
     } catch (err) {
@@ -775,7 +791,8 @@ export default function GistSyncPanel({
               <button
                 type="button"
                 onClick={() => {
-                  const inviteMsg = `Hi！我已經在 HeartSync 建立了我們的專屬生活付出天秤囉！⚖️\n\n🔗 天秤連線網址（點擊直接開啟）：\nhttps://winnie-lin.space/couple-balance/\n\n🔑 我們的專屬 Gist ID：\n${syncConfig.gistId}\n\n請在你的裝置開啟網頁，在引導精靈中選擇「連結現有天秤」並貼上此 Gist ID，即可自動連線並即時同步！`;
+                  const inviteUrl = `https://winnie-lin.space/couple-balance/?gistId=${syncConfig.gistId}`;
+                  const inviteMsg = `Hi！我已經在 HeartSync 建立了我們的專屬生活付出天秤囉！⚖️\n\n🔗 點擊此連結直接加入（免複製貼上）：\n${inviteUrl}\n\n開啟後在引導精靈中確認身份，即可即時雙向同步！✨`;
                   navigator.clipboard.writeText(inviteMsg);
                   alert('邀請文字已複製到剪貼簿，趕快傳給伴侶吧！');
                 }}
