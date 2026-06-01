@@ -36,10 +36,15 @@ export default function App() {
 
   // --- INITIAL LOADING ---
   useEffect(() => {
-    // 1. Load sync config & offline mode from localStorage
-    const savedToken = localStorage.getItem('gist_token') || '';
-    const savedGistId = localStorage.getItem('gist_id') || '';
-    const savedOffline = localStorage.getItem('offline_mode') === 'true';
+    // 1. Detect if secrets are injected via GitHub Actions, otherwise fall back to localStorage
+    const envToken = import.meta.env.VITE_GIST_TOKEN || '';
+    const envGistId = import.meta.env.VITE_GIST_ID || '';
+
+    const savedToken = envToken || localStorage.getItem('gist_token') || '';
+    const savedGistId = envGistId || localStorage.getItem('gist_id') || '';
+    
+    // If environment secrets exist, sync is forced and offline is disabled!
+    const savedOffline = (envToken && envGistId) ? false : (localStorage.getItem('offline_mode') === 'true');
     
     const config = { token: savedToken, gistId: savedGistId };
     setSyncConfig(config);
@@ -172,6 +177,14 @@ export default function App() {
 
   // --- TOGGLE OFFLINE MODE ---
   const handleSetOfflineMode = (val) => {
+    // If environment secrets are present, ignore offline toggle to prevent sync break
+    const envToken = import.meta.env.VITE_GIST_TOKEN || '';
+    const envGistId = import.meta.env.VITE_GIST_ID || '';
+    if (envToken && envGistId) {
+      showToast('🔒 雲端同步已由 GitHub Secrets 託管', 'info');
+      return;
+    }
+
     localStorage.setItem('offline_mode', val ? 'true' : 'false');
     setOfflineMode(val);
     if (val) {

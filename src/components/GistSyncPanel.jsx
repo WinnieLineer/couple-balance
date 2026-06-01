@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings, RefreshCw, Cloud, CloudOff, Database, Sparkles, Lock, AlertCircle, CheckCircle2, HelpCircle, ArrowLeftRight } from 'lucide-react';
+import { Settings, RefreshCw, Cloud, CloudOff, Database, Sparkles, Lock, AlertCircle, CheckCircle2, HelpCircle, ArrowLeftRight, HelpCircle as Help } from 'lucide-react';
 import { createSecretGist } from '../utils/githubGist';
 
 export default function GistSyncPanel({ 
@@ -43,12 +43,14 @@ export default function GistSyncPanel({
 
   // Magic: One-click create secret Gist
   const handleAutoCreateGist = async () => {
-    if (!token.trim()) {
-      setErrorMsg('請先輸入您的 GitHub Token 才能為您自動新建喔！');
-      return;
-    }
     setErrorMsg('');
     setSuccessMsg('');
+    
+    if (!token.trim()) {
+      setErrorMsg('⚠️ 請先在下方輸入您的 GitHub Token 才能為您自動新建喔！');
+      return;
+    }
+    
     setIsLoading(true);
 
     try {
@@ -74,7 +76,7 @@ export default function GistSyncPanel({
       setSuccessMsg('🎉 建立成功！已自動為您在 GitHub 建立祕密 Gist 並完成對接！');
       setOfflineMode(false);
     } catch (err) {
-      setErrorMsg(`建立失敗：${err.message || '請確認 Token 是否具備 "gist" 權限'}`);
+      setErrorMsg(`❌ 建立失敗：${err.message || '請確認 Token 是否具備 "gist" 權限'}`);
     } finally {
       setIsLoading(false);
     }
@@ -84,7 +86,7 @@ export default function GistSyncPanel({
     setErrorMsg('');
     setSuccessMsg('');
     if (!token.trim() || !gistId.trim()) {
-      setErrorMsg('請同時填入 Token 與 Gist ID，或點擊「一鍵新建」喔！');
+      setErrorMsg('⚠️ 請同時填入 Token 與 Gist ID，或點擊「一鍵新建」喔！');
       return;
     }
     
@@ -107,7 +109,9 @@ export default function GistSyncPanel({
   };
 
   // If no sync details and NOT explicitly using offline mode, show the cute Setup Wizard
-  const showWizard = !offlineMode && (!syncConfig.token || !syncConfig.gistId);
+  // Also check if Vite has pre-injected secrets (if so, skip wizard entirely!)
+  const isEnvSecretInjected = !!(import.meta.env.VITE_GIST_TOKEN && import.meta.env.VITE_GIST_ID);
+  const showWizard = !isEnvSecretInjected && !offlineMode && (!syncConfig.token || !syncConfig.gistId);
 
   return (
     <div style={{ marginBottom: '24px' }}>
@@ -117,33 +121,42 @@ export default function GistSyncPanel({
           <div className="comic-card animate-float" style={styles.wizardCard}>
             <div style={styles.wizardHeader}>
               <div style={styles.dogContainer}>
-                {/* SVG White Dog and Brown Dog looking happy */}
-                <svg viewBox="0 0 100 60" style={styles.wizardDogsSvg}>
-                  {/* Left white dog */}
-                  <path d="M 20 40 Q 15 35 15 25 Q 15 15 25 15 Q 35 15 35 25 Q 35 35 30 40 Z" fill="#FFFFFF" stroke="#5D4A3E" strokeWidth="3" />
-                  <circle cx="22" cy="23" r="2.5" fill="#5D4A3E" />
-                  <circle cx="30" cy="23" r="2.5" fill="#5D4A3E" />
-                  <path d="M 24 28 Q 26 30 28 28" fill="none" stroke="#5D4A3E" strokeWidth="2" strokeLinecap="round" />
-                  <path d="M 12 20 Q 8 20 12 26" fill="#FFFFFF" stroke="#5D4A3E" strokeWidth="2.5" />
-                  <path d="M 38 20 Q 42 20 38 26" fill="#FFFFFF" stroke="#5D4A3E" strokeWidth="2.5" />
-                  
-                  {/* Right brown dog */}
-                  <path d="M 80 40 Q 85 35 85 25 Q 85 15 75 15 Q 65 15 65 25 Q 65 35 70 40 Z" fill="#E5A96E" stroke="#5D4A3E" strokeWidth="3" />
-                  <circle cx="70" cy="23" r="2.5" fill="#5D4A3E" />
-                  <circle cx="78" cy="23" r="2.5" fill="#5D4A3E" />
-                  <path d="M 72 28 Q 74 30 76 28" fill="none" stroke="#5D4A3E" strokeWidth="2" strokeLinecap="round" />
-                  <path d="M 88 20 Q 92 20 88 26" fill="#E5A96E" stroke="#5D4A3E" strokeWidth="2.5" />
-                  <path d="M 62 20 Q 58 20 62 26" fill="#E5A96E" stroke="#5D4A3E" strokeWidth="2.5" />
+                {/* SVG AUTHENTIC MALTESE FLUFFY DOGS HUGGING */}
+                <svg viewBox="0 0 100 50" style={styles.wizardDogsSvg}>
+                  {/* Left fluffy white dog */}
+                  <ellipse cx="18" cy="24" rx="7" ry="10" fill="#FFFFFF" stroke="#5D4A3E" strokeWidth="2.5" />
+                  <ellipse cx="42" cy="24" rx="7" ry="10" fill="#FFFFFF" stroke="#5D4A3E" strokeWidth="2.5" />
+                  <ellipse cx="30" cy="30" rx="16" ry="13" fill="#FFFFFF" stroke="#5D4A3E" strokeWidth="2.5" />
+                  <circle cx="25" cy="28" r="2.2" fill="#5D4A3E" />
+                  <circle cx="35" cy="28" r="2.2" fill="#5D4A3E" />
+                  <ellipse cx="20" cy="32" rx="2.5" ry="1.5" fill="#FFC4C4" />
+                  <ellipse cx="40" cy="32" rx="2.5" ry="1.5" fill="#FFC4C4" />
+                  <ellipse cx="30" cy="31" rx="2" ry="1.2" fill="#5D4A3E" />
+                  <path d="M 28,34 Q 30,36 32,34" fill="none" stroke="#5D4A3E" strokeWidth="1.5" strokeLinecap="round" />
+
+                  {/* Right golden-brown puppy */}
+                  <path d="M 58,22 Q 52,26 56,38 Q 60,42 62,34 Z" fill="#E5A96E" stroke="#5D4A3E" strokeWidth="2.5" />
+                  <path d="M 82,22 Q 88,26 84,38 Q 80,42 78,34 Z" fill="#E5A96E" stroke="#5D4A3E" strokeWidth="2.5" />
+                  <ellipse cx="70" cy="30" rx="15" ry="13" fill="#E5A96E" stroke="#5D4A3E" strokeWidth="2.5" />
+                  <circle cx="65" cy="28" r="2.2" fill="#5D4A3E" />
+                  <circle cx="75" cy="28" r="2.2" fill="#5D4A3E" />
+                  <ellipse cx="61" cy="32" rx="2.5" ry="1.5" fill="#FF8B8B" />
+                  <ellipse cx="79" cy="32" rx="2.5" ry="1.5" fill="#FF8B8B" />
+                  <ellipse cx="70" cy="31" rx="2" ry="1.2" fill="#5D4A3E" />
+                  <path d="M 67,33 Q 70,37 73,33 Z" fill="#C0392B" stroke="#5D4A3E" strokeWidth="1.5" />
+
+                  {/* Red Heart */}
+                  <path d="M 50,33 Q 47,28 43,29 Q 39,31 43,37 L 50,44 L 57,37 Q 61,31 57,29 Q 53,28 50,33 Z" fill="#FF8B8B" stroke="#5D4A3E" strokeWidth="2" className="animate-float" />
                 </svg>
               </div>
-              <h2 style={styles.wizardTitle}>🐾 歡迎來到夫妻付出天秤！ 🐾</h2>
-              <p style={styles.wizardSubtitle}>這是一個記錄雙方金錢、家事與貼心付出的平衡小空間。請先設定您們的角色並選擇連線方式：</p>
+              <h2 style={styles.wizardTitle}>🤍 歡迎來到 HeartSync！ 🤍</h2>
+              <p style={styles.wizardSubtitle}>這是一個專屬您們的甜蜜天秤。請先設定暱稱並選擇您們的生活資料庫連線方式：</p>
             </div>
 
             <div style={styles.wizardBody}>
               {/* --- STEP 1: PARTNERS NICKNAMES & CHARACTERS --- */}
               <div style={styles.wizardSection}>
-                <h3 style={styles.sectionHeader}>🐶 步驟一：設定您們的姓名與小狗角色</h3>
+                <h3 style={styles.sectionHeader}>🐶 步驟一：設定雙方暱稱與代表小狗</h3>
                 
                 <div style={styles.namesRow}>
                   {/* Partner 1 Input */}
@@ -151,7 +164,7 @@ export default function GistSyncPanel({
                     <label style={styles.label}>
                       伴侶一 姓名
                       <span style={{ fontSize: '0.75rem', color: p1Role === 'white_dog' ? 'var(--text-muted)' : 'var(--color-brown)', marginLeft: '6px', fontWeight: '700' }}>
-                        ({p1Role === 'white_dog' ? '🤍 白色小狗' : '🤎 棕色小狗'})
+                        ({p1Role === 'white_dog' ? '🤍 白色小狗' : '棕色小狗'})
                       </span>
                     </label>
                     <input 
@@ -170,7 +183,7 @@ export default function GistSyncPanel({
                       onClick={handleSwapRoles} 
                       className="comic-btn secondary"
                       style={styles.swapBtn}
-                      title="互換小狗角色插畫"
+                      title="互換小狗角色"
                     >
                       <ArrowLeftRight size={16} />
                     </button>
@@ -181,7 +194,7 @@ export default function GistSyncPanel({
                     <label style={styles.label}>
                       伴侶二 姓名
                       <span style={{ fontSize: '0.75rem', color: p2Role === 'white_dog' ? 'var(--text-muted)' : 'var(--color-brown)', marginLeft: '6px', fontWeight: '700' }}>
-                        ({p2Role === 'white_dog' ? '🤍 白色小狗' : '🤎 棕色小狗'})
+                        ({p2Role === 'white_dog' ? '🤍 白色小狗' : '棕色小狗'})
                       </span>
                     </label>
                     <input 
@@ -207,6 +220,14 @@ export default function GistSyncPanel({
                   </div>
                   <p style={styles.optionDesc}>不論是用手機或電腦，雙方都能隨時記錄並自動同步！</p>
                   
+                  {/* IMMEDIATELY VISIBLE ERROR PLACEMENT */}
+                  {errorMsg && (
+                    <div style={{ ...styles.alertError, margin: '8px 0' }}>
+                      <AlertCircle size={16} />
+                      <span>{errorMsg}</span>
+                    </div>
+                  )}
+
                   <div style={styles.inputGroup}>
                     <label style={styles.label}>
                       <Lock size={12} style={{ marginRight: '4px' }} />
@@ -217,11 +238,19 @@ export default function GistSyncPanel({
                     </label>
                     <input 
                       type="password" 
-                      placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxx" 
+                      placeholder="貼上您的 ghp_ 開頭 Token" 
                       value={token} 
                       onChange={(e) => setToken(e.target.value)} 
                       className="comic-input" 
                     />
+                    
+                    {/* Secrets workflow guide */}
+                    <div style={styles.secretsTip}>
+                      <span style={{ fontWeight: '700' }}>🔒 頂級安全推薦 (GitHub Secrets) </span>
+                      <div>
+                        不想在瀏覽器填寫 Token？您可以在 GitHub 專案的 **Settings** -&gt; **Secrets and variables** -&gt; **Actions** 中新增機密 `GIST_TOKEN` (填入 PAT) 與 `GIST_ID`。Actions 在 CI/CD 打包時會自動注入，網頁開啟即可**自動同步，完全免登入**，極致隱私安全！
+                      </div>
+                    </div>
                   </div>
 
                   <div style={styles.actionButtons}>
@@ -229,14 +258,14 @@ export default function GistSyncPanel({
                       onClick={handleAutoCreateGist} 
                       className="comic-btn" 
                       disabled={isLoading}
-                      style={{ flex: 1, padding: '8px 12px', fontSize: '0.9rem' }}
+                      style={{ flex: 1, padding: '10px 12px', fontSize: '0.9rem' }}
                     >
                       <Sparkles size={14} />
                       {isLoading ? '正在建立雲端空間...' : '一鍵自動新建雲端資料庫'}
                     </button>
                   </div>
 
-                  <div style={{ margin: '10px 0', textAlign: 'center', color: '#8E7E73', fontSize: '0.85rem' }}>─ 或者貼入現有的 Gist ID ─</div>
+                  <div style={{ margin: '12px 0', textAlign: 'center', color: '#8E7E73', fontSize: '0.85rem' }}>─ 或者貼入現有 Gist ID ─</div>
 
                   <div style={styles.inputGroup}>
                     <label style={styles.label}><Database size={12} style={{ marginRight: '4px' }} /> 貼入既有的 Gist ID</label>
@@ -253,7 +282,7 @@ export default function GistSyncPanel({
                     onClick={handleSave} 
                     className="comic-btn pink" 
                     disabled={isLoading} 
-                    style={{ width: '100%', marginTop: '6px', padding: '8px 12px', fontSize: '0.9rem' }}
+                    style={{ width: '100%', marginTop: '6px', padding: '10px 12px', fontSize: '0.9rem' }}
                   >
                     <CheckCircle2 size={14} /> 儲存並連接既有 Gist
                   </button>
@@ -266,25 +295,18 @@ export default function GistSyncPanel({
                     <h4 style={styles.optionTitle}>本機體驗模式（暫不同步）</h4>
                   </div>
                   <p style={styles.optionDesc}>
-                    資料將安全存放在此瀏覽器中。您可以先體驗，隨時點擊右上角「同步設定」來綁定 GitHub 進行備份與多裝置同步。
+                    將資料安全存放在此瀏覽器中。隨時點擊右上角「同步設定」來綁定 GitHub 進行備份。
                   </p>
                   <button 
                     onClick={handleOfflineModeSelect} 
                     className="comic-btn secondary" 
-                    style={{ width: '100%', marginTop: '8px', padding: '8px 12px', fontSize: '0.9rem' }}
+                    style={{ width: '100%', marginTop: '8px', padding: '10px 12px', fontSize: '0.9rem' }}
                   >
                     直接儲存在本機，開始體驗！ 🐾
                   </button>
                 </div>
               </div>
             </div>
-
-            {errorMsg && (
-              <div style={styles.alertError}>
-                <AlertCircle size={18} />
-                <span>{errorMsg}</span>
-              </div>
-            )}
 
             {successMsg && (
               <div style={styles.alertSuccess}>
@@ -299,7 +321,13 @@ export default function GistSyncPanel({
       {/* --- FLOATING STATUS & SETTINGS TOGGLE BAR --- */}
       <div style={styles.statusContainer}>
         <div style={styles.statusBadges}>
-          {syncConfig.token && syncConfig.gistId && !offlineMode ? (
+          {isEnvSecretInjected ? (
+            <div style={{ ...styles.badge, backgroundColor: '#E1ECC8' }}>
+              <Cloud size={16} />
+              <span>雲端託管中 (Secrets)</span>
+              <span style={styles.dotPulse} />
+            </div>
+          ) : syncConfig.token && syncConfig.gistId && !offlineMode ? (
             <div style={{ ...styles.badge, backgroundColor: '#E1ECC8' }}>
               <Cloud size={16} />
               <span>雲端同步中</span>
@@ -314,7 +342,7 @@ export default function GistSyncPanel({
 
           {/* Sync Status Texts */}
           <span style={styles.syncStatusText}>
-            狀態: {isSyncing ? '🐶 正在同步數據...' : syncStatus}
+            狀態: {isSyncing ? '✨ 正在同步心意...' : syncStatus}
           </span>
         </div>
 
@@ -353,7 +381,7 @@ export default function GistSyncPanel({
             <h4 style={styles.sectionHeader}>🐶 雙方暱稱與角色設定</h4>
             <div style={styles.namesRow}>
               <div style={styles.inputCol}>
-                <label style={styles.label}>伴侶一 姓名 ({p1Role === 'white_dog' ? '🤍 白狗' : '🤎 棕狗'})</label>
+                <label style={styles.label}>伴侶一 姓名 ({p1Role === 'white_dog' ? '🤍 白狗' : '棕狗'})</label>
                 <input 
                   type="text" 
                   value={p1Name} 
@@ -374,7 +402,7 @@ export default function GistSyncPanel({
               </div>
 
               <div style={styles.inputCol}>
-                <label style={styles.label}>伴侶二 姓名 ({p2Role === 'white_dog' ? '🤍 白狗' : '🤎 棕狗'})</label>
+                <label style={styles.label}>伴侶二 姓名 ({p2Role === 'white_dog' ? '🤍 白狗' : '棕狗'})</label>
                 <input 
                   type="text" 
                   value={p2Name} 
@@ -385,43 +413,64 @@ export default function GistSyncPanel({
             </div>
           </div>
 
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>
-              <Lock size={14} style={{ marginRight: '4px' }} />
-              GitHub Personal Access Token (PAT)
-            </label>
-            <input 
-              type="password" 
-              placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxx" 
-              value={token} 
-              onChange={(e) => setToken(e.target.value)} 
-              className="comic-input" 
-            />
-          </div>
+          {/* Secrets Alert if injected */}
+          {isEnvSecretInjected && (
+            <div style={{ ...styles.alertSuccess, marginBottom: '16px', fontSize: '0.85rem' }}>
+              <Lock size={16} />
+              <span>此網頁的 GitHub Token 與 Gist ID 已成功透過 GitHub Secrets 安全注入！您無須進行手動配置。</span>
+            </div>
+          )}
 
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>
-              <Database size={14} style={{ marginRight: '4px' }} />
-              Gist ID
-            </label>
-            <input 
-              type="text" 
-              placeholder="輸入 32 位字元的 Gist ID" 
-              value={gistId} 
-              onChange={(e) => setGistId(e.target.value)} 
-              className="comic-input" 
-            />
-          </div>
+          {!isEnvSecretInjected && (
+            <>
+              {errorMsg && (
+                <div style={{ ...styles.alertError, marginBottom: '12px' }}>
+                  <AlertCircle size={16} />
+                  <span>{errorMsg}</span>
+                </div>
+              )}
+
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>
+                  <Lock size={14} style={{ marginRight: '4px' }} />
+                  GitHub Personal Access Token (PAT)
+                </label>
+                <input 
+                  type="password" 
+                  placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxx" 
+                  value={token} 
+                  onChange={(e) => setToken(e.target.value)} 
+                  className="comic-input" 
+                />
+              </div>
+
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>
+                  <Database size={14} style={{ marginRight: '4px' }} />
+                  Gist ID
+                </label>
+                <input 
+                  type="text" 
+                  placeholder="輸入 32 位字元的 Gist ID" 
+                  value={gistId} 
+                  onChange={(e) => setGistId(e.target.value)} 
+                  className="comic-input" 
+                />
+              </div>
+            </>
+          )}
 
           <div style={styles.panelActions}>
-            <button 
-              onClick={handleAutoCreateGist} 
-              className="comic-btn" 
-              disabled={isLoading}
-            >
-              <Sparkles size={16} />
-              {isLoading ? '正在新建...' : '一鍵新建 Gist'}
-            </button>
+            {!isEnvSecretInjected && (
+              <button 
+                onClick={handleAutoCreateGist} 
+                className="comic-btn" 
+                disabled={isLoading}
+              >
+                <Sparkles size={16} />
+                {isLoading ? '正在新建...' : '一鍵新建 Gist'}
+              </button>
+            )}
 
             <button 
               onClick={handleSave} 
@@ -432,7 +481,7 @@ export default function GistSyncPanel({
               儲存所有設定
             </button>
 
-            {offlineMode && (
+            {offlineMode && !isEnvSecretInjected && (
               <button 
                 onClick={() => {
                   const customPartners = getCustomPartnersPayload();
@@ -447,15 +496,8 @@ export default function GistSyncPanel({
             )}
           </div>
 
-          {errorMsg && (
-            <div style={styles.alertError}>
-              <AlertCircle size={18} />
-              <span>{errorMsg}</span>
-            </div>
-          )}
-
           {successMsg && (
-            <div style={styles.alertSuccess}>
+            <div style={styles.alertSuccess} style={{ marginTop: '12px' }}>
               <CheckCircle2 size={18} />
               <span>{successMsg}</span>
             </div>
@@ -493,8 +535,8 @@ const styles = {
     marginBottom: '16px',
   },
   dogContainer: {
-    width: '120px',
-    height: '60px',
+    width: '140px',
+    height: '70px',
     margin: '0 auto 6px auto',
   },
   wizardDogsSvg: {
@@ -613,7 +655,6 @@ const styles = {
     gap: '10px',
   },
   alertError: {
-    marginTop: '12px',
     padding: '10px',
     backgroundColor: '#FFD3D3',
     border: '2.5px solid #5D4A3E',
@@ -624,9 +665,10 @@ const styles = {
     gap: '8px',
     fontSize: '0.85rem',
     fontWeight: '700',
+    width: '100%',
+    boxSizing: 'border-box',
   },
   alertSuccess: {
-    marginTop: '12px',
     padding: '10px',
     backgroundColor: '#E1ECC8',
     border: '2.5px solid #5D4A3E',
@@ -637,6 +679,18 @@ const styles = {
     gap: '8px',
     fontSize: '0.85rem',
     fontWeight: '700',
+    width: '100%',
+    boxSizing: 'border-box',
+  },
+  secretsTip: {
+    backgroundColor: '#FAF6EE',
+    border: '2px dashed #E5A96E',
+    borderRadius: '10px',
+    padding: '10px',
+    marginTop: '8px',
+    fontSize: '0.78rem',
+    color: '#5D4A3E',
+    lineHeight: '1.4',
   },
   statusContainer: {
     display: 'flex',

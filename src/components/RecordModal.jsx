@@ -228,11 +228,28 @@ export default function RecordModal({
                 ))}
               </div>
             )}
+
+            {/* HEART POINT COZY EVALUATION GUIDE */}
+            {recordType === 'love' && (
+              <div style={styles.guideWrapper}>
+                <details style={styles.guideDetails}>
+                  <summary style={styles.guideSummary}>
+                    💡 不知道心意點數怎麼評估？點我看對照指南
+                  </summary>
+                  <div style={styles.guideContent}>
+                    <div style={styles.guideRow}>🌸 <strong>+5 點 (輕微心意)</strong>：倒垃圾、順手倒溫水、買咖啡、洗水果</div>
+                    <div style={styles.guideRow}>🧼 <strong>+10 點 (日常付出)</strong>：辛苦洗碗、吸地拖地、洗曬衣服、整理房間</div>
+                    <div style={styles.guideRow}>🍳 <strong>+20 點 (深度奉獻)</strong>：親自下廚做飯、專車接送、搥背按摩半小時</div>
+                    <div style={styles.guideRow}>👑 <strong>+30 點 (史詩級寵愛)</strong>：大掃除整理全家、生病通宵照顧、驚喜手工禮</div>
+                  </div>
+                </details>
+              </div>
+            )}
           </div>
 
           {error && <div style={styles.errorText}>⚠️ {error}</div>}
 
-          {/* Action buttons */}
+          {/* Action row */}
           <div style={styles.actionRow}>
             <button 
               type="button" 
@@ -248,7 +265,7 @@ export default function RecordModal({
               style={{ flex: 2 }}
             >
               <Plus size={16} />
-              <span>快樂記錄！</span>
+              <span>快樂記錄！ ✨</span>
             </button>
           </div>
         </form>
@@ -455,5 +472,39 @@ const styles = {
     display: 'flex',
     gap: '12px',
     marginTop: '10px',
+  },
+  // Guide styles
+  guideWrapper: {
+    marginTop: '10px',
+    width: '100%',
+  },
+  guideDetails: {
+    backgroundColor: '#FAF6EE',
+    border: '2px dashed #E5A96E',
+    borderRadius: '10px',
+    padding: '8px 12px',
+    cursor: 'pointer',
+  },
+  guideSummary: {
+    fontSize: '0.78rem',
+    fontWeight: '700',
+    color: '#5D4A3E',
+    outline: 'none',
+    userSelect: 'none',
+  },
+  guideContent: {
+    marginTop: '8px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+    cursor: 'default',
+    borderTop: '1px dashed #E5A96E',
+    paddingTop: '6px',
+  },
+  guideRow: {
+    fontSize: '0.75rem',
+    color: '#8E7E73',
+    lineHeight: '1.4',
+    textAlign: 'left',
   }
 };
