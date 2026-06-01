@@ -7,12 +7,14 @@ import BalanceScale from './components/BalanceScale';
 import WinnerDashboard from './components/WinnerDashboard';
 import RecordModal from './components/RecordModal';
 import HistoryList from './components/HistoryList';
+import ActivityLog from './components/ActivityLog';
 import PWAPrompt from './components/PWAPrompt';
 import { fetchGistData, updateGistData } from './utils/githubGist';
 
 export default function App() {
   // --- STATES ---
   const [records, setRecords] = useState([]);
+  const [activityLog, setActivityLog] = useState([]);
   const [syncConfig, setSyncConfig] = useState({ token: '', gistId: '' });
   const [syncStatus, setSyncStatus] = useState('未連接');
   const [isSyncing, setIsSyncing] = useState(false);
@@ -25,6 +27,7 @@ export default function App() {
   // --- REFS: always hold latest values so async callbacks don't capture stale closures ---
   const syncConfigRef = useRef({ token: '', gistId: '' });
   const recordsRef = useRef([]);
+  const activityLogRef = useRef([]);
   const partnersRef = useRef({ p1: { name: '伴侶一', role: 'white_dog', deviceId: '' }, p2: { name: '伴侶二', role: 'brown_dog', deviceId: '' } });
   const offlineModeRef = useRef(false);
 
@@ -52,6 +55,7 @@ export default function App() {
   // Keep refs in sync with state so async functions always read fresh values
   useEffect(() => { syncConfigRef.current = syncConfig; }, [syncConfig]);
   useEffect(() => { recordsRef.current = records; }, [records]);
+  useEffect(() => { activityLogRef.current = activityLog; }, [activityLog]);
   useEffect(() => { partnersRef.current = partners; }, [partners]);
   useEffect(() => { offlineModeRef.current = offlineMode; }, [offlineMode]);
 
@@ -112,8 +116,21 @@ export default function App() {
       try {
         loadedRecords = JSON.parse(cachedRecords);
         setRecords(loadedRecords);
+        recordsRef.current = loadedRecords;
       } catch (e) {
         console.error('Failed to parse cached records', e);
+      }
+    }
+
+    // 3b. Load cached activity log
+    const cachedLog = localStorage.getItem('cached_activity_log');
+    if (cachedLog) {
+      try {
+        const loadedLog = JSON.parse(cachedLog);
+        setActivityLog(loadedLog);
+        activityLogRef.current = loadedLog;
+      } catch (e) {
+        console.error('Failed to parse cached activity log', e);
       }
     }
 
@@ -211,6 +228,12 @@ export default function App() {
         recordsRef.current = cloudData.records;
         localStorage.setItem('cached_records', JSON.stringify(cloudData.records));
 
+        // Load activity log (immutable, only grows)
+        const cloudLog = Array.isArray(cloudData.activityLog) ? cloudData.activityLog : [];
+        setActivityLog(cloudLog);
+        activityLogRef.current = cloudLog;
+        localStorage.setItem('cached_activity_log', JSON.stringify(cloudLog));
+
         if (cloudData.partners) {
           setPartners(cloudData.partners);
           partnersRef.current = cloudData.partners;
@@ -243,7 +266,7 @@ export default function App() {
     customPartners = partnersRef.current
   ) => {
     if (!token || !gistId || offlineModeRef.current) return;
-    
+
     setIsSyncing(true);
     setSyncStatus('正在上傳...');
     try {
@@ -253,7 +276,8 @@ export default function App() {
           version: '1.0'
         },
         records: newRecords,
-        partners: customPartners
+        partners: customPartners,
+        activityLog: activityLogRef.current,  // always include full immutable log
       };
 
       await updateGistData(token, gistId, payload);
@@ -359,7 +383,25 @@ export default function App() {
   const handleAddRecord = (record) => {
     const updatedRecords = [record, ...records];
     setRecords(updatedRecords);
-    
+    recordsRef.current = updatedRecords;
+
+    // Append immutable activity log entry
+    const logEntry = {
+      id: `log_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      timestamp: new Date().toISOString(),
+      action: 'add',
+      by: record.by || myIdentity || 'p1',
+      recordId: record.id,
+      recordTitle: record.title,
+      recordValue: record.value,
+      recordType: record.type,
+      recordCurrency: record.currency || 'TWD',
+    };
+    const updatedLog = [...activityLogRef.current, logEntry];
+    setActivityLog(updatedLog);
+    activityLogRef.current = updatedLog;
+    localStorage.setItem('cached_activity_log', JSON.stringify(updatedLog));
+
     // Write local storage
     localStorage.setItem('cached_records', JSON.stringify(updatedRecords));
 
@@ -373,21 +415,41 @@ export default function App() {
 
     showToast(`記錄成功：${record.title}`, 'success');
 
-    // Auto-sync push
+    // Push records + activity log to cloud
     pushCloudData(updatedRecords);
   };
 
   // --- DELETE RECORD ---
   const handleDeleteRecord = (id) => {
     if (window.confirm('確定要刪除這筆生活紀錄嗎？')) {
+      const deletedRecord = records.find(r => r.id === id);
       const updatedRecords = records.filter(r => r.id !== id);
       setRecords(updatedRecords);
       recordsRef.current = updatedRecords;
 
+      // Append immutable activity log entry for deletion
+      const logEntry = {
+        id: `log_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        timestamp: new Date().toISOString(),
+        action: 'delete',
+        by: localStorage.getItem('my_identity') || myIdentity || 'p1',
+        recordId: id,
+        recordTitle: deletedRecord?.title || '未知紀錄',
+        recordValue: deletedRecord?.value || 0,
+        recordType: deletedRecord?.type || 'money',
+        recordCurrency: deletedRecord?.currency || 'TWD',
+      };
+      const updatedLog = [...activityLogRef.current, logEntry];
+      setActivityLog(updatedLog);
+      activityLogRef.current = updatedLog;
+      localStorage.setItem('cached_activity_log', JSON.stringify(updatedLog));
+
       // Write local storage
       localStorage.setItem('cached_records', JSON.stringify(updatedRecords));
       showToast('記錄已刪除', 'info');
-      // Deletion is local-only; cloud sync happens only when adding a new record
+
+      // Push updated records + deletion log to cloud
+      pushCloudData(updatedRecords);
     }
   };
 
@@ -428,8 +490,7 @@ export default function App() {
           />
           <div>
             <h1 className="app-title">HeartSync</h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span className="badge">HeartSync</span>
+            <div>
               <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: '800' }}>✨ 雙向奔赴，記錄我們的生活心意平衡</span>
             </div>
           </div>
@@ -523,7 +584,7 @@ export default function App() {
 
       {/* --- RECORD HISTORY & DETAILED LOGS --- */}
       <div style={{ marginTop: '24px' }}>
-        <HistoryList 
+        <HistoryList
           records={records}
           onDeleteRecord={handleDeleteRecord}
           p1Name={partners.p1.name}
@@ -533,6 +594,13 @@ export default function App() {
           displayCurrency={displayCurrency}
         />
       </div>
+
+      {/* --- IMMUTABLE ACTIVITY LOG --- */}
+      <ActivityLog
+        activityLog={activityLog}
+        p1Name={partners.p1.name}
+        p2Name={partners.p2.name}
+      />
 
       {/* --- FLOATING ACTION TRIGGER BUTTON --- */}
       <div className="floating-action-wrapper" style={styles.floatingActionWrapper}>
