@@ -59,9 +59,14 @@ export async function createSecretGist(token, initialData = {}) {
  */
 export async function fetchGistData(token, gistId) {
   try {
-    const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+    const timestamp = Date.now();
+    const response = await fetch(`https://api.github.com/gists/${gistId}?t=${timestamp}`, {
       method: 'GET',
-      headers: getHeaders(token),
+      headers: {
+        ...getHeaders(token),
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+      },
     });
 
     if (!response.ok) {
@@ -78,7 +83,15 @@ export async function fetchGistData(token, gistId) {
 
     if (file.truncated) {
       // If the file is truncated, fetch it using raw_url
-      const rawRes = await fetch(file.raw_url);
+      const rawTimestamp = Date.now();
+      const rawUrlObj = new URL(file.raw_url);
+      rawUrlObj.searchParams.set('t', rawTimestamp);
+      const rawRes = await fetch(rawUrlObj.toString(), {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        }
+      });
       if (!rawRes.ok) throw new Error('Failed to fetch truncated raw file content');
       return await rawRes.json();
     }
