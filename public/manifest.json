@@ -1,0 +1,24 @@
+{
+  "name": "HeartSync 雙向奔赴的生活天秤",
+  "short_name": "HeartSync",
+  "description": "雙軌生活付出天秤記帳工具，記錄共同開銷與家事付出，攜手維持浪漫平衡！",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F4F4F3",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "./favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

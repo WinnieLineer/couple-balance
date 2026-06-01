@@ -285,3 +285,323 @@ body {
   border: 2px solid var(--bg-primary);
   border-radius: 4px;
 }
+
+/* --- MOBILE RESPONSIVE UI/UX OPTIMIZATIONS (max-width: 600px) --- */
+@media (max-width: 600px) {
+  /* Page margins & Container */
+  .container {
+    padding: 12px 10px 96px 10px !important;
+  }
+
+  /* Header Stacking & Scaling */
+  .header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    padding-bottom: 14px !important;
+    margin-bottom: 20px !important;
+  }
+  
+  .title-container {
+    align-items: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  
+  .title-icon {
+    width: 90px !important;
+    height: 45px !important;
+    margin-bottom: -15px !important;
+  }
+  
+  .app-title {
+    font-size: 2.2rem !important;
+  }
+
+  /* Currency selector container styling in App.jsx */
+  .currency-selector-container {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+  }
+  
+  .currency-row {
+    width: 100% !important;
+    display: flex !important;
+    gap: 6px !important;
+  }
+  
+  .currency-tab-btn {
+    flex: 1 !important;
+    text-align: center !important;
+    padding: 6px 4px !important;
+    font-size: 0.72rem !important;
+  }
+
+  /* GistSyncPanel floating status bar */
+  .status-container {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 10px 12px !important;
+    gap: 8px !important;
+  }
+
+  .status-badges {
+    justify-content: space-between !important;
+    width: 100% !important;
+  }
+
+  .button-group {
+    width: 100% !important;
+    display: flex !important;
+    gap: 8px !important;
+  }
+
+  .button-group button {
+    flex: 1 !important;
+    font-size: 0.75rem !important;
+    padding: 8px 6px !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+  }
+
+  /* Winner Dashboard mobile vertical stack */
+  .WinnerDashboard-columnsGrid {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .WinnerDashboard-statsCard, .WinnerDashboard-summaryCard {
+    flex: 1 1 100% !important;
+    padding: 12px 14px !important;
+  }
+  
+  .card-header {
+    padding-bottom: 8px !important;
+  }
+  
+  .role-name {
+    font-size: 0.88rem !important;
+  }
+
+  .stat-value {
+    font-size: 1.1rem !important;
+  }
+
+  /* Scales Grid mobile spacing */
+  .scales-grid {
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  /* BalanceScale mobile typography */
+  .BalanceScale-infoArea {
+    gap: 4px !important;
+  }
+
+  .p-name {
+    font-size: 0.72rem !important;
+  }
+  
+  .p-val {
+    font-size: 0.82rem !important;
+  }
+
+  .balance-status {
+    padding: 4px 6px !important;
+    font-size: 0.74rem !important;
+    border-width: 2px !important;
+  }
+
+  /* History list mobile header */
+  .HistoryList-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding-bottom: 12px !important;
+  }
+
+  .HistoryList-title {
+    font-size: 1.05rem !important;
+    text-align: center !important;
+  }
+
+  .HistoryList-tabContainer {
+    width: 100% !important;
+    display: flex !important;
+    gap: 6px !important;
+  }
+
+  .HistoryList-tab {
+    flex: 1 !important;
+    padding: 6px 4px !important;
+    font-size: 0.75rem !important;
+    text-align: center !important;
+  }
+
+  /* History List items mobile layout */
+  .HistoryList-itemCard {
+    padding: 10px 12px !important;
+    gap: 8px !important;
+  }
+
+  .HistoryList-itemTitle {
+    font-size: 0.88rem !important;
+  }
+
+  .HistoryList-itemDetails {
+    gap: 8px !important;
+    font-size: 0.72rem !important;
+  }
+
+  .HistoryList-moneyVal {
+    font-size: 0.92rem !important;
+  }
+  
+  .HistoryList-convertedVal {
+    font-size: 0.7rem !important;
+  }
+
+  /* Onboarding / Onboarding Wizard */
+  .wizard-card {
+    max-height: 94vh !important;
+    overflow-y: auto !important;
+    padding: 16px !important;
+    border-width: 2.5px !important;
+  }
+
+  .wizard-title {
+    font-size: 1.15rem !important;
+  }
+
+  .wizard-subtitle {
+    font-size: 0.78rem !important;
+  }
+
+  .wizard-tab-container {
+    margin-bottom: 14px !important;
+  }
+
+  .wizard-tab-btn {
+    font-size: 0.76rem !important;
+    padding: 6px 4px !important;
+    border-width: 2px !important;
+  }
+
+  .wizard-section {
+    padding: 12px !important;
+    border-width: 2px !important;
+  }
+
+  .wizard-section-header {
+    font-size: 0.88rem !important;
+    margin-bottom: 12px !important;
+  }
+
+  .names-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  .swap-col {
+    align-self: center !important;
+    margin: 4px 0 !important;
+  }
+
+  .identity-row {
+    flex-direction: column !important;
+    gap: 6px !important;
+  }
+
+  .identity-btn {
+    padding: 8px !important;
+    font-size: 0.78rem !important;
+    border-width: 2px !important;
+  }
+
+  /* Record Modal mobile optimization */
+  .RecordModal-card {
+    max-height: 94vh !important;
+    overflow-y: auto !important;
+    padding: 16px !important;
+    border-width: 2.5px !important;
+  }
+
+  .RecordModal-title {
+    font-size: 1.15rem !important;
+    margin-bottom: 12px !important;
+  }
+
+  .RecordModal-typeSelector {
+    gap: 8px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .RecordModal-typeBtn {
+    padding: 8px 10px !important;
+    font-size: 0.8rem !important;
+    border-width: 2px !important;
+  }
+
+  .RecordModal-partnerSelector {
+    flex-direction: column !important;
+    gap: 6px !important;
+  }
+
+  .RecordModal-partnerCard {
+    padding: 8px !important;
+  }
+
+  .RecordModal-partnerName {
+    font-size: 0.8rem !important;
+  }
+
+  .RecordModal-presetTag {
+    font-size: 0.72rem !important;
+    padding: 3px 6px !important;
+  }
+
+  .RecordModal-currencyRow {
+    gap: 6px !important;
+  }
+
+  .RecordModal-currencyBtn {
+    font-size: 0.76rem !important;
+    padding: 6px 8px !important;
+  }
+
+  .RecordModal-quickPointBtn {
+    font-size: 0.72rem !important;
+    padding: 3px 4px !important;
+  }
+
+  .RecordModal-actionRow {
+    gap: 8px !important;
+  }
+
+  /* Floating button wrapper for mobile */
+  .floating-action-wrapper {
+    bottom: 16px !important;
+    width: calc(100% - 20px) !important;
+  }
+
+  .floating-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 12px 18px !important;
+    font-size: 0.95rem !important;
+    box-shadow: 3px 3px 0px #000000 !important;
+  }
+
+  /* Toast notification on mobile */
+  .toast-alert {
+    bottom: 80px !important;
+    left: 10px !important;
+    right: 10px !important;
+    padding: 10px 14px !important;
+    border-width: 2.5px !important;
+  }
+}

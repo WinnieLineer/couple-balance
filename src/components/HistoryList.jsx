@@ -49,13 +49,13 @@ export default function HistoryList({
   return (
     <div className="comic-card" style={styles.container}>
       {/* Tab Selectors inside the history panel */}
-      <div style={styles.header}>
-        <h3 style={styles.title}>付出足跡歷史紀錄</h3>
+      <div className="HistoryList-header" style={styles.header}>
+        <h3 className="HistoryList-title" style={styles.title}>付出足跡歷史紀錄</h3>
         
-        <div style={styles.tabContainer}>
+        <div className="HistoryList-tabContainer" style={styles.tabContainer}>
           <button
             onClick={() => setActiveTab('money')}
-            className={`tab-btn ${activeTab === 'money' ? 'active' : ''}`}
+            className={`tab-btn HistoryList-tab ${activeTab === 'money' ? 'active' : ''}`}
             style={{
               ...styles.tab,
               backgroundColor: activeTab === 'money' ? '#000000' : '#FFFFFF',
@@ -68,7 +68,7 @@ export default function HistoryList({
           </button>
           <button
             onClick={() => setActiveTab('love')}
-            className={`tab-btn ${activeTab === 'love' ? 'active' : ''}`}
+            className={`tab-btn HistoryList-tab ${activeTab === 'love' ? 'active' : ''}`}
             style={{
               ...styles.tab,
               backgroundColor: activeTab === 'love' ? '#000000' : '#FFFFFF',
@@ -105,7 +105,7 @@ export default function HistoryList({
             return (
               <div 
                 key={record.id} 
-                className="comic-card animate-pop" 
+                className="comic-card animate-pop HistoryList-itemCard" 
                 style={{ 
                   ...styles.itemCard,
                   borderLeft: isWhite ? '8px solid #000000' : '8px solid #D2D2D2',
@@ -113,7 +113,7 @@ export default function HistoryList({
                 }}
               >
                 {/* Left side: Avatar & Info */}
-                <div style={styles.itemLeft}>
+                <div className="HistoryList-itemLeft" style={styles.itemLeft}>
                   {/* Miniature Dog typographic label */}
                   <div style={{ 
                     ...styles.dogBadge, 
@@ -126,9 +126,9 @@ export default function HistoryList({
                     {isWhite ? '白' : '灰'}
                   </div>
 
-                  <div style={styles.itemMeta}>
-                    <div style={styles.itemTitle}>{record.title}</div>
-                    <div style={styles.itemDetails}>
+                  <div className="HistoryList-itemMeta" style={styles.itemMeta}>
+                    <div className="HistoryList-itemTitle" style={styles.itemTitle}>{record.title}</div>
+                    <div className="HistoryList-itemDetails" style={styles.itemDetails}>
                       <span style={styles.userSpan}>
                         <User size={12} style={{ marginRight: '4px' }} />
                         {name}
@@ -142,19 +142,19 @@ export default function HistoryList({
                 </div>
 
                 {/* Right side: Value & Delete */}
-                <div style={styles.itemRight}>
+                <div className="HistoryList-itemRight" style={styles.itemRight}>
                   <div style={styles.valueText}>
                     {record.type === 'money' ? (
                       <div style={styles.moneyContainer}>
-                        <span style={styles.moneyVal}>{getCurrencySymbol(origCurrency)} {record.value.toLocaleString()}</span>
+                        <span className="HistoryList-moneyVal" style={styles.moneyVal}>{getCurrencySymbol(origCurrency)} {record.value.toLocaleString()}</span>
                         {showConverted && (
-                          <span style={styles.convertedVal}>
+                          <span className="HistoryList-convertedVal" style={styles.convertedVal}>
                             ({getCurrencySymbol(displayCurrency)} {convertedVal.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })})
                           </span>
                         )}
                       </div>
                     ) : (
-                      <span style={styles.loveVal}>+{record.value} 點</span>
+                      <span className="HistoryList-loveVal" style={styles.loveVal}>+{record.value} 點</span>
                     )}
                   </div>
 

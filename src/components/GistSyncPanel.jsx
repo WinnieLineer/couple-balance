@@ -101,7 +101,7 @@ export default function GistSyncPanel({
         // Save config in parent
         saveConfig(finalToken, gistIdClean, customPartners, 'p1');
         
-        const inviteMsg = `Hi！我已經在 HeartSync 建立了我們的專屬生活付出天秤囉！⚖️\n請在你的裝置開啟 HeartSync 網頁，在引導精靈中選擇「連結現有天秤」，貼上我的 Gist ID 即可自動連線並同步！\n\n🔗 我們的天秤 Gist ID：\n${gistIdClean}`;
+        const inviteMsg = `Hi！我已經在 HeartSync 建立了我們的專屬生活付出天秤囉！⚖️\n\n🔗 天秤連線網址（點擊直接開啟）：\nhttps://winnie-lin.space/couple-balance/\n\n🔑 我們的專屬 Gist ID：\n${gistIdClean}\n\n請在你的裝置開啟網頁，在引導精靈中選擇「連結現有天秤」並貼上此 Gist ID，即可自動連線並即時同步！`;
         setInvitationText(inviteMsg);
         
         setShowWizard(false);
@@ -189,7 +189,7 @@ export default function GistSyncPanel({
       setGistIdInput(newGistId);
       saveConfig(finalToken, newGistId, customPartners, finalIdentity);
       
-      const inviteMsg = `Hi！我已經在 HeartSync 建立了我們的專屬生活付出天秤囉！⚖️\n請在你的裝置開啟 HeartSync 網頁，在引導精靈中選擇「連結現有天秤」，貼上我的 Gist ID 即可自動連線並同步！\n\n🔗 我們的天秤 Gist ID：\n${newGistId}`;
+      const inviteMsg = `Hi！我已經在 HeartSync 建立了我們的專屬生活付出天秤囉！⚖️\n\n🔗 天秤連線網址（點擊直接開啟）：\nhttps://winnie-lin.space/couple-balance/\n\n🔑 我們的專屬 Gist ID：\n${newGistId}\n\n請在你的裝置開啟網頁，在引導精靈中選擇「連結現有天秤」並貼上此 Gist ID，即可自動連線並即時同步！`;
       setInvitationText(inviteMsg);
       setLocalSuccess('雲端資料庫建立成功！');
     } catch (err) {
@@ -266,17 +266,17 @@ export default function GistSyncPanel({
       {/* --- CLOUD DATABASE INVITATION POPUP OVERLAY --- */}
       {invitationText && (
         <div style={styles.wizardOverlay}>
-          <div className="comic-card animate-float" style={{ ...styles.wizardCard, maxWidth: '480px' }}>
+          <div className="comic-card animate-float wizard-card" style={{ ...styles.wizardCard, maxWidth: '480px' }}>
             <div style={{ textAlign: 'center', marginBottom: '20px', borderBottom: '3px solid #000000', paddingBottom: '12px' }}>
               <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', border: '3px solid #000000', borderRadius: '50%', marginBottom: '8px', fontSize: '1.4rem', boxShadow: '2px 2px 0px #000000', backgroundColor: '#FFFFFF' }}>
                 🎉
               </div>
-              <h2 style={styles.wizardTitle}>雲端天秤建立成功！</h2>
-              <p style={styles.wizardSubtitle}>專屬雲端資料庫已成功備份至 GitHub！邀請您的伴侶開始同步吧。</p>
+              <h2 className="wizard-title" style={styles.wizardTitle}>雲端天秤建立成功！</h2>
+              <p className="wizard-subtitle" style={styles.wizardSubtitle}>專屬雲端資料庫已成功備份至 GitHub！邀請您的伴侶開始同步吧。</p>
             </div>
 
             <div style={styles.wizardBody}>
-              <div style={styles.wizardSection}>
+              <div className="wizard-section" style={styles.wizardSection}>
                 <label style={styles.label}>✉️ 傳給伴侶的邀請訊息：</label>
                 <textarea
                   readOnly
@@ -327,17 +327,17 @@ export default function GistSyncPanel({
       {/* --- INITIAL NICKNAMES WIZARD (FOR NEW USERS) --- */}
       {showWizard && (
         <div style={styles.wizardOverlay}>
-          <div className="comic-card animate-float" style={styles.wizardCard}>
+          <div className="comic-card animate-float wizard-card" style={styles.wizardCard}>
             <div style={{ textAlign: 'center', marginBottom: '24px', borderBottom: '3px solid #000000', paddingBottom: '16px' }}>
               <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', border: '3px solid #000000', borderRadius: '50%', marginBottom: '12px', fontSize: '1.4rem', boxShadow: '2px 2px 0px #000000', backgroundColor: '#FFFFFF' }}>
                 ⚖️
               </div>
-              <h2 style={styles.wizardTitle}>歡迎來到 HeartSync</h2>
-              <p style={styles.wizardSubtitle}>設定代表名稱或連結現有雲端天秤，開啟共同付出的極簡生活記帳之旅。</p>
+              <h2 className="wizard-title" style={styles.wizardTitle}>歡迎來到 HeartSync</h2>
+              <p className="wizard-subtitle" style={styles.wizardSubtitle}>設定代表名稱或連結現有雲端天秤，開啟共同付出的極簡生活記帳之旅。</p>
             </div>
 
             {/* Segmented control tabs */}
-            <div style={styles.tabContainer}>
+            <div className="wizard-tab-container" style={styles.tabContainer}>
               <button
                 type="button"
                 onClick={() => {
@@ -345,6 +345,7 @@ export default function GistSyncPanel({
                   setLocalError('');
                   setLocalSuccess('');
                 }}
+                className="wizard-tab-btn"
                 style={{
                   ...styles.tabBtn,
                   backgroundColor: wizardMode === 'create' ? '#000000' : '#FFFFFF',
@@ -360,6 +361,7 @@ export default function GistSyncPanel({
                   setLocalError('');
                   setLocalSuccess('');
                 }}
+                className="wizard-tab-btn"
                 style={{
                   ...styles.tabBtn,
                   backgroundColor: wizardMode === 'join' ? '#000000' : '#FFFFFF',
@@ -374,8 +376,8 @@ export default function GistSyncPanel({
               {wizardMode === 'join' ? (
                 // --- JOIN EXISTING GIST MODE ---
                 !fetchedPartners ? (
-                  <div style={styles.wizardSection}>
-                    <h3 style={styles.sectionHeader}>連結現有天秤 (Gist ID)</h3>
+                  <div className="wizard-section" style={styles.wizardSection}>
+                    <h3 className="wizard-section-header" style={styles.sectionHeader}>連結現有天秤 (Gist ID)</h3>
                     <p style={{ fontSize: '0.82rem', color: '#666666', marginBottom: '16px', fontWeight: 'bold' }}>
                       請輸入伴侶分享的 Gist ID。連結成功後，系統會自動載入伴侶設定，免手動重複輸入！
                     </p>
@@ -404,8 +406,8 @@ export default function GistSyncPanel({
                   </div>
                 ) : (
                   // --- JOIN SUCCESS - CHOOSE DEVICE IDENTITY ---
-                  <div style={styles.wizardSection}>
-                    <h3 style={styles.sectionHeader}>🎉 連線成功！請選擇您的身份</h3>
+                  <div className="wizard-section" style={styles.wizardSection}>
+                    <h3 className="wizard-section-header" style={styles.sectionHeader}>🎉 連線成功！請選擇您的身份</h3>
                     <p style={{ fontSize: '0.85rem', color: '#666666', marginBottom: '20px', fontWeight: 'bold', lineHeight: '1.5' }}>
                       已成功連線！已從雲端載入設定好的伴侶名稱：<br />
                       🤍 <b>{fetchedPartners.p1.name}</b> 與 🖤 <b>{fetchedPartners.p2.name}</b><br />
@@ -413,10 +415,11 @@ export default function GistSyncPanel({
                     </p>
 
                     <label style={styles.label}>我是哪一位？</label>
-                    <div style={styles.identityRow}>
+                    <div className="identity-row" style={styles.identityRow}>
                       <button
                         type="button"
                         onClick={() => setSelectedJoinIdentity('p1')}
+                        className="identity-btn"
                         style={{
                           ...styles.identityBtn,
                           backgroundColor: selectedJoinIdentity === 'p1' ? '#000000' : '#FFFFFF',
@@ -428,6 +431,7 @@ export default function GistSyncPanel({
                       <button
                         type="button"
                         onClick={() => setSelectedJoinIdentity('p2')}
+                        className="identity-btn"
                         style={{
                           ...styles.identityBtn,
                           backgroundColor: selectedJoinIdentity === 'p2' ? '#000000' : '#FFFFFF',
@@ -453,10 +457,10 @@ export default function GistSyncPanel({
               ) : (
                 // --- CREATE NEW SCALE MODE ---
                 <>
-                  <div style={styles.wizardSection}>
-                    <h3 style={styles.sectionHeader}>設定伴侶名稱與小狗角色</h3>
+                  <div className="wizard-section" style={styles.wizardSection}>
+                    <h3 className="wizard-section-header" style={styles.sectionHeader}>設定伴侶名稱與小狗角色</h3>
                     
-                    <div style={styles.namesRow}>
+                    <div className="names-row" style={styles.namesRow}>
                       {/* Partner 1 Input */}
                       <div style={styles.inputCol}>
                         <label style={styles.label}>
@@ -475,7 +479,7 @@ export default function GistSyncPanel({
                       </div>
 
                       {/* Swap Button */}
-                      <div style={styles.swapCol}>
+                      <div className="swap-col" style={styles.swapCol}>
                         <button 
                           type="button" 
                           onClick={handleSwapRoles} 
@@ -508,10 +512,11 @@ export default function GistSyncPanel({
                     {/* Who am I device selection */}
                     <div style={{ marginTop: '20px' }}>
                       <label style={styles.label}>這台裝置主要使用者是誰？（預設為該使用者記帳）</label>
-                      <div style={styles.identityRow}>
+                      <div className="identity-row" style={styles.identityRow}>
                         <button
                           type="button"
                           onClick={() => onUpdateMyIdentity('p1')}
+                          className="identity-btn"
                           style={{
                             ...styles.identityBtn,
                             backgroundColor: myIdentity === 'p1' ? '#000000' : '#FFFFFF',
@@ -523,6 +528,7 @@ export default function GistSyncPanel({
                         <button
                           type="button"
                           onClick={() => onUpdateMyIdentity('p2')}
+                          className="identity-btn"
                           style={{
                             ...styles.identityBtn,
                             backgroundColor: myIdentity === 'p2' ? '#000000' : '#FFFFFF',
@@ -570,8 +576,8 @@ export default function GistSyncPanel({
       )}
 
       {/* --- FLOATING STATUS & SETTINGS TOGGLE BAR --- */}
-      <div style={styles.statusContainer}>
-        <div style={styles.statusBadges}>
+      <div className="status-container" style={styles.statusContainer}>
+        <div className="status-badges" style={styles.statusBadges}>
           {syncConfig.token && syncConfig.gistId && !offlineMode ? (
             <div style={{ ...styles.badge, backgroundColor: '#FFFFFF' }}>
               <Cloud size={16} />
@@ -591,11 +597,11 @@ export default function GistSyncPanel({
           </span>
         </div>
 
-        <div style={styles.buttonGroup}>
+        <div className="button-group" style={styles.buttonGroup}>
           {syncConfig.token && syncConfig.gistId && !offlineMode && (
             <button 
               onClick={onPull} 
-              className="comic-btn secondary" 
+              className="comic-btn secondary action-btn" 
               disabled={isSyncing}
               style={styles.actionBtn}
             >
@@ -606,7 +612,7 @@ export default function GistSyncPanel({
 
           <button 
             onClick={() => setIsOpen(!isOpen)} 
-            className="comic-btn secondary"
+            className="comic-btn secondary action-btn"
             style={styles.actionBtn}
           >
             <span>修改暱稱與雲端設定</span>
@@ -620,7 +626,7 @@ export default function GistSyncPanel({
           <h3 style={styles.panelTitle}>雙方暱稱與角色設定</h3>
           
           <div style={{ ...styles.wizardSection, border: 'none', padding: 0, boxShadow: 'none' }}>
-            <div style={styles.namesRow}>
+            <div className="names-row" style={styles.namesRow}>
               <div style={styles.inputCol}>
                 <label style={styles.label}>伴侶一 姓名 ({p1Role === 'white_dog' ? '白狗' : '灰狗'})</label>
                 <input 
@@ -631,7 +637,7 @@ export default function GistSyncPanel({
                 />
               </div>
 
-              <div style={styles.swapCol}>
+              <div className="swap-col" style={styles.swapCol}>
                 <button 
                   type="button" 
                   onClick={handleSwapRoles} 
@@ -656,10 +662,11 @@ export default function GistSyncPanel({
             {/* Who am I device selection */}
             <div style={{ marginTop: '20px' }}>
               <label style={styles.label}>這台裝置主要使用者是誰？（預設為該使用者記帳）</label>
-              <div style={styles.identityRow}>
+              <div className="identity-row" style={styles.identityRow}>
                 <button
                   type="button"
                   onClick={() => onUpdateMyIdentity('p1')}
+                  className="identity-btn"
                   style={{
                     ...styles.identityBtn,
                     backgroundColor: myIdentity === 'p1' ? '#000000' : '#FFFFFF',
@@ -671,6 +678,7 @@ export default function GistSyncPanel({
                 <button
                   type="button"
                   onClick={() => onUpdateMyIdentity('p2')}
+                  className="identity-btn"
                   style={{
                     ...styles.identityBtn,
                     backgroundColor: myIdentity === 'p2' ? '#000000' : '#FFFFFF',
@@ -752,7 +760,7 @@ export default function GistSyncPanel({
               <button
                 type="button"
                 onClick={() => {
-                  const inviteMsg = `Hi！我已經在 HeartSync 建立了我們的專屬生活付出天秤囉！⚖️\n請在你的裝置開啟 HeartSync 網頁，在引導精靈中選擇「連結現有天秤」，貼上我的 Gist ID 即可自動連線並同步！\n\n🔗 我們的天秤 Gist ID：\n${syncConfig.gistId}`;
+                  const inviteMsg = `Hi！我已經在 HeartSync 建立了我們的專屬生活付出天秤囉！⚖️\n\n🔗 天秤連線網址（點擊直接開啟）：\nhttps://winnie-lin.space/couple-balance/\n\n🔑 我們的專屬 Gist ID：\n${syncConfig.gistId}\n\n請在你的裝置開啟網頁，在引導精靈中選擇「連結現有天秤」並貼上此 Gist ID，即可自動連線並即時同步！`;
                   navigator.clipboard.writeText(inviteMsg);
                   alert('邀請文字已複製到剪貼簿，趕快傳給伴侶吧！');
                 }}

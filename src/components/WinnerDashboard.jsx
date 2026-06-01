@@ -65,9 +65,9 @@ export default function WinnerDashboard({
         <span style={styles.bannerText}>生活付出數據總覽看板</span>
       </div>
 
-      <div style={styles.columnsGrid}>
+      <div className="WinnerDashboard-columnsGrid" style={styles.columnsGrid}>
         {/* P1 Column Card */}
-        <div style={styles.statsCard}>
+        <div className="WinnerDashboard-statsCard" style={styles.statsCard}>
           <div style={styles.cardHeader}>
             <div style={styles.avatarWrapper}>
               {p1Role === 'white_dog' ? renderWhiteDogBadge() : renderGrayDogBadge()}
@@ -87,7 +87,7 @@ export default function WinnerDashboard({
         </div>
 
         {/* Middle Summary Card */}
-        <div style={styles.summaryCard}>
+        <div className="WinnerDashboard-summaryCard" style={styles.summaryCard}>
           <h4 style={styles.summaryTitle}>雙方付出差額分析</h4>
           <div style={styles.summaryBody}>
             {/* Money Balance */}
@@ -120,7 +120,7 @@ export default function WinnerDashboard({
         </div>
 
         {/* P2 Column Card */}
-        <div style={styles.statsCard}>
+        <div className="WinnerDashboard-statsCard" style={styles.statsCard}>
           <div style={styles.cardHeader}>
             <div style={styles.avatarWrapper}>
               {p2Role === 'white_dog' ? renderWhiteDogBadge() : renderGrayDogBadge()}

@@ -7,6 +7,7 @@ import BalanceScale from './components/BalanceScale';
 import WinnerDashboard from './components/WinnerDashboard';
 import RecordModal from './components/RecordModal';
 import HistoryList from './components/HistoryList';
+import PWAPrompt from './components/PWAPrompt';
 import { fetchGistData, updateGistData } from './utils/githubGist';
 
 export default function App() {
@@ -112,13 +113,59 @@ export default function App() {
     const savedCurrency = localStorage.getItem('display_currency') || 'TWD';
     setDisplayCurrency(savedCurrency);
 
-    // 4. Trigger initial cloud sync if applicable
+    // 5. Request notification permission on PWA startup
+    try {
+      if ('Notification' in window && Notification.permission === 'default') {
+        const req = Notification.requestPermission();
+        if (req && typeof req.then === 'function') {
+          req.catch(err => console.warn('PWA: Request notification permission error:', err));
+        }
+      }
+    } catch (e) {
+      console.warn('PWA: Notification initialization failed gracefully:', e);
+    }
+
+    // 6. Trigger initial cloud sync if applicable
     if (savedToken && savedGistId && !savedOffline) {
       pullCloudData(savedToken, savedGistId, loadedRecords);
     } else if (savedOffline) {
       setSyncStatus('本機離線運作中');
     }
   }, []);
+
+  // --- PWA SYSTEM NOTIFICATIONS ---
+  const triggerPwaNotification = (newRecords, currentPartners = partners) => {
+    try {
+      if (!('Notification' in window)) {
+        console.warn('PWA: Notifications not supported by this browser.');
+        return;
+      }
+
+      if (Notification.permission === 'granted') {
+        newRecords.forEach(record => {
+          try {
+            const partnerKey = record.by || 'p1';
+            const partnerName = currentPartners[partnerKey]?.name || '伴侶';
+            const recordTitle = record.title || '新付出';
+            const recordVal = record.type === 'money' 
+              ? `${record.value} 元` 
+              : `${record.value} 點`;
+
+            new Notification('⚖️ HeartSync 收到生活付出足跡！', {
+              body: `${partnerName} 剛才記了一筆付出：【${recordTitle}】(${recordVal})！`,
+              icon: './favicon.png',
+              badge: './favicon.png',
+              tag: record.id,
+            });
+          } catch (err) {
+            console.error('PWA: Single notification construct failed:', err);
+          }
+        });
+      }
+    } catch (e) {
+      console.warn('PWA: Notification triggering failed gracefully:', e);
+    }
+  };
 
   // --- PULL (CLOUD -> LOCAL) ---
   const pullCloudData = async (token = syncConfig.token, gistId = syncConfig.gistId, fallbackRecords = records) => {
@@ -130,6 +177,18 @@ export default function App() {
       
       // Update local state and cache
       if (cloudData && Array.isArray(cloudData.records)) {
+        // Compare with current records to find newly added records by companion
+        if (fallbackRecords && fallbackRecords.length > 0) {
+          const currentIds = new Set(fallbackRecords.map(r => r.id));
+          const newPartnerRecords = cloudData.records.filter(r => {
+            return !currentIds.has(r.id) && r.by !== myIdentity;
+          });
+
+          if (newPartnerRecords.length > 0) {
+            triggerPwaNotification(newPartnerRecords, cloudData.partners || partners);
+          }
+        }
+
         setRecords(cloudData.records);
         localStorage.setItem('cached_records', JSON.stringify(cloudData.records));
         
@@ -355,9 +414,9 @@ export default function App() {
         </div>
 
         {/* Global Currency View Selector */}
-        <div style={styles.currencySelectorContainer}>
+        <div className="currency-selector-container" style={styles.currencySelectorContainer}>
           <span style={styles.currencyLabel}>💱 顯示幣別：</span>
-          <div style={styles.currencyRow}>
+          <div className="currency-row" style={styles.currencyRow}>
             {['TWD', 'SGD', 'USD'].map((curr) => (
               <button
                 key={curr}
@@ -366,6 +425,7 @@ export default function App() {
                   localStorage.setItem('display_currency', curr);
                   showToast(`💱 顯示幣別切換為 ${curr === 'TWD' ? '台幣 TWD' : curr === 'SGD' ? '新幣 SGD' : '美金 USD'}！`, 'success');
                 }}
+                className="currency-tab-btn"
                 style={{
                   ...styles.currencyTabBtn,
                   backgroundColor: displayCurrency === curr ? '#000000' : '#FFFFFF',
@@ -413,7 +473,7 @@ export default function App() {
       />
 
       {/* --- DUAL SCALES SECTION --- */}
-      <div style={styles.scalesGrid}>
+      <div className="scales-grid" style={styles.scalesGrid}>
         <BalanceScale 
           type="money"
           p1Value={p1Money}
@@ -454,10 +514,10 @@ export default function App() {
       </div>
 
       {/* --- FLOATING ACTION TRIGGER BUTTON --- */}
-      <div style={styles.floatingActionWrapper}>
+      <div className="floating-action-wrapper" style={styles.floatingActionWrapper}>
         <button 
           onClick={() => setIsAddModalOpen(true)}
-          className="comic-btn"
+          className="comic-btn floating-btn"
           style={styles.floatingBtn}
         >
           <Plus size={20} strokeWidth={3} />
@@ -487,6 +547,9 @@ export default function App() {
           <span style={{ fontWeight: '800', fontSize: '0.9rem' }}>{toast.message}</span>
         </div>
       )}
+
+      {/* --- PWA APP INSTALLATION PROMPT --- */}
+      <PWAPrompt />
     </div>
   );
 }

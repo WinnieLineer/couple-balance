@@ -89,7 +89,7 @@ export default function RecordModal({
 
   return (
     <div style={styles.overlay}>
-      <div className="comic-card animate-float" style={styles.modalCard}>
+      <div className="comic-card animate-float RecordModal-card" style={styles.modalCard}>
         {/* Memo Paper Header Decoration */}
         <div style={styles.memoHeader}>
           <div style={styles.binderRings}>
@@ -104,13 +104,14 @@ export default function RecordModal({
           </button>
         </div>
 
-        <h2 style={styles.title}>新增生活付出記錄</h2>
+        <h2 className="RecordModal-title" style={styles.title}>新增生活付出記錄</h2>
         
         {/* Type selector tabs */}
-        <div style={styles.typeSelector}>
+        <div className="RecordModal-typeSelector" style={styles.typeSelector}>
           <button 
             type="button" 
             onClick={() => { setRecordType('money'); setValue(''); setError(''); }}
+            className="RecordModal-typeBtn"
             style={{ 
               ...styles.typeBtn, 
               backgroundColor: recordType === 'money' ? 'var(--color-light-gray)' : '#FFFFFF',
@@ -124,6 +125,7 @@ export default function RecordModal({
           <button 
             type="button" 
             onClick={() => { setRecordType('love'); setValue(''); setError(''); }}
+            className="RecordModal-typeBtn"
             style={{ 
               ...styles.typeBtn, 
               backgroundColor: recordType === 'love' ? 'var(--color-light-gray)' : '#FFFFFF',
@@ -142,9 +144,10 @@ export default function RecordModal({
               <User size={15} style={{ marginRight: '4px' }} />
               誰為生活付出了呢？
             </label>
-            <div style={styles.partnerSelector}>
+            <div className="RecordModal-partnerSelector" style={styles.partnerSelector}>
               <div 
                 onClick={() => setByPartner('p1')}
+                className="RecordModal-partnerCard"
                 style={{ 
                   ...styles.partnerCard, 
                   backgroundColor: byPartner === 'p1' ? 'var(--bg-primary)' : '#FFFFFF',
@@ -152,12 +155,13 @@ export default function RecordModal({
                   borderWidth: byPartner === 'p1' ? '3px' : '2px'
                 }}
               >
-                <span style={styles.partnerName}>{p1Name} ({p1Role === 'white_dog' ? '白狗' : '灰狗'})</span>
+                <span className="RecordModal-partnerName" style={styles.partnerName}>{p1Name} ({p1Role === 'white_dog' ? '白狗' : '灰狗'})</span>
                 {byPartner === 'p1' && <Check size={16} color="var(--text-primary)" strokeWidth={3} />}
               </div>
 
               <div 
                 onClick={() => setByPartner('p2')}
+                className="RecordModal-partnerCard"
                 style={{ 
                   ...styles.partnerCard, 
                   backgroundColor: byPartner === 'p2' ? 'var(--bg-primary)' : '#FFFFFF',
@@ -165,7 +169,7 @@ export default function RecordModal({
                   borderWidth: byPartner === 'p2' ? '3px' : '2px'
                 }}
               >
-                <span style={styles.partnerName}>{p2Name} ({p2Role === 'white_dog' ? '白狗' : '灰狗'})</span>
+                <span className="RecordModal-partnerName" style={styles.partnerName}>{p2Name} ({p2Role === 'white_dog' ? '白狗' : '灰狗'})</span>
                 {byPartner === 'p2' && <Check size={16} color="var(--text-primary)" strokeWidth={3} />}
               </div>
             </div>
@@ -196,6 +200,7 @@ export default function RecordModal({
                   key={idx}
                   type="button"
                   onClick={() => handlePresetClick(item)}
+                  className="RecordModal-presetTag"
                   style={styles.presetTag}
                 >
                   {item.tag}
@@ -211,7 +216,7 @@ export default function RecordModal({
               <label style={styles.label}>
                 交易幣別
               </label>
-              <div style={styles.currencyRow}>
+              <div className="RecordModal-currencyRow" style={styles.currencyRow}>
                 {[
                   { code: 'TWD', name: 'TWD (NT$)' },
                   { code: 'SGD', name: 'SGD (S$)' },
@@ -221,6 +226,7 @@ export default function RecordModal({
                     key={curr.code}
                     type="button"
                     onClick={() => setCurrency(curr.code)}
+                    className="RecordModal-currencyBtn"
                     style={{
                       ...styles.currencyBtn,
                       backgroundColor: currency === curr.code ? '#000000' : '#FFFFFF',
@@ -265,6 +271,7 @@ export default function RecordModal({
                     key={pts}
                     type="button"
                     onClick={() => handleQuickPoints(pts)}
+                    className="RecordModal-quickPointBtn"
                     style={styles.quickPointBtn}
                   >
                     +{pts} 點
@@ -294,7 +301,7 @@ export default function RecordModal({
           {error && <div style={styles.errorText}>{error}</div>}
 
           {/* Action row */}
-          <div style={styles.actionRow}>
+          <div className="RecordModal-actionRow" style={styles.actionRow}>
             <button 
               type="button" 
               onClick={onClose} 

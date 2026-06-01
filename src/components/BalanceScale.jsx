@@ -172,13 +172,13 @@ export default function BalanceScale({
       </div>
 
       {/* --- BALANCE STATE TEXT --- */}
-      <div style={styles.infoArea}>
+      <div className="BalanceScale-infoArea" style={styles.infoArea}>
         <div style={styles.partnerScore}>
-          <div style={styles.pName}>{p1Role === 'white_dog' ? '白狗' : '灰狗'} {p1Name}</div>
-          <div style={styles.pVal}>{formatVal(p1Value)}</div>
+          <div className="p-name" style={styles.pName}>{p1Role === 'white_dog' ? '白狗' : '灰狗'} {p1Name}</div>
+          <div className="p-val" style={styles.pVal}>{formatVal(p1Value)}</div>
         </div>
 
-        <div style={styles.balanceStatus}>
+        <div className="balance-status" style={styles.balanceStatus}>
           {diff === 0 ? (
             <div style={styles.perfectState}>完美平衡</div>
           ) : (
@@ -195,8 +195,8 @@ export default function BalanceScale({
         </div>
 
         <div style={styles.partnerScore}>
-          <div style={{ ...styles.pName, textAlign: 'right' }}>{p2Role === 'white_dog' ? '白狗' : '灰狗'} {p2Name}</div>
-          <div style={{ ...styles.pVal, textAlign: 'right' }}>{formatVal(p2Value)}</div>
+          <div className="p-name" style={{ ...styles.pName, textAlign: 'right' }}>{p2Role === 'white_dog' ? '白狗' : '灰狗'} {p2Name}</div>
+          <div className="p-val" style={{ ...styles.pVal, textAlign: 'right' }}>{formatVal(p2Value)}</div>
         </div>
       </div>
     </div>
