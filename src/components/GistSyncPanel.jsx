@@ -129,10 +129,19 @@ export default function GistSyncPanel({
   const handleSaveCloudConfig = () => {
     setLocalError('');
     setLocalSuccess('');
-    if (!tokenInput.trim() || !gistIdInput.trim()) {
-      setLocalError('請填寫完整 Token 與 Gist ID！');
+    
+    const finalGistId = gistIdInput.trim();
+    if (!finalGistId) {
+      setLocalError('請填寫 Gist ID！');
       return;
     }
+    
+    const finalToken = (import.meta.env.VITE_GIST_TOKEN || localStorage.getItem('gist_token') || '').trim();
+    if (!finalToken) {
+      setLocalError('⚠️ 系統未設定 GIST_TOKEN，無法儲存雲端設定！');
+      return;
+    }
+    
     const customPartners = getCustomPartnersPayload();
     
     // Perform verification to block 3rd-party join even in regular settings save
@@ -144,7 +153,7 @@ export default function GistSyncPanel({
       return;
     }
 
-    saveConfig(tokenInput.trim(), gistIdInput.trim(), customPartners, myIdentity || 'p1');
+    saveConfig(finalToken, finalGistId, customPartners, myIdentity || 'p1');
     setLocalSuccess('雲端設定已儲存並載入！');
   };
 
@@ -152,10 +161,13 @@ export default function GistSyncPanel({
   const handleCreateNewGist = async () => {
     setLocalError('');
     setLocalSuccess('');
-    if (!tokenInput.trim()) {
-      setLocalError('一鍵建庫前請先輸入您的 GitHub Token！');
+    
+    const finalToken = (import.meta.env.VITE_GIST_TOKEN || localStorage.getItem('gist_token') || '').trim();
+    if (!finalToken) {
+      setLocalError('⚠️ 專案 Secrets 中未設定 GIST_TOKEN，無法一鍵自動建庫！');
       return;
     }
+    
     try {
       setLocalSuccess('正在建立雲端資料庫...');
       const customPartners = getCustomPartnersPayload();
@@ -173,9 +185,9 @@ export default function GistSyncPanel({
         partners: customPartners
       };
       
-      const newGistId = await createSecretGist(tokenInput.trim(), initialPayload);
+      const newGistId = await createSecretGist(finalToken, initialPayload);
       setGistIdInput(newGistId);
-      saveConfig(tokenInput.trim(), newGistId, customPartners, finalIdentity);
+      saveConfig(finalToken, newGistId, customPartners, finalIdentity);
       
       const inviteMsg = `Hi！我已經在 HeartSync 建立了我們的專屬生活付出天秤囉！⚖️\n請在你的裝置開啟 HeartSync 網頁，在引導精靈中選擇「連結現有天秤」，貼上我的 Gist ID 即可自動連線並同步！\n\n🔗 我們的天秤 Gist ID：\n${newGistId}`;
       setInvitationText(inviteMsg);
@@ -191,11 +203,11 @@ export default function GistSyncPanel({
     setLocalError('');
     setLocalSuccess('');
     
-    const finalToken = (isLocal ? joinToken.trim() : (import.meta.env.VITE_GIST_TOKEN || '')).trim();
+    const finalToken = (import.meta.env.VITE_GIST_TOKEN || localStorage.getItem('gist_token') || '').trim();
     const finalGistId = joinGistId.trim();
     
-    if (isLocal && !finalToken) {
-      setLocalError('請填寫 GitHub Token (PAT)！');
+    if (!finalToken) {
+      setLocalError('⚠️ 系統未設定 GIST_TOKEN，無法連結！');
       return;
     }
     if (!finalGistId) {

@@ -60,8 +60,12 @@ export default function App() {
     }
 
     // 1. Detect if secrets are injected via GitHub Actions, otherwise fall back to localStorage
-    const envToken = import.meta.env.VITE_GIST_TOKEN || '';
-    const envGistId = import.meta.env.VITE_GIST_ID || '';
+    const rawEnvToken = import.meta.env.VITE_GIST_TOKEN || '';
+    const rawEnvGistId = import.meta.env.VITE_GIST_ID || '';
+    
+    // Safety check against literal "undefined" or "null" strings from bundler/Vite
+    const envToken = (rawEnvToken === 'undefined' || rawEnvToken === 'null') ? '' : rawEnvToken;
+    const envGistId = (rawEnvGistId === 'undefined' || rawEnvGistId === 'null') ? '' : rawEnvGistId;
 
     const savedToken = envToken || localStorage.getItem('gist_token') || '';
     const savedGistId = envGistId || localStorage.getItem('gist_id') || '';
