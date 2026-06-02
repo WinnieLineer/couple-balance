@@ -39,8 +39,16 @@ export default function RecordModal({
   useEffect(() => {
     if (isOpen) {
       setByPartner(defaultByPartner);
+      // 只鎖 overflow 防止背景捲動，不設 position:fixed 避免桌面版 layout 爆出
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
     }
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [isOpen, defaultByPartner]);
+
 
   if (!isOpen) return null;
 
@@ -89,7 +97,7 @@ export default function RecordModal({
 
   return (
     <div style={styles.overlay}>
-      <div className="comic-card animate-float RecordModal-card" style={styles.modalCard}>
+      <div className="comic-card animate-pop RecordModal-card" style={styles.modalCard}>
         {/* Memo Paper Header Decoration */}
         <div style={styles.memoHeader}>
           <div style={styles.binderRings}>

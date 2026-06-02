@@ -60,14 +60,49 @@ export default function WinnerDashboard({
   );
 
   return (
-    <div className="comic-card" style={styles.container}>
-      <div style={styles.banner}>
-        <span style={styles.bannerText}>生活付出數據總覽看板</span>
+    <div style={styles.container}>
+      {/* 1. Difference Analysis (Top, Full Width) */}
+      <div className="comic-card WinnerDashboard-summaryCard" style={styles.summaryCard}>
+        <div style={styles.banner}>
+          <span style={styles.bannerText}>⚖️ 雙方付出差額分析</span>
+        </div>
+        <div style={styles.summaryBody}>
+          {/* Money Balance */}
+          <div style={styles.summaryItem}>
+            <span style={styles.balanceLabel}>💰 共同生活金錢差額比對</span>
+            <div style={styles.balanceValueContainer}>
+              {moneyDiff === 0 ? (
+                <span style={styles.balancedText}>🎉 雙方目前的金錢支出達到完美平衡！</span>
+              ) : (
+                <span style={styles.imbalancedText}>
+                  <strong>{moneyDiff > 0 ? p1Name : p2Name}</strong> 比對手多支出了 <strong style={styles.highlight}>{symbol} {Math.abs(moneyDiff).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</strong>
+                </span>
+              )}
+            </div>
+          </div>
+          
+          <div style={styles.dividerLine} />
+
+          {/* Chore Balance */}
+          <div style={styles.summaryItem}>
+            <span style={styles.balanceLabel}>🧹 家事與心意點數差額比對</span>
+            <div style={styles.balanceValueContainer}>
+              {loveDiff === 0 ? (
+                <span style={styles.balancedText}>🎉 雙方付出心意點數已完美平衡！</span>
+              ) : (
+                <span style={styles.imbalancedText}>
+                  <strong>{loveDiff > 0 ? p1Name : p2Name}</strong> 多付出了 <strong style={styles.highlight}>{Math.abs(loveDiff)} 點</strong> 的溫馨關懷
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
+      {/* 2. Side-by-side Individual Stats (Bottom) */}
       <div className="WinnerDashboard-columnsGrid" style={styles.columnsGrid}>
         {/* P1 Column Card */}
-        <div className="WinnerDashboard-statsCard" style={styles.statsCard}>
+        <div className="comic-card WinnerDashboard-statsCard" style={styles.statsCard}>
           <div style={styles.cardHeader}>
             <div style={styles.avatarWrapper}>
               {p1Role === 'white_dog' ? renderWhiteDogBadge() : renderGrayDogBadge()}
@@ -86,41 +121,8 @@ export default function WinnerDashboard({
           </div>
         </div>
 
-        {/* Middle Summary Card */}
-        <div className="WinnerDashboard-summaryCard" style={styles.summaryCard}>
-          <h4 style={styles.summaryTitle}>雙方付出差額分析</h4>
-          <div style={styles.summaryBody}>
-            {/* Money Balance */}
-            <div style={styles.summaryItem}>
-              <span style={styles.balanceLabel}>💰 金錢差額</span>
-              <span style={styles.balanceValue}>
-                {moneyDiff === 0 ? (
-                  <span style={styles.balanced}>完美平衡</span>
-                ) : (
-                  <span>
-                    {moneyDiff > 0 ? p1Name : p2Name} 多支出 <strong style={styles.highlight}>{symbol} {Math.abs(moneyDiff).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</strong>
-                  </span>
-                )}
-              </span>
-            </div>
-            {/* Chore Balance */}
-            <div style={styles.summaryItem}>
-              <span style={styles.balanceLabel}>💖 家事差額</span>
-              <span style={styles.balanceValue}>
-                {loveDiff === 0 ? (
-                  <span style={styles.balanced}>完美平衡</span>
-                ) : (
-                  <span>
-                    {loveDiff > 0 ? p1Name : p2Name} 多付出 <strong style={styles.highlight}>{Math.abs(loveDiff)} 點</strong>
-                  </span>
-                )}
-              </span>
-            </div>
-          </div>
-        </div>
-
         {/* P2 Column Card */}
-        <div className="WinnerDashboard-statsCard" style={styles.statsCard}>
+        <div className="comic-card WinnerDashboard-statsCard" style={styles.statsCard}>
           <div style={styles.cardHeader}>
             <div style={styles.avatarWrapper}>
               {p2Role === 'white_dog' ? renderWhiteDogBadge() : renderGrayDogBadge()}
@@ -145,26 +147,24 @@ export default function WinnerDashboard({
 
 const styles = {
   container: {
-    backgroundColor: '#FFFFFF',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px',
     marginBottom: '24px',
-    padding: '24px',
-    border: '3px solid #000000',
-    boxShadow: '4px 4px 0px #000000',
-    borderRadius: '0px',
   },
   banner: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#000000',
-    borderRadius: '0px',
+    borderRadius: '8px',
     padding: '8px 16px',
-    marginBottom: '24px',
+    marginBottom: '16px',
   },
   bannerText: {
-    fontWeight: '800',
-    fontSize: '0.95rem',
-    letterSpacing: '1.5px',
+    fontWeight: '900',
+    fontSize: '0.92rem',
+    letterSpacing: '1px',
     color: '#FFFFFF',
     textTransform: 'uppercase',
   },
@@ -176,28 +176,26 @@ const styles = {
   statsCard: {
     flex: '1 1 240px',
     backgroundColor: '#FFFFFF',
-    border: '3px solid #000000',
-    boxShadow: '3px 3px 0px #000000',
-    padding: '16px 20px',
+    padding: '18px 22px',
     display: 'flex',
     flexDirection: 'column',
     gap: '12px',
+    transition: 'transform 0.2s ease',
   },
   summaryCard: {
-    flex: '1 1 280px',
-    backgroundColor: '#F4F4F3',
-    border: '3px solid #000000',
-    boxShadow: '3px 3px 0px #000000',
-    padding: '16px 20px',
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    padding: '20px 24px',
     display: 'flex',
     flexDirection: 'column',
     gap: '12px',
+    transition: 'transform 0.2s ease',
   },
   cardHeader: {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
-    borderBottom: '2px solid #000000',
+    borderBottom: '2.5px solid #000000',
     paddingBottom: '10px',
   },
   avatarWrapper: {
@@ -210,7 +208,7 @@ const styles = {
   },
   roleName: {
     fontWeight: '900',
-    fontSize: '0.95rem',
+    fontSize: '1rem',
     color: '#000000',
     letterSpacing: '0.5px',
   },
@@ -230,46 +228,57 @@ const styles = {
     fontWeight: '800',
   },
   statValue: {
-    fontSize: '1.2rem',
-    fontWeight: '900',
+    fontSize: '1.25rem',
+    fontWeight: '950',
     color: '#000000',
-  },
-  summaryTitle: {
-    fontSize: '0.9rem',
-    fontWeight: '900',
-    color: '#000000',
-    borderBottom: '2px dashed #000000',
-    paddingBottom: '10px',
-    letterSpacing: '0.5px',
-    textTransform: 'uppercase',
   },
   summaryBody: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '12px',
+    gap: '14px',
   },
   summaryItem: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '4px',
+    gap: '6px',
   },
   balanceLabel: {
-    fontSize: '0.75rem',
+    fontSize: '0.8rem',
     color: '#666666',
-    fontWeight: '800',
-  },
-  balanceValue: {
-    fontSize: '0.92rem',
-    fontWeight: '700',
-    color: '#000000',
-  },
-  balanced: {
-    color: '#000000',
     fontWeight: '900',
+    letterSpacing: '0.5px',
+  },
+  balanceValueContainer: {
+    fontSize: '1.05rem',
+    color: '#000000',
+    fontWeight: '750',
+  },
+  balancedText: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    backgroundColor: '#000000',
+    color: '#FFFFFF',
+    padding: '4px 10px',
+    borderRadius: '8px',
+    fontSize: '0.82rem',
+    fontWeight: '900',
+    border: '2.5px solid #000000',
+    boxShadow: '2px 2px 0px rgba(0,0,0,0.15)',
+  },
+  imbalancedText: {
+    color: '#000000',
+    fontWeight: '700',
   },
   highlight: {
-    fontWeight: '900',
+    fontWeight: '950',
     color: '#000000',
     textDecoration: 'underline',
+    fontSize: '1.15rem',
+  },
+  dividerLine: {
+    height: '2px',
+    backgroundColor: '#000000',
+    borderStyle: 'dashed',
+    opacity: 0.15,
   }
 };

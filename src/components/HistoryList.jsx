@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Trash2, Calendar, User, Footprints, Search } from 'lucide-react';
 
 const EXCHANGE_RATES = {
@@ -24,6 +24,7 @@ export default function HistoryList({
 }) {
   const [activeTab, setActiveTab] = useState('money'); // 'money' or 'love'
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   // Filter records based on tab and search query
   const filteredRecords = records
@@ -85,22 +86,43 @@ export default function HistoryList({
       </div>
 
       {/* Search Bar */}
-      <div style={styles.searchContainer}>
-        <Search size={18} style={styles.searchIcon} />
-        <input 
-          type="text" 
-          placeholder="搜尋紀錄名稱..." 
+      <div style={{
+        ...styles.searchContainer,
+        boxShadow: isSearchFocused ? '5px 5px 0px #000000' : '3px 3px 0px #000000',
+        transform: isSearchFocused ? 'translate(-1px, -1px)' : 'translate(0, 0)',
+      }}>
+        <Search
+          size={16}
+          style={{
+            ...styles.searchIcon,
+            color: isSearchFocused ? '#000000' : '#888888',
+          }}
+        />
+        <input
+          type="text"
+          placeholder="🔍 搜尋付出項目名稱..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          onFocus={() => setIsSearchFocused(true)}
+          onBlur={() => setIsSearchFocused(false)}
           style={styles.searchInput}
         />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery('')}
+            style={styles.searchClearBtn}
+            title="清除搜尋"
+          >
+            ✕
+          </button>
+        )}
       </div>
 
       {/* History Items list */}
       <div style={styles.listWrapper}>
         {filteredRecords.length === 0 ? (
           <div style={styles.emptyState}>
-            <Footprints size={40} color="#666666" style={{ marginBottom: '12px' }} className="animate-float" />
+            <Footprints size={40} color="#666666" style={{ marginBottom: '12px' }} />
             <p style={styles.emptyText}>暫無付出歷史足跡</p>
             <p style={styles.emptySubtext}>點擊下方的「新增生活記錄」來留下點滴紀錄吧</p>
           </div>
@@ -224,6 +246,45 @@ const styles = {
     fontWeight: '800',
     cursor: 'pointer',
     transition: 'all 0.1s ease',
+  },
+  searchContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    border: '3px solid #000000',
+    borderRadius: '12px',
+    backgroundColor: '#FFFFFF',
+    padding: '10px 14px',
+    marginBottom: '16px',
+    transition: 'box-shadow 0.15s ease, transform 0.15s ease',
+    cursor: 'text',
+  },
+  searchIcon: {
+    flexShrink: 0,
+    transition: 'color 0.15s ease',
+  },
+  searchInput: {
+    flex: 1,
+    border: 'none',
+    outline: 'none',
+    fontSize: '0.88rem',
+    fontWeight: '700',
+    fontFamily: 'inherit',
+    color: '#000000',
+    backgroundColor: 'transparent',
+    minWidth: 0,
+  },
+  searchClearBtn: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '0.82rem',
+    fontWeight: '900',
+    color: '#888888',
+    padding: '0 2px',
+    lineHeight: 1,
+    flexShrink: 0,
+    transition: 'color 0.1s ease',
   },
   listWrapper: {
     display: 'flex',

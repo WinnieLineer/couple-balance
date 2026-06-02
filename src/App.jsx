@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Cloud, CloudOff, RefreshCw } from 'lucide-react';
+import { Plus, Cloud, CloudOff, RefreshCw, Settings } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
-import GistSyncPanel from './components/GistSyncPanel';
+import SettingsModal from './components/SettingsModal';
+import OnboardingWizard from './components/OnboardingWizard';
 import BalanceScale from './components/BalanceScale';
 import WinnerDashboard from './components/WinnerDashboard';
 import RecordModal from './components/RecordModal';
@@ -24,8 +25,13 @@ export default function App() {
   const [displayCurrency, setDisplayCurrency] = useState('TWD');
   const [myIdentity, setMyIdentity] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [showWizard, setShowWizard] = useState(!localStorage.getItem('partners_config'));
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
   const [needsUpdate, setNeedsUpdate] = useState(false);
+  const [pullDistance, setPullDistance] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [refreshState, setRefreshState] = useState('idle'); // 'idle' | 'pulling' | 'loading' | 'success'
 
   // --- REFS: always hold latest values so async callbacks don't capture stale closures ---
   const syncConfigRef = useRef({ token: '', gistId: '' });
@@ -55,7 +61,7 @@ export default function App() {
     p2: { name: '伴侶二', role: 'brown_dog', deviceId: '' }
   });
 
-  // --- VERSION CHECK ---
+  // --- AUTOMATED VERSION CHECK & CACHE CLEANING ---
   useEffect(() => {
     const checkVersion = async () => {
       try {
@@ -63,7 +69,31 @@ export default function App() {
         if (response.ok) {
           const data = await response.json();
           if (data.versionCode && data.versionCode > APP_VERSION_CODE) {
+            // Check session storage to prevent rapid infinite reload loops
+            const lastUpgrade = sessionStorage.getItem('last_auto_upgrade');
+            if (lastUpgrade && (Date.now() - parseInt(lastUpgrade, 10) < 15000)) {
+              console.warn('Auto-upgrade loop protection triggered. Skipping reload.');
+              return;
+            }
+            sessionStorage.setItem('last_auto_upgrade', Date.now().toString());
             setNeedsUpdate(true);
+
+            // Execute service worker unregistration & cache deletion
+            if ('serviceWorker' in navigator) {
+              const registrations = await navigator.serviceWorker.getRegistrations();
+              for (let reg of registrations) {
+                await reg.unregister();
+              }
+            }
+            const cacheNames = await caches.keys();
+            for (let name of cacheNames) {
+              await caches.delete(name);
+            }
+
+            // Short visual delay for user clarity before auto-reload
+            setTimeout(() => {
+              window.location.reload(true);
+            }, 1000);
           }
         }
       } catch (err) {
@@ -496,6 +526,59 @@ export default function App() {
     }
   };
 
+  // --- PULL TO REFRESH EVENT HANDLERS ---
+  const startYRef = useRef(0);
+  const isDraggingRef = useRef(false);
+
+  const handlePullStart = (clientY) => {
+    if (window.scrollY > 0 || isSyncing || refreshState === 'loading') return;
+    startYRef.current = clientY;
+    isDraggingRef.current = true;
+    setIsDragging(true);
+    setRefreshState('pulling');
+  };
+
+  const handlePullMove = (clientY) => {
+    if (!isDraggingRef.current) return;
+    const dy = clientY - startYRef.current;
+    if (dy > 0) {
+      // Elastic damping effect
+      const dist = Math.min(100, Math.pow(dy, 0.82));
+      setPullDistance(dist);
+    } else {
+      setPullDistance(0);
+    }
+  };
+
+  const handlePullEnd = () => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+    setIsDragging(false);
+
+    if (pullDistance >= 50) {
+      setPullDistance(50);
+      setRefreshState('loading');
+      triggerPullSync();
+    } else {
+      setPullDistance(0);
+      setRefreshState('idle');
+    }
+  };
+
+  const triggerPullSync = async () => {
+    try {
+      await pullCloudData();
+      setRefreshState('success');
+    } catch (err) {
+      setRefreshState('idle');
+    } finally {
+      setTimeout(() => {
+        setPullDistance(0);
+        setRefreshState('idle');
+      }, 800);
+    }
+  };
+
   // --- CALCULATE BALANCES FOR SCALES ---
   // Money (dynamically converted to displayCurrency)
   const p1Money = records
@@ -508,41 +591,66 @@ export default function App() {
   const p1Love = records.filter(r => r.type === 'love' && r.by === 'p1').reduce((acc, r) => acc + r.value, 0);
   const p2Love = records.filter(r => r.type === 'love' && r.by === 'p2').reduce((acc, r) => acc + r.value, 0);
 
-  // --- RENDER EARLY RETURN: UPDATE NEEDED ---
+  // --- RENDER EARLY RETURN: AUTOMATED UPDATE NEEDED ---
   if (needsUpdate) {
     return (
       <div style={styles.updateOverlay}>
-        <div className="comic-card animate-pop" style={{ maxWidth: '400px', width: '90%', padding: '30px 20px', textAlign: 'center', backgroundColor: '#fff', border: '4px solid #000', borderRadius: '16px', boxShadow: '6px 6px 0 #000' }}>
-          <h2 style={{ fontSize: '1.5rem', marginBottom: '16px', fontWeight: '900' }}>✨ 發現新版本</h2>
-          <p style={{ marginBottom: '24px', fontWeight: 'bold', lineHeight: '1.5', color: '#333' }}>
-            為了確保資料同步穩定與最新功能，請務必更新至最新版本！
+        <div className="comic-card animate-pop" style={{ maxWidth: '420px', width: '90%', padding: '40px 24px', textAlign: 'center', backgroundColor: '#fff', border: '4px solid #000', borderRadius: '16px', boxShadow: '6px 6px 0 #000' }}>
+          <h2 style={{ fontSize: '1.6rem', marginBottom: '16px', fontWeight: '950' }}>🚀 系統偵測到新版本</h2>
+          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '50px', height: '50px', border: '3.5px solid #000000', borderRadius: '50%', backgroundColor: '#FFFFFF', boxShadow: '3px 3px 0px #000000', marginBottom: '16px', fontSize: '1.5rem' }}>
+            ⚡
+          </div>
+          <p style={{ fontWeight: '900', fontSize: '1.05rem', lineHeight: '1.6', color: '#000', margin: '0 0 12px 0' }}>
+            正在為您自動下載升級...
           </p>
-          <button 
-            className="comic-btn primary" 
-            style={{ width: '100%', fontSize: '1.1rem', padding: '14px', borderRadius: '8px' }}
-            onClick={() => {
-              if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.getRegistrations().then(regs => {
-                  regs.forEach(r => r.unregister());
-                });
-              }
-              caches.keys().then(names => {
-                names.forEach(n => caches.delete(n));
-              });
-              setTimeout(() => {
-                window.location.reload(true);
-              }, 300);
-            }}
-          >
-            🚀 立即更新並重新載入
-          </button>
+          <p style={{ fontSize: '0.82rem', fontWeight: '700', lineHeight: '1.5', color: '#666666' }}>
+            系統將在 1 秒內為您自動清除快取並重新載入，請稍候。
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container">
+    <div 
+      style={{ position: 'relative', overflow: 'hidden', minHeight: '100vh', userSelect: isDragging ? 'none' : 'auto' }}
+      onTouchStart={(e) => handlePullStart(e.touches[0].clientY)}
+      onTouchMove={(e) => handlePullMove(e.touches[0].clientY)}
+      onTouchEnd={handlePullEnd}
+      onMouseDown={(e) => handlePullStart(e.clientY)}
+      onMouseMove={(e) => handlePullMove(e.clientY)}
+      onMouseUp={handlePullEnd}
+      onMouseLeave={handlePullEnd}
+    >
+      {/* Pull Indicator Peeking Block */}
+      <div style={{
+        ...styles.pullIndicator,
+        transform: `translateY(${pullDistance - 50}px)`,
+        opacity: Math.min(1, pullDistance / 50),
+        transition: isDragging ? 'none' : 'all 0.4s cubic-bezier(0.25, 1, 0.5, 1)',
+      }}>
+        <span className={refreshState === 'loading' ? 'animate-spin-slow' : ''} style={{ fontSize: '1.2rem' }}>
+          {refreshState === 'loading' ? '🔄' : refreshState === 'success' ? '✨' : '👇'}
+        </span>
+        <span style={{ fontWeight: '800', fontSize: '0.85rem' }}>
+          {refreshState === 'loading' 
+            ? 'sync data from cloud...' 
+            : refreshState === 'success' 
+              ? '同步完成！' 
+              : pullDistance >= 50 
+                ? '放開以開始同步' 
+                : '下拉同步雲端資料'}
+        </span>
+      </div>
+
+      <div 
+        className="container"
+        style={{
+          ...styles.container,
+          transform: `translateY(${pullDistance}px)`,
+          transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)',
+        }}
+      >
       {/* --- APP HEADER --- */}
       <header className="header" style={styles.header}>
         <div className="title-container">
@@ -572,34 +680,123 @@ export default function App() {
           </div>
         </div>
 
-        {/* Global Currency View Selector */}
-        <div className="currency-selector-container" style={styles.currencySelectorContainer}>
-          <span style={styles.currencyLabel}>💱 顯示幣別：</span>
-          <div className="currency-row" style={styles.currencyRow}>
-            {['TWD', 'SGD', 'USD'].map((curr) => (
-              <button
-                key={curr}
-                onClick={() => {
-                  setDisplayCurrency(curr);
-                  localStorage.setItem('display_currency', curr);
-                  showToast(`💱 顯示幣別切換為 ${curr === 'TWD' ? '台幣 TWD' : curr === 'SGD' ? '新幣 SGD' : '美金 USD'}！`, 'success');
-                }}
-                className="currency-tab-btn"
-                style={{
-                  ...styles.currencyTabBtn,
-                  backgroundColor: displayCurrency === curr ? '#000000' : '#FFFFFF',
-                  color: displayCurrency === curr ? '#FFFFFF' : '#666666',
-                }}
-              >
-                {curr}
-              </button>
-            ))}
-          </div>
+        {/* Header Actions: Settings Gear Icon + Add Button */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* ⚙️ 系統設定按鈕 */}
+          <button
+            onClick={() => setIsSettingsOpen(true)}
+            className="comic-btn secondary"
+            style={{
+              padding: '10px',
+              borderRadius: '50%',
+              width: '44px',
+              height: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '3px 3px 0px #000000',
+              border: '3px solid #000000',
+              cursor: 'pointer',
+              transition: 'all 0.1s ease',
+              flexShrink: 0,
+            }}
+            title="打開系統設定"
+          >
+            <Settings size={20} />
+          </button>
+
+          {/* ➕ 新增付出按鈕（最右） */}
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="comic-btn"
+            style={{
+              padding: '10px',
+              borderRadius: '50%',
+              width: '44px',
+              height: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#000000',
+              color: '#FFFFFF',
+              boxShadow: '3px 3px 0px rgba(0,0,0,0.35)',
+              border: '3px solid #000000',
+              cursor: 'pointer',
+              transition: 'all 0.12s ease',
+              flexShrink: 0,
+            }}
+            title="新增生活付出記錄"
+          >
+            <Plus size={22} strokeWidth={3} />
+          </button>
         </div>
       </header>
 
-      {/* --- GIST SYNC BAR / CONFIG PANEL --- */}
-      <GistSyncPanel
+      {/* --- STATUS & SETTINGS BAR --- */}
+      <div className="status-container" style={styles.statusContainer}>
+        <div className="status-badges" style={styles.statusBadges}>
+          {syncConfig.token && syncConfig.gistId && !offlineMode ? (
+            <div style={{ ...styles.badge, backgroundColor: '#FFFFFF' }}>
+              <Cloud size={16} />
+              <span>雲端已連線</span>
+              <span style={styles.dotPulse} />
+            </div>
+          ) : (
+            <div style={{ ...styles.badge, backgroundColor: '#FFFFFF', color: '#666666' }}>
+              <CloudOff size={16} />
+              <span>離線體驗中</span>
+            </div>
+          )}
+
+          {/* Sync Status Texts */}
+          <span style={styles.syncStatusText}>
+            {isSyncing ? '正在同步中...' : syncStatus}
+          </span>
+        </div>
+
+        <div className="button-group" style={styles.buttonGroup}>
+          {syncConfig.token && syncConfig.gistId && !offlineMode && (
+            <button 
+              onClick={() => pullCloudData()} 
+              className="comic-btn secondary action-btn" 
+              disabled={isSyncing}
+              style={styles.actionBtn}
+            >
+              <RefreshCw size={14} className={isSyncing ? 'animate-spin-slow' : ''} />
+              <span>手動同步</span>
+            </button>
+          )}
+
+          <button 
+            onClick={() => setIsSettingsOpen(true)} 
+            className="comic-btn action-btn"
+            style={{ ...styles.actionBtn, backgroundColor: '#000000', color: '#FFFFFF' }}
+          >
+            <Settings size={14} />
+            <span>系統設定</span>
+          </button>
+        </div>
+      </div>
+
+      {/* --- INITIAL NICKNAMES WIZARD (FOR NEW USERS) --- */}
+      {showWizard && (
+        <OnboardingWizard
+          partners={partners}
+          onUpdatePartners={handleUpdatePartners}
+          myIdentity={myIdentity}
+          onUpdateMyIdentity={(val) => {
+            setMyIdentity(val);
+            localStorage.setItem('my_identity', val);
+          }}
+          saveConfig={saveConfig}
+          onCloseWizard={() => setShowWizard(false)}
+        />
+      )}
+
+      {/* --- SYSTEM UNIFIED SETTINGS MODAL --- */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
         syncConfig={syncConfig}
         saveConfig={saveConfig}
         syncStatus={syncStatus}
@@ -614,7 +811,11 @@ export default function App() {
           setMyIdentity(val);
           localStorage.setItem('my_identity', val);
         }}
-        isLocal={isLocal}
+        displayCurrency={displayCurrency}
+        onUpdateCurrency={(val) => {
+          setDisplayCurrency(val);
+          localStorage.setItem('display_currency', val);
+        }}
       />
 
       {/* --- WINNER DASHBOARD --- */}
@@ -715,6 +916,7 @@ export default function App() {
 
       {/* --- PWA APP INSTALLATION PROMPT --- */}
       <PWAPrompt />
+      </div>
     </div>
   );
 }
@@ -744,37 +946,63 @@ const styles = {
     paddingBottom: '20px',
     marginBottom: '28px',
   },
-  currencySelectorContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    marginBottom: '4px',
-  },
-  currencyLabel: {
-    fontSize: '0.82rem',
-    fontWeight: '800',
-    color: '#666666',
-    letterSpacing: '0.5px',
-  },
-  currencyRow: {
-    display: 'flex',
-    gap: '6px',
-  },
-  currencyTabBtn: {
-    border: '2.5px solid #000000',
-    padding: '6px 12px',
-    borderRadius: '8px',
-    fontWeight: '800',
-    fontSize: '0.8rem',
-    cursor: 'pointer',
-    fontFamily: 'inherit',
-    boxShadow: '1.5px 1.5px 0px #000000',
-    transition: 'all 0.1s ease',
-  },
   scalesGrid: {
     display: 'flex',
     gap: '24px',
     flexWrap: 'wrap',
+  },
+  statusContainer: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    border: '3px solid #000000',
+    borderRadius: '12px',
+    padding: '10px 16px',
+    boxShadow: '4px 4px 0px #000000',
+    flexWrap: 'wrap',
+    gap: '12px',
+    marginBottom: '24px',
+  },
+  statusBadges: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+  },
+  badge: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '4px 12px',
+    borderRadius: '8px',
+    fontSize: '0.8rem',
+    fontWeight: '800',
+    border: '2.5px solid #000000',
+    position: 'relative',
+  },
+  dotPulse: {
+    width: '6px',
+    height: '6px',
+    backgroundColor: '#1e7e34',
+    borderRadius: '50%',
+    display: 'inline-block',
+  },
+  syncStatusText: {
+    fontSize: '0.85rem',
+    fontWeight: '800',
+    color: '#666666',
+  },
+  buttonGroup: {
+    display: 'flex',
+    gap: '8px',
+  },
+  actionBtn: {
+    padding: '6px 14px',
+    fontSize: '0.82rem',
+    borderRadius: '8px',
+    boxShadow: '2px 2px 0px #000000',
+    backgroundColor: '#FFFFFF',
+    border: '2.5px solid #000000',
   },
   floatingActionWrapper: {
     position: 'fixed',
@@ -804,5 +1032,20 @@ const styles = {
     height: '8px',
     borderRadius: '50%',
     border: '1px solid #000000',
+  },
+  pullIndicator: {
+    position: 'absolute',
+    top: '0px',
+    left: 0,
+    right: 0,
+    height: '50px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    zIndex: 10,
+    fontWeight: '900',
+    fontSize: '0.88rem',
+    color: '#000000',
   }
 };

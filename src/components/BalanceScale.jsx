@@ -70,7 +70,7 @@ export default function BalanceScale({
       
       {/* Sparkle if winning */}
       {isWinning && (
-        <g transform="translate(14, -5)" className="animate-float">
+        <g transform="translate(14, -5)">
           <path d="M 5,0 L 6,3 L 9,4 L 6,5 L 5,8 L 4,5 L 1,4 L 4,3 Z" fill="#FFFFFF" stroke="#000000" strokeWidth="1.5" />
         </g>
       )}
@@ -99,7 +99,7 @@ export default function BalanceScale({
       
       {/* Sparkle if winning */}
       {isWinning && (
-        <g transform="translate(14, -5)" className="animate-float">
+        <g transform="translate(14, -5)">
           <path d="M 5,0 L 6,3 L 9,4 L 6,5 L 5,8 L 4,5 L 1,4 L 4,3 Z" fill="#FFFFFF" stroke="#000000" strokeWidth="1.5" />
         </g>
       )}
@@ -107,7 +107,7 @@ export default function BalanceScale({
   );
 
   return (
-    <div className="comic-card animate-wiggle" style={styles.card}>
+    <div className="comic-card" style={styles.card}>
       <div style={styles.cardHeader}>
         <div style={styles.iconBg}>
           {type === 'money' ? <Landmark size={20} color="#000000" /> : <Heart size={20} color="#000000" fill="#000000" />}

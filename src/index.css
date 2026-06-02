@@ -145,7 +145,7 @@ body {
 /* --- ANIMATIONS --- */
 @keyframes float {
   0% { transform: translateY(0px); }
-  50% { transform: translateY(-6px); }
+  50% { transform: translateY(-3px); }
   100% { transform: translateY(0px); }
 }
 
@@ -160,18 +160,28 @@ body {
   100% { transform: scale(1); opacity: 1; }
 }
 
+@keyframes modalPop {
+  0% { transform: scale(0.9) translateY(20px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
 @keyframes spin-slow {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
 
+/* Calm animate-float to hover-only or extremely slow and subtle (12s period, 2px displacement) */
 .animate-float {
-  animation: float 4s ease-in-out infinite;
+  animation: float 10s ease-in-out infinite;
+}
+
+.animate-float:hover {
+  animation: float 1.5s ease-in-out infinite;
 }
 
 .animate-float-delayed {
-  animation: float 4s ease-in-out infinite;
-  animation-delay: 2s;
+  animation: float 10s ease-in-out infinite;
+  animation-delay: 5s;
 }
 
 .animate-wiggle:hover {
@@ -180,6 +190,95 @@ body {
 
 .animate-spin-slow {
   animation: spin-slow 15s linear infinite;
+}
+
+/* Premium Settings Modal Styles */
+.modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 16px;
+  animation: pop 0.25s ease-out;
+}
+
+.settings-modal-card {
+  max-width: 550px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  background-color: #FFFFFF;
+  border: 3.5px solid #000000;
+  box-shadow: 8px 8px 0px #000000;
+  border-radius: 20px;
+  padding: 28px;
+  position: relative;
+  animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.settings-tab-nav {
+  display: flex;
+  flex-wrap: wrap;
+  border-bottom: 3.5px solid #000000;
+  margin-bottom: 20px;
+  gap: 4px;
+}
+
+.settings-tab-link {
+  flex: 1 1 auto;
+  min-width: 90px;
+  padding: 10px 8px;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 0.85rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  border-bottom: 4px solid transparent;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.settings-tab-link.active {
+  color: #000000;
+  border-bottom: 4px solid #000000;
+}
+
+.settings-modal-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  border: 2.5px solid #000000;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.1s ease;
+}
+
+.settings-modal-close:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px #000000;
+  background: var(--color-light-gray);
+}
+
+.settings-modal-close:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px #000000;
 }
 
 /* --- LAYOUT UTILITIES --- */
@@ -274,16 +373,35 @@ body {
 }
 
 /* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
+/* Hide main browser scrollbar on html and body to look like a native app */
+html, body {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
-::-webkit-scrollbar-track {
+html::-webkit-scrollbar, body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+/* Style other inner scrollable elements beautifully */
+*:not(html):not(body) {
+  scrollbar-width: thin;
+  scrollbar-color: #000000 var(--bg-primary);
+}
+
+*:not(html):not(body)::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*:not(html):not(body)::-webkit-scrollbar-track {
   background: var(--bg-primary);
 }
-::-webkit-scrollbar-thumb {
+*:not(html):not(body)::-webkit-scrollbar-thumb {
   background: #000000;
   border: 2px solid var(--bg-primary);
   border-radius: 4px;
+}
+*:not(html):not(body)::-webkit-scrollbar-thumb:hover {
+  background: #333333;
 }
 
 /* --- MOBILE RESPONSIVE UI/UX OPTIMIZATIONS (max-width: 600px) --- */
