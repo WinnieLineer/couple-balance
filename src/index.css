@@ -1,26 +1,38 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300..900&family=Nunito:wght@300..800&display=swap');
 
-/* --- PREMIUM BLACK & WHITE DESIGN SYSTEM --- */
+/* ─────────────────────────────────────────────
+   PREMIUM BLACK & WHITE DESIGN SYSTEM
+   HeartSync — Hand-Drawn Comic Aesthetic
+───────────────────────────────────────────── */
 :root {
-  --bg-primary: #F4F4F3;      /* Sleek off-white/light gray */
-  --bg-secondary: #FFFFFF;    /* Pure White */
-  --text-primary: #000000;    /* Solid Black */
-  --text-muted: #666666;      /* Charcoal Gray */
-  --border-color: #E2E2E0;    /* Light Gray lines */
-  --border-thick: 3px solid #000000; /* Signature bold comic outline */
-  
-  /* Black & White Accent Palette */
-  --color-accent: #000000;
-  --color-accent-hover: #222222;
-  --color-light-gray: #EDEDED;
-  --color-light-gray-hover: #DCDCDC;
-  --color-love-gray: #E0E0E0; /* Charcoal gray for Effort Dog */
+  --bg-primary: #F5F5F3;
+  --bg-secondary: #FFFFFF;
+  --text-primary: #000000;
+  --text-muted: #666666;
+  --text-subtle: #999999;
+  --border-color: #E0E0DE;
+  --border-thick: 3px solid #000000;
 
-  /* Flat Shadows */
-  --shadow-flat: 4px 4px 0px #000000;
-  --shadow-flat-large: 8px 8px 0px #000000;
-  --shadow-flat-hover: 6px 6px 0px #000000;
-  --shadow-flat-active: 1px 1px 0px #000000;
+  /* Accent palette */
+  --color-accent: #000000;
+  --color-accent-hover: #1a1a1a;
+  --color-light-gray: #EFEFED;
+  --color-light-gray-hover: #E2E2E0;
+  --color-love-gray: #D8D8D8;
+
+  /* Flat comic shadows */
+  --shadow-xs:    2px 2px 0px #000000;
+  --shadow-sm:    3px 3px 0px #000000;
+  --shadow-flat:  4px 4px 0px #000000;
+  --shadow-md:    5px 5px 0px #000000;
+  --shadow-lg:    8px 8px 0px #000000;
+  --shadow-hover: 6px 6px 0px #000000;
+  --shadow-press: 1px 1px 0px #000000;
+
+  /* Easing curves */
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out:    cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-snappy: cubic-bezier(0.175, 0.885, 0.32, 1.15);
 
   font-family: 'Outfit', 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
   line-height: 1.5;
@@ -29,7 +41,7 @@
   background-color: var(--bg-primary);
 }
 
-/* --- RESET & BASICS --- */
+/* ─── RESET ─────────────────────────────────── */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -41,37 +53,36 @@
 body {
   min-height: 100vh;
   background-color: var(--bg-primary);
-  background-image: 
-    radial-gradient(#000000 1px, transparent 1px), 
-    radial-gradient(#000000 1px, transparent 1px);
-  background-size: 48px 48px;
-  background-position: 0 0, 24px 24px;
-  background-image: 
-    radial-gradient(rgba(0, 0, 0, 0.02) 1.5px, transparent 1.5px), 
-    radial-gradient(rgba(0, 0, 0, 0.02) 1.5px, transparent 1.5px);
+  background-image:
+    radial-gradient(rgba(0,0,0,0.045) 1.5px, transparent 1.5px),
+    radial-gradient(rgba(0,0,0,0.045) 1.5px, transparent 1.5px);
+  background-size: 40px 40px;
+  background-position: 0 0, 20px 20px;
 }
 
-/* --- HIGH-CONTRAST COMIC STYLING --- */
+/* ─── COMIC CARD ─────────────────────────────── */
 .comic-card {
   background: var(--bg-secondary);
   border: var(--border-thick);
   border-radius: 16px;
   padding: 24px;
   box-shadow: var(--shadow-flat);
-  transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.15), box-shadow 0.15s ease;
+  transition:
+    transform 0.18s var(--ease-snappy),
+    box-shadow 0.18s ease;
 }
 
 .comic-card:hover {
   transform: translate(-2px, -2px);
-  box-shadow: var(--shadow-flat-hover);
+  box-shadow: var(--shadow-hover);
 }
 
+/* ─── BUTTONS ────────────────────────────────── */
 .comic-btn {
   font-family: inherit;
   font-weight: 800;
-  font-size: 0.95rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 0.9rem;
+  letter-spacing: 0.3px;
   color: #FFFFFF;
   background-color: #000000;
   border: var(--border-thick);
@@ -79,62 +90,70 @@ body {
   padding: 10px 20px;
   cursor: pointer;
   box-shadow: var(--shadow-flat);
-  transition: all 0.1s ease;
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.1s ease,
+    background-color 0.1s ease;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   user-select: none;
+  white-space: nowrap;
 }
 
 .comic-btn:hover {
   background-color: var(--color-accent-hover);
   transform: translate(-2px, -2px);
-  box-shadow: var(--shadow-flat-hover);
+  box-shadow: var(--shadow-hover);
 }
 
 .comic-btn:active {
-  transform: translate(2px, 2px);
-  box-shadow: var(--shadow-flat-active);
+  transform: translate(1px, 1px);
+  box-shadow: var(--shadow-press);
 }
 
-.comic-btn.pink, .comic-btn.secondary {
+.comic-btn.secondary {
   background-color: #FFFFFF;
   color: #000000;
 }
-.comic-btn.pink:hover, .comic-btn.secondary:hover {
+.comic-btn.secondary:hover {
   background-color: var(--color-light-gray);
 }
 
 .comic-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.38;
   cursor: not-allowed;
   transform: none !important;
   box-shadow: var(--shadow-flat) !important;
 }
 
-/* --- FORM INPUTS --- */
+/* ─── INPUTS ─────────────────────────────────── */
 .comic-input {
   font-family: inherit;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  font-weight: 700;
   color: #000000;
   width: 100%;
-  padding: 12px 16px;
+  padding: 11px 14px;
   border: var(--border-thick);
   border-radius: 10px;
   background-color: #FFFFFF;
   outline: none;
-  box-shadow: inset 2px 2px 0px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+  box-shadow: var(--shadow-xs);
 }
 
 .comic-input:focus {
-  box-shadow: inset 2px 2px 0px rgba(0, 0, 0, 0.05), 0 0 0 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm), 0 0 0 3px rgba(0,0,0,0.08);
+  transform: translate(-1px, -1px);
 }
 
 .comic-select {
   font-family: inherit;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  font-weight: 700;
   color: #000000;
-  padding: 12px 16px;
+  padding: 11px 14px;
   border: var(--border-thick);
   border-radius: 10px;
   background-color: #FFFFFF;
@@ -142,91 +161,105 @@ body {
   cursor: pointer;
 }
 
-/* --- ANIMATIONS --- */
+/* ─── KEYFRAME ANIMATIONS ────────────────────── */
 @keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-3px); }
+  0%   { transform: translateY(0px); }
+  50%  { transform: translateY(-3px); }
   100% { transform: translateY(0px); }
 }
 
 @keyframes wiggle {
   0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-2deg); }
-  75% { transform: rotate(2deg); }
+  25%       { transform: rotate(-2deg); }
+  75%       { transform: rotate(2deg); }
 }
 
 @keyframes pop {
-  0% { transform: scale(0.95); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
+  0%   { transform: scale(0.92); opacity: 0; }
+  100% { transform: scale(1);    opacity: 1; }
 }
 
 @keyframes modalPop {
-  0% { transform: scale(0.9) translateY(20px); opacity: 0; }
-  100% { transform: scale(1) translateY(0); opacity: 1; }
+  0%   { transform: scale(0.88) translateY(24px); opacity: 0; }
+  100% { transform: scale(1)    translateY(0);    opacity: 1; }
+}
+
+@keyframes slideDown {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  100% { transform: translateY(0);     opacity: 1; }
+}
+
+@keyframes fadeIn {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
 }
 
 @keyframes spin-slow {
   from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  to   { transform: rotate(360deg); }
 }
 
-/* Calm animate-float to hover-only or extremely slow and subtle (12s period, 2px displacement) */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(1.4); }
+}
+
+/* Calm float — subtle 10s cycle, faster on hover */
 .animate-float {
   animation: float 10s ease-in-out infinite;
 }
-
 .animate-float:hover {
   animation: float 1.5s ease-in-out infinite;
 }
-
 .animate-float-delayed {
-  animation: float 10s ease-in-out infinite;
-  animation-delay: 5s;
+  animation: float 10s ease-in-out 5s infinite;
 }
-
 .animate-wiggle:hover {
   animation: wiggle 0.4s ease-in-out infinite;
 }
-
 .animate-spin-slow {
-  animation: spin-slow 15s linear infinite;
+  animation: spin-slow 2s linear infinite;
+}
+.animate-pop {
+  animation: pop 0.22s var(--ease-snappy);
 }
 
-/* Premium Settings Modal Styles */
+/* ─── MODAL / OVERLAY ────────────────────────── */
 .modal-backdrop {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-color: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10000;
   padding: 16px;
-  animation: pop 0.25s ease-out;
+  animation: fadeIn 0.2s ease-out;
 }
 
 .settings-modal-card {
-  max-width: 550px;
+  max-width: 560px;
   width: 100%;
-  max-height: 90vh;
+  max-height: 92vh;
   overflow-y: auto;
   background-color: #FFFFFF;
   border: 3.5px solid #000000;
-  box-shadow: 8px 8px 0px #000000;
+  box-shadow: var(--shadow-lg);
   border-radius: 20px;
   padding: 28px;
   position: relative;
-  animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: modalPop 0.28s var(--ease-bounce);
 }
 
+/* Settings tab nav */
 .settings-tab-nav {
   display: flex;
   flex-wrap: wrap;
-  border-bottom: 3.5px solid #000000;
-  margin-bottom: 20px;
-  gap: 4px;
+  border-bottom: 3px solid #000000;
+  margin-bottom: 22px;
+  gap: 2px;
 }
 
 .settings-tab-link {
@@ -235,13 +268,14 @@ body {
   padding: 10px 8px;
   font-family: inherit;
   font-weight: 800;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   background: none;
   border: none;
   cursor: pointer;
   color: var(--text-muted);
-  border-bottom: 4px solid transparent;
-  transition: all 0.2s ease;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -3px;
+  transition: color 0.15s ease, border-color 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -250,42 +284,44 @@ body {
 
 .settings-tab-link.active {
   color: #000000;
-  border-bottom: 4px solid #000000;
+  border-bottom-color: #000000;
+}
+
+.settings-tab-link:hover:not(.active) {
+  color: #333333;
 }
 
 .settings-modal-close {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: 18px;
+  right: 18px;
   border: 2.5px solid #000000;
   width: 32px;
   height: 32px;
   border-radius: 50%;
   background: #FFFFFF;
   cursor: pointer;
-  box-shadow: 2px 2px 0px #000000;
+  box-shadow: var(--shadow-xs);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.1s ease;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
-
 .settings-modal-close:hover {
   transform: translate(-1px, -1px);
-  box-shadow: 3px 3px 0px #000000;
+  box-shadow: var(--shadow-sm);
   background: var(--color-light-gray);
 }
-
 .settings-modal-close:active {
   transform: translate(1px, 1px);
-  box-shadow: 1px 1px 0px #000000;
+  box-shadow: var(--shadow-press);
 }
 
-/* --- LAYOUT UTILITIES --- */
+/* ─── LAYOUT UTILITIES ───────────────────────── */
 .container {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 24px 16px 80px 16px;
+  padding: 24px 16px 96px 16px;
 }
 
 .header {
@@ -303,33 +339,37 @@ body {
   gap: 16px;
 }
 
-.title-icon {
-  width: 130px;
-  height: 65px;
-  align-self: flex-end;
-  margin-bottom: -22px; /* Pull peeking dog onto the bottom line! */
-  z-index: 5;
-}
-
 .app-title {
-  font-size: 2.8rem;
+  font-size: 2.6rem;
   font-weight: 900;
-  letter-spacing: -1px;
+  letter-spacing: -1.5px;
   text-transform: uppercase;
+  line-height: 1;
 }
 
+/* ─── STATUS BADGE ───────────────────────────── */
 .badge {
   background: #000000;
   color: #FFFFFF;
   padding: 3px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.5px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.4px;
   text-transform: uppercase;
 }
 
-/* Tab controls */
+/* Animated sync dot */
+.dot-pulse {
+  width: 7px;
+  height: 7px;
+  background: #000000;
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulse-dot 1.8s ease-in-out infinite;
+}
+
+/* ─── TABS ───────────────────────────────────── */
 .tabs {
   display: flex;
   gap: 8px;
@@ -339,126 +379,119 @@ body {
 .tab-btn {
   background: #FFFFFF;
   border: var(--border-thick);
-  border-radius: 8px;
-  padding: 6px 12px;
+  border-radius: 10px;
+  padding: 7px 14px;
   font-family: inherit;
   font-weight: 800;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all 0.1s ease;
+  transition: all 0.12s ease;
+  box-shadow: var(--shadow-xs);
 }
 
 .tab-btn.active {
   background: #000000;
   color: #FFFFFF;
-  box-shadow: 2px 2px 0 #FFFFFF;
+  box-shadow: var(--shadow-sm);
 }
 
-/* Toast alert */
+.tab-btn:hover:not(.active) {
+  background: var(--color-light-gray);
+  transform: translate(-1px, -1px);
+}
+
+/* ─── TOAST ALERT ────────────────────────────── */
 .toast-alert {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
+  bottom: 28px;
+  right: 20px;
   background: var(--bg-secondary);
-  border: var(--border-thick);
+  border: 3px solid #000000;
   box-shadow: var(--shadow-flat);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 12px 20px;
   display: flex;
   align-items: center;
   gap: 10px;
-  z-index: 1000;
-  animation: pop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+  z-index: 9000;
+  animation: pop 0.22s var(--ease-snappy);
+  max-width: 320px;
 }
 
-/* Scrollbar styling */
-/* Hide main browser scrollbar on html and body to look like a native app */
+/* ─── PULL-TO-REFRESH HEADER ─────────────────── */
+.pull-refresh-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #000000;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 0.88rem;
+  letter-spacing: 0.5px;
+  z-index: 9998;
+  padding: 12px 16px;
+  animation: slideDown 0.2s ease-out;
+}
+
+/* ─── SCROLLBARS ─────────────────────────────── */
 html, body {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
-html::-webkit-scrollbar, body::-webkit-scrollbar {
-  display: none; /* Chrome, Safari and Opera */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
 }
 
-/* Style other inner scrollable elements beautifully */
+/* Custom thin scrollbars on nested containers */
 *:not(html):not(body) {
   scrollbar-width: thin;
-  scrollbar-color: #000000 var(--bg-primary);
+  scrollbar-color: #CCCCCC transparent;
 }
-
 *:not(html):not(body)::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 5px;
+  height: 5px;
 }
 *:not(html):not(body)::-webkit-scrollbar-track {
-  background: var(--bg-primary);
+  background: transparent;
 }
 *:not(html):not(body)::-webkit-scrollbar-thumb {
-  background: #000000;
-  border: 2px solid var(--bg-primary);
-  border-radius: 4px;
+  background: #CCCCCC;
+  border-radius: 999px;
 }
 *:not(html):not(body)::-webkit-scrollbar-thumb:hover {
-  background: #333333;
+  background: #888888;
 }
 
-/* --- MOBILE RESPONSIVE UI/UX OPTIMIZATIONS (max-width: 600px) --- */
-@media (max-width: 600px) {
-  /* Page margins & Container */
+/* ─── MOBILE RESPONSIVE (≤ 640px) ───────────── */
+@media (max-width: 640px) {
   .container {
-    padding: 12px 10px 96px 10px !important;
+    padding: 12px 12px 100px 12px !important;
   }
 
-  /* Header Stacking & Scaling */
   .header {
-    flex-direction: column !important;
     align-items: stretch !important;
-    gap: 12px !important;
+    gap: 10px !important;
     padding-bottom: 14px !important;
-    margin-bottom: 20px !important;
+    margin-bottom: 18px !important;
   }
-  
+
   .title-container {
     align-items: center !important;
-    gap: 8px !important;
-    width: 100% !important;
+    gap: 10px !important;
   }
-  
-  .title-icon {
-    width: 90px !important;
-    height: 45px !important;
-    margin-bottom: -15px !important;
-  }
-  
+
   .app-title {
-    font-size: 2.2rem !important;
+    font-size: 2rem !important;
+    letter-spacing: -1px !important;
   }
 
-  /* Currency selector container styling in App.jsx */
-  .currency-selector-container {
-    width: 100% !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 4px !important;
-  }
-  
-  .currency-row {
-    width: 100% !important;
-    display: flex !important;
-    gap: 6px !important;
-  }
-  
-  .currency-tab-btn {
-    flex: 1 !important;
-    text-align: center !important;
-    padding: 6px 4px !important;
-    font-size: 0.72rem !important;
-  }
-
-  /* GistSyncPanel floating status bar */
   .status-container {
     flex-direction: column !important;
     align-items: stretch !important;
@@ -479,70 +512,50 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
   .button-group button {
     flex: 1 !important;
-    font-size: 0.75rem !important;
+    font-size: 0.76rem !important;
     padding: 8px 6px !important;
     justify-content: center !important;
-    white-space: nowrap !important;
   }
 
-  /* Winner Dashboard mobile vertical stack */
+  /* Dashboard */
   .WinnerDashboard-columnsGrid {
     flex-direction: column !important;
     gap: 12px !important;
   }
 
-  .WinnerDashboard-statsCard, .WinnerDashboard-summaryCard {
+  .WinnerDashboard-statsCard,
+  .WinnerDashboard-summaryCard {
     flex: 1 1 100% !important;
-    padding: 12px 14px !important;
-  }
-  
-  .card-header {
-    padding-bottom: 8px !important;
-  }
-  
-  .role-name {
-    font-size: 0.88rem !important;
+    padding: 14px 16px !important;
   }
 
-  .stat-value {
-    font-size: 1.1rem !important;
-  }
-
-  /* Scales Grid mobile spacing */
+  /* Scales */
   .scales-grid {
     flex-direction: column !important;
     gap: 16px !important;
   }
 
-  /* BalanceScale mobile typography */
   .BalanceScale-infoArea {
     gap: 4px !important;
   }
 
-  .p-name {
-    font-size: 0.72rem !important;
-  }
-  
-  .p-val {
-    font-size: 0.82rem !important;
-  }
+  .p-name { font-size: 0.72rem !important; }
+  .p-val  { font-size: 0.82rem !important; }
 
   .balance-status {
-    padding: 4px 6px !important;
-    font-size: 0.74rem !important;
-    border-width: 2px !important;
+    padding: 4px 8px !important;
+    font-size: 0.72rem !important;
   }
 
-  /* History list mobile header */
+  /* History list */
   .HistoryList-header {
     flex-direction: column !important;
     align-items: stretch !important;
-    gap: 10px !important;
-    padding-bottom: 12px !important;
+    gap: 8px !important;
   }
 
   .HistoryList-title {
-    font-size: 1.05rem !important;
+    font-size: 1rem !important;
     text-align: center !important;
   }
 
@@ -555,171 +568,76 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
   .HistoryList-tab {
     flex: 1 !important;
     padding: 6px 4px !important;
-    font-size: 0.75rem !important;
+    font-size: 0.74rem !important;
     text-align: center !important;
   }
 
-  /* History List items mobile layout */
   .HistoryList-itemCard {
     padding: 10px 12px !important;
-    gap: 8px !important;
   }
 
-  .HistoryList-itemTitle {
-    font-size: 0.88rem !important;
+  .HistoryList-itemTitle   { font-size: 0.88rem !important; }
+  .HistoryList-itemDetails { font-size: 0.72rem !important; gap: 8px !important; }
+  .HistoryList-moneyVal    { font-size: 0.92rem !important; }
+  .HistoryList-convertedVal { font-size: 0.68rem !important; }
+
+  /* Modals */
+  .settings-modal-card {
+    padding: 20px 16px !important;
+    border-width: 2.5px !important;
+    border-radius: 16px !important;
   }
 
-  .HistoryList-itemDetails {
-    gap: 8px !important;
-    font-size: 0.72rem !important;
-  }
-
-  .HistoryList-moneyVal {
-    font-size: 0.92rem !important;
-  }
-  
-  .HistoryList-convertedVal {
-    font-size: 0.7rem !important;
-  }
-
-  /* Onboarding / Onboarding Wizard */
   .wizard-card {
     max-height: 94vh !important;
     overflow-y: auto !important;
-    padding: 16px !important;
+    padding: 18px 14px !important;
     border-width: 2.5px !important;
   }
 
-  .wizard-title {
-    font-size: 1.15rem !important;
+  .RecordModal-card {
+    max-height: 94vh !important;
+    overflow-y: auto !important;
+    padding: 18px 14px !important;
+    border-width: 2.5px !important;
   }
 
-  .wizard-subtitle {
-    font-size: 0.78rem !important;
+  .RecordModal-title        { font-size: 1.1rem !important; }
+  .RecordModal-typeBtn      { padding: 8px 10px !important; font-size: 0.8rem !important; }
+  .RecordModal-partnerSelector { flex-direction: column !important; }
+  .RecordModal-presetTag    { font-size: 0.72rem !important; }
+  .RecordModal-currencyBtn  { font-size: 0.74rem !important; }
+  .RecordModal-quickPointBtn{ font-size: 0.72rem !important; }
+
+  /* Floating button */
+  .floating-action-wrapper {
+    bottom: 16px !important;
+    width: calc(100% - 24px) !important;
+  }
+  .floating-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 13px 20px !important;
+    font-size: 0.95rem !important;
   }
 
-  .wizard-tab-container {
-    margin-bottom: 14px !important;
+  /* Toast */
+  .toast-alert {
+    bottom: 88px !important;
+    left: 12px !important;
+    right: 12px !important;
+    max-width: none !important;
+    padding: 10px 14px !important;
   }
 
-  .wizard-tab-btn {
-    font-size: 0.76rem !important;
-    padding: 6px 4px !important;
-    border-width: 2px !important;
-  }
-
-  .wizard-section {
-    padding: 12px !important;
-    border-width: 2px !important;
-  }
-
-  .wizard-section-header {
-    font-size: 0.88rem !important;
-    margin-bottom: 12px !important;
-  }
-
+  /* Settings responsive */
   .names-row {
     flex-direction: column !important;
     align-items: stretch !important;
     gap: 8px !important;
   }
-
-  .swap-col {
-    align-self: center !important;
-    margin: 4px 0 !important;
-  }
-
   .identity-row {
     flex-direction: column !important;
     gap: 6px !important;
-  }
-
-  .identity-btn {
-    padding: 8px !important;
-    font-size: 0.78rem !important;
-    border-width: 2px !important;
-  }
-
-  /* Record Modal mobile optimization */
-  .RecordModal-card {
-    max-height: 94vh !important;
-    overflow-y: auto !important;
-    padding: 16px !important;
-    border-width: 2.5px !important;
-  }
-
-  .RecordModal-title {
-    font-size: 1.15rem !important;
-    margin-bottom: 12px !important;
-  }
-
-  .RecordModal-typeSelector {
-    gap: 8px !important;
-    margin-bottom: 14px !important;
-  }
-
-  .RecordModal-typeBtn {
-    padding: 8px 10px !important;
-    font-size: 0.8rem !important;
-    border-width: 2px !important;
-  }
-
-  .RecordModal-partnerSelector {
-    flex-direction: column !important;
-    gap: 6px !important;
-  }
-
-  .RecordModal-partnerCard {
-    padding: 8px !important;
-  }
-
-  .RecordModal-partnerName {
-    font-size: 0.8rem !important;
-  }
-
-  .RecordModal-presetTag {
-    font-size: 0.72rem !important;
-    padding: 3px 6px !important;
-  }
-
-  .RecordModal-currencyRow {
-    gap: 6px !important;
-  }
-
-  .RecordModal-currencyBtn {
-    font-size: 0.76rem !important;
-    padding: 6px 8px !important;
-  }
-
-  .RecordModal-quickPointBtn {
-    font-size: 0.72rem !important;
-    padding: 3px 4px !important;
-  }
-
-  .RecordModal-actionRow {
-    gap: 8px !important;
-  }
-
-  /* Floating button wrapper for mobile */
-  .floating-action-wrapper {
-    bottom: 16px !important;
-    width: calc(100% - 20px) !important;
-  }
-
-  .floating-btn {
-    width: 100% !important;
-    justify-content: center !important;
-    padding: 12px 18px !important;
-    font-size: 0.95rem !important;
-    box-shadow: 3px 3px 0px #000000 !important;
-  }
-
-  /* Toast notification on mobile */
-  .toast-alert {
-    bottom: 80px !important;
-    left: 10px !important;
-    right: 10px !important;
-    padding: 10px 14px !important;
-    border-width: 2.5px !important;
   }
 }

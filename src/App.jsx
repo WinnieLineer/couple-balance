@@ -739,7 +739,7 @@ export default function App() {
             <div style={{ ...styles.badge, backgroundColor: '#FFFFFF' }}>
               <Cloud size={16} />
               <span>雲端已連線</span>
-              <span style={styles.dotPulse} />
+              <span className="dot-pulse" style={styles.dotPulse} />
             </div>
           ) : (
             <div style={{ ...styles.badge, backgroundColor: '#FFFFFF', color: '#666666' }}>
@@ -981,9 +981,9 @@ const styles = {
     position: 'relative',
   },
   dotPulse: {
-    width: '6px',
-    height: '6px',
-    backgroundColor: '#1e7e34',
+    width: '7px',
+    height: '7px',
+    backgroundColor: '#000000',
     borderRadius: '50%',
     display: 'inline-block',
   },
@@ -1014,7 +1014,7 @@ const styles = {
   floatingBtn: {
     padding: '16px 28px',
     fontSize: '1.05rem',
-    borderRadius: '0px',
+    borderRadius: '16px',
     boxShadow: '4px 4px 0px #000000',
     backgroundColor: '#FFFFFF',
     color: '#000000',
