@@ -351,6 +351,8 @@ const styles = {
   modalCard: {
     maxWidth: '480px',
     width: '100%',
+    maxHeight: '90vh',
+    overflowY: 'auto',
     backgroundColor: '#FFFFFF',
     padding: '28px 24px 24px 24px',
     position: 'relative',
