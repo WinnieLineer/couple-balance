@@ -12,7 +12,7 @@ import ActivityLog from './components/ActivityLog';
 import PWAPrompt from './components/PWAPrompt';
 import { fetchGistData, updateGistData } from './utils/githubGist';
 
-const APP_VERSION_CODE = 1;
+const APP_VERSION_CODE = 2;
 
 export default function App() {
   // --- STATES ---
@@ -653,7 +653,7 @@ export default function App() {
       >
       {/* --- APP HEADER --- */}
       <header className="header" style={styles.header}>
-        <div className="title-container">
+        <div className="title-container" style={{ minWidth: 0, flex: 1 }}>
           {/* Authentic peeking Maltese dog mascot image from the favicon */}
           <img 
             src="./favicon.png" 
@@ -681,7 +681,7 @@ export default function App() {
         </div>
 
         {/* Header Actions: Settings Gear Icon + Add Button */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
           {/* ⚙️ 系統設定按鈕 */}
           <button
             onClick={() => setIsSettingsOpen(true)}
@@ -939,9 +939,8 @@ const styles = {
   header: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    flexWrap: 'wrap',
-    gap: '16px',
+    alignItems: 'center',
+    gap: '12px',
     borderBottom: '3px solid #000000',
     paddingBottom: '20px',
     marginBottom: '28px',
