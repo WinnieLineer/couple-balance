@@ -39,14 +39,7 @@ export default function RecordModal({
   useEffect(() => {
     if (isOpen) {
       setByPartner(defaultByPartner);
-      // 只鎖 overflow 防止背景捲動，不設 position:fixed 避免桌面版 layout 爆出
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
   }, [isOpen, defaultByPartner]);
 
 
@@ -96,7 +89,15 @@ export default function RecordModal({
   };
 
   return (
-    <div style={styles.overlay}>
+    <div 
+      style={styles.overlay}
+      onMouseDown={(e) => e.stopPropagation()}
+      onMouseMove={(e) => e.stopPropagation()}
+      onMouseUp={(e) => e.stopPropagation()}
+      onTouchStart={(e) => e.stopPropagation()}
+      onTouchMove={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
+    >
       <div className="comic-card animate-pop RecordModal-card" style={styles.modalCard}>
         {/* Memo Paper Header Decoration */}
         <div style={styles.memoHeader}>
@@ -343,19 +344,20 @@ const styles = {
     backgroundColor: 'rgba(0, 0, 0, 0.45)',
     backdropFilter: 'blur(10px)',
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
     zIndex: 9999,
-    padding: '16px',
+    padding: '24px 16px 40px 16px',
+    overflowY: 'auto',
+    WebkitOverflowScrolling: 'touch',
   },
   modalCard: {
     maxWidth: '480px',
     width: '100%',
-    maxHeight: '90vh',
-    overflowY: 'auto',
     backgroundColor: '#FFFFFF',
     padding: '28px 24px 24px 24px',
     position: 'relative',
+    flexShrink: 0,
     backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px)',
     backgroundSize: '100% 28px',
     boxShadow: 'var(--shadow-lg)',

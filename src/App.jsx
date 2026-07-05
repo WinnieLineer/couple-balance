@@ -531,7 +531,7 @@ export default function App() {
   const isDraggingRef = useRef(false);
 
   const handlePullStart = (clientY) => {
-    if (window.scrollY > 0 || isSyncing || refreshState === 'loading') return;
+    if (isAddModalOpen || isSettingsOpen || showWizard || window.scrollY > 0 || isSyncing || refreshState === 'loading') return;
     startYRef.current = clientY;
     isDraggingRef.current = true;
     setIsDragging(true);

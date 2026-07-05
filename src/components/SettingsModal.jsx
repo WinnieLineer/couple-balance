@@ -46,17 +46,7 @@ export default function SettingsModal({
     setGistIdInput(syncConfig.gistId || '');
   }, [syncConfig]);
 
-  // 只鎖 overflow 防止背景捲動，不設 position:fixed 避免桌面版 layout 爆出
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
+  // No body overflow lock needed — the modal-backdrop overlay handles scrolling
 
   if (!isOpen) return null;
 
@@ -163,7 +153,16 @@ export default function SettingsModal({
   };
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
+    <div 
+      className="modal-backdrop" 
+      onClick={onClose}
+      onMouseDown={(e) => e.stopPropagation()}
+      onMouseMove={(e) => e.stopPropagation()}
+      onMouseUp={(e) => e.stopPropagation()}
+      onTouchStart={(e) => e.stopPropagation()}
+      onTouchMove={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
+    >
       <div className="settings-modal-card" onClick={(e) => e.stopPropagation()}>
         {/* Close Button */}
         <button className="settings-modal-close" onClick={onClose} aria-label="關閉">

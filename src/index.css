@@ -232,24 +232,25 @@ body {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   z-index: 10000;
-  padding: 16px;
+  padding: 24px 16px 40px 16px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   animation: fadeIn 0.2s ease-out;
 }
 
 .settings-modal-card {
   max-width: 560px;
   width: 100%;
-  max-height: 92vh;
-  overflow-y: auto;
   background-color: #FFFFFF;
   border: 3.5px solid #000000;
   box-shadow: var(--shadow-lg);
   border-radius: 20px;
   padding: 28px;
   position: relative;
+  flex-shrink: 0;
   animation: modalPop 0.28s var(--ease-bounce);
 }
 
@@ -589,15 +590,11 @@ body::-webkit-scrollbar {
   }
 
   .wizard-card {
-    max-height: 94vh !important;
-    overflow-y: auto !important;
     padding: 18px 14px !important;
     border-width: 2.5px !important;
   }
 
   .RecordModal-card {
-    max-height: 94vh !important;
-    overflow-y: auto !important;
     padding: 18px 14px !important;
     border-width: 2.5px !important;
   }

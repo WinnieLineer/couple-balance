@@ -165,7 +165,15 @@ export default function OnboardingWizard({
   };
 
   return (
-    <div style={styles.wizardOverlay}>
+    <div 
+      style={styles.wizardOverlay}
+      onMouseDown={(e) => e.stopPropagation()}
+      onMouseMove={(e) => e.stopPropagation()}
+      onMouseUp={(e) => e.stopPropagation()}
+      onTouchStart={(e) => e.stopPropagation()}
+      onTouchMove={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
+    >
       {/* 1. Cloud Success Invite Link Popover */}
       {invitationText ? (
         <div className="comic-card wizard-card" style={{ ...styles.wizardCard, maxWidth: '460px' }}>
@@ -461,16 +469,17 @@ const styles = {
     backdropFilter: 'blur(8px)',
     WebkitBackdropFilter: 'blur(8px)',
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
     zIndex: 10000,
-    padding: '16px',
+    padding: '24px 16px 40px 16px',
+    overflowY: 'auto',
+    WebkitOverflowScrolling: 'touch',
   },
   wizardCard: {
     maxWidth: '500px',
     width: '100%',
-    maxHeight: '92vh',
-    overflowY: 'auto',
+    flexShrink: 0,
     backgroundColor: '#FFFFFF',
     padding: '24px',
     border: '3px solid #000000',
