@@ -64,7 +64,7 @@ export default function SettingsModal({
       p2: { name: p2Name.trim() || '伴侶二', role: p2Role, deviceId: partners.p2.deviceId || '' }
     };
     onUpdatePartners(payload);
-    setLocalSuccess('伴侶暱稱與角色設定已成功儲存！');
+    setLocalSuccess('伴侶稱呼與角色設定已成功儲存！');
     setTimeout(() => setLocalSuccess(''), 2000);
   };
 
@@ -90,7 +90,7 @@ export default function SettingsModal({
     };
 
     saveConfig(finalToken, finalGistId, payload, myIdentity || 'p1');
-    setLocalSuccess('雲端 Gist 設定儲存成功，正進行同步...');
+    setLocalSuccess('雲端 Gist 設定儲存成功，正進行更新...');
     setTimeout(() => setLocalSuccess(''), 2500);
   };
 
@@ -137,7 +137,7 @@ export default function SettingsModal({
       setGistIdInput(newGistId);
       
       saveConfig(finalToken, newGistId, payloadPartners, finalIdentity);
-      setLocalSuccess('🎉 專屬雲端資料庫建立成功，並已自動將您原先的本地紀錄備份至雲端！');
+      setLocalSuccess('🎉 專屬雲端資料庫建立成功，並已自動將您原先的本地明細備份至雲端！');
       setTimeout(() => setLocalSuccess(''), 4500);
     } catch (err) {
       console.error(err);
@@ -149,7 +149,7 @@ export default function SettingsModal({
 
   const handleCopyInvitation = () => {
     const inviteUrl = `https://winnie-lin.space/couple-balance/?gistId=${syncConfig.gistId}`;
-    const inviteMsg = `Hi！我已經在 HeartSync 建立了我們的專屬生活付出天秤囉！⚖️\n\n🔗 點擊此連結直接加入（免複製貼上）：\n${inviteUrl}\n\n開啟後在引導精靈中確認身份，即可即時雙向同步！✨`;
+    const inviteMsg = `Hi！我已經在 HeartSync 建立了我們的專屬生活付出天秤囉！⚖️\n\n🔗 點擊此連結直接加入（免複製貼上）：\n${inviteUrl}\n\n開啟後在引導精靈中確認身份，即可即時雙向連線更新！✨`;
     navigator.clipboard.writeText(inviteMsg);
     alert('邀請文字已複製到剪貼簿，趕快傳給伴侶吧！');
   };
@@ -189,21 +189,21 @@ export default function SettingsModal({
             onClick={() => { setActiveTab('partners'); setLocalError(''); setLocalSuccess(''); }}
           >
             <Users size={16} />
-            <span>伴侶暱稱</span>
+            <span>伴侶稱呼</span>
           </button>
           <button
             className={`settings-tab-link ${activeTab === 'cloud' ? 'active' : ''}`}
             onClick={() => { setActiveTab('cloud'); setLocalError(''); setLocalSuccess(''); }}
           >
             <Cloud size={16} />
-            <span>雲端與同步</span>
+            <span>雲端與備份</span>
           </button>
           <button
             className={`settings-tab-link ${activeTab === 'activity' ? 'active' : ''}`}
             onClick={() => { setActiveTab('activity'); setLocalError(''); setLocalSuccess(''); }}
           >
             <History size={16} />
-            <span>活動紀錄</span>
+            <span>活動日誌</span>
           </button>
         </div>
 
@@ -246,7 +246,7 @@ export default function SettingsModal({
         {activeTab === 'partners' && (
           <div style={styles.tabContent}>
             <p style={styles.tabDescription}>
-              在此修改雙方在天秤上顯示的暱稱，並選擇象徵的角色。
+              在此修改雙方在天秤上顯示的稱呼，並選擇象徵的角色。
             </p>
             <div className="names-row" style={styles.namesRow}>
               {/* Partner 1 Input */}
@@ -327,7 +327,7 @@ export default function SettingsModal({
               className="comic-btn"
               style={{ width: '100%', marginTop: '20px', padding: '12px', justifyContent: 'center' }}
             >
-              💾 儲存暱稱與角色變更
+              💾 儲存稱呼與角色變更
             </button>
 
             {localSuccess && <div style={styles.localSuccessText}>{localSuccess}</div>}
@@ -338,7 +338,7 @@ export default function SettingsModal({
         {activeTab === 'cloud' && (
           <div style={styles.tabContent}>
             <p style={styles.tabDescription}>
-              設定 GitHub Gist 進行雲端同步，讓您與伴侶的資料隨時保持一致。
+              設定 GitHub Gist 進行雲端備份，讓您與伴侶的資料隨時保持一致。
             </p>
 
             {/* Offline Mode Toggle */}
@@ -346,7 +346,7 @@ export default function SettingsModal({
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1 }}>
                 <span style={{ fontSize: '0.88rem', fontWeight: '800', color: '#000000' }}>📵 離線體驗模式</span>
                 <span style={{ fontSize: '0.75rem', color: '#666666', fontWeight: '600' }}>
-                  開啟後資料將僅儲存在這台裝置上，不與雲端同步。
+                  開啟後資料將僅儲存在這台裝置上，不進行雲端備份。
                 </span>
               </div>
               <button
@@ -361,14 +361,14 @@ export default function SettingsModal({
                   border: '2.5px solid #000000',
                 }}
               >
-                {offlineMode ? '已開啟離線' : '同步進行中'}
+                {offlineMode ? '已開啟離線' : '雲端已連線'}
               </button>
             </div>
 
             {!offlineMode && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '10px' }}>
                 <div style={styles.inputCol}>
-                  <label style={styles.label}>專屬同步 Gist ID</label>
+                  <label style={styles.label}>專屬雲端 Gist ID</label>
                   <input
                     type="text"
                     value={gistIdInput}
@@ -408,7 +408,7 @@ export default function SettingsModal({
                       style={{ padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.82rem', width: '100%', marginTop: '6px' }}
                     >
                       <RefreshCw size={14} className={isSyncing ? 'animate-spin-slow' : ''} />
-                      <span>{isSyncing ? '正在手動同步中...' : '手動拉取雲端最新資料'}</span>
+                      <span>{isSyncing ? '正在手動更新中...' : '手動下載雲端最新資料'}</span>
                     </button>
                   )}
                 </div>
@@ -418,7 +418,7 @@ export default function SettingsModal({
                   <div style={styles.shareCard}>
                     <h4 style={styles.shareTitle}>🔗 分享天秤給伴侶</h4>
                     <p style={{ fontSize: '0.78rem', color: '#666666', fontWeight: '700', marginBottom: '8px', lineHeight: '1.4' }}>
-                      伴侶只需在另一台裝置進入時選擇「連結現有天秤」並貼入此 ID，即可秒速同步！
+                      伴侶只需在另一台裝置進入時選擇「連結現有天秤」並貼入此 ID，即可秒速連線！
                     </p>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                       <input 
@@ -463,7 +463,7 @@ export default function SettingsModal({
         {activeTab === 'activity' && (
           <div style={styles.tabContent}>
             <p style={styles.tabDescription}>
-              共同天秤的所有歷史操作日誌（唯讀不可篡改），用於核對和追溯。
+              共同天秤的所有操作日誌（唯讀且不可修改），用於核對和追溯。
             </p>
             <div style={{
               maxHeight: '320px',

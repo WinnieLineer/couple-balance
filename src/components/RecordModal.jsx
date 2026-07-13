@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { X, Landmark, Heart, Sparkles, User, Tag, Plus, Check } from 'lucide-react';
 
 const MONEY_PRESETS = [
-  { tag: '買菜與日用品', val: '' },
+  { tag: '買菜及日用品', val: '' },
   { tag: '水電瓦斯網路', val: '' },
-  { tag: '約會大餐', val: '' },
-  { tag: '房租與家居費', val: '' },
-  { tag: '交通與加油費', val: '' },
-  { tag: '零食飲料生活', val: '' },
+  { tag: '約會美食', val: '' },
+  { tag: '房租及家居費', val: '' },
+  { tag: '交通及加油費', val: '' },
+  { tag: '飲料點心生活', val: '' },
 ];
 
 const LOVE_PRESETS = [
@@ -27,20 +27,24 @@ export default function RecordModal({
   p2Name = '伴侶二',
   p1Role = 'white_dog',
   p2Role = 'brown_dog',
-  defaultByPartner = 'p1'
+  defaultByPartner = 'p1',
+  defaultType = 'money'
 }) {
-  const [recordType, setRecordType] = useState('money'); // 'money' or 'love'
+  const [recordType, setRecordType] = useState(defaultType); // 'money' or 'love'
   const [byPartner, setByPartner] = useState(defaultByPartner); // 'p1' (husband) or 'p2' (wife)
   const [title, setTitle] = useState('');
   const [value, setValue] = useState('');
   const [currency, setCurrency] = useState('TWD');
   const [error, setError] = useState('');
+  const [isTitleFocused, setIsTitleFocused] = useState(false);
+  const [isValueFocused, setIsValueFocused] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setByPartner(defaultByPartner);
+      setRecordType(defaultType);
     }
-  }, [isOpen, defaultByPartner]);
+  }, [isOpen, defaultByPartner, defaultType]);
 
 
   if (!isOpen) return null;
@@ -147,7 +151,7 @@ export default function RecordModal({
           </button>
         </div>
 
-        <h2 className="RecordModal-title" style={styles.title}>新增生活付出記錄</h2>
+        <h2 className="RecordModal-title" style={styles.title}>登記生活付出項目</h2>
         
         {/* Type selector tabs */}
         <div className="RecordModal-typeSelector" style={styles.typeSelector}>
@@ -182,7 +186,7 @@ export default function RecordModal({
             }}
           >
             <Heart size={18} color={!isMoney ? 'var(--color-love-accent)' : 'var(--text-muted)'} fill={!isMoney ? 'var(--color-love-accent)' : 'none'} />
-            <span>家事與心意</span>
+            <span>家事及心意</span>
           </button>
         </div>
 
@@ -191,7 +195,7 @@ export default function RecordModal({
           <div style={styles.formGroup}>
             <label style={styles.label}>
               <User size={15} style={{ marginRight: '4px' }} />
-              誰為生活付出了呢？
+              是誰為生活付出的？
             </label>
             <div className="RecordModal-partnerSelector" style={styles.partnerSelector}>
               <div 
@@ -229,6 +233,13 @@ export default function RecordModal({
               placeholder={isMoney ? '例如：買全聯菜肉、繳電費...' : '例如：掃地洗衣服、搥背...' }
               value={title} 
               onChange={(e) => setTitle(e.target.value)} 
+              onFocus={() => setIsTitleFocused(true)}
+              onBlur={() => setIsTitleFocused(false)}
+              style={{
+                borderColor: isTitleFocused ? activeColor : 'var(--border-color)',
+                boxShadow: isTitleFocused ? `0 0 0 3.5px ${isMoney ? 'rgba(122,168,144,0.25)' : 'rgba(255,138,138,0.25)'}` : 'none',
+                transition: 'all 0.15s ease',
+              }}
               className="comic-input" 
               maxLength="30"
             />
@@ -236,7 +247,7 @@ export default function RecordModal({
 
           {/* Quick presets */}
           <div style={styles.formGroup}>
-            <label style={styles.presetLabel}>推薦快捷標籤：</label>
+            <label style={styles.presetLabel}>推薦常用項目：</label>
             <div style={styles.presetsList}>
               {(isMoney ? MONEY_PRESETS : LOVE_PRESETS).map((item, idx) => (
                 <button
@@ -311,6 +322,14 @@ export default function RecordModal({
                 placeholder={isMoney ? `${currency === 'TWD' ? 'NT$' : currency === 'SGD' ? 'S$' : 'US$'} 金額` : '點數值'} 
                 value={value} 
                 onChange={(e) => setValue(e.target.value)} 
+                onFocus={() => setIsValueFocused(true)}
+                onBlur={() => setIsValueFocused(false)}
+                style={{
+                  borderColor: isValueFocused ? activeColor : 'var(--border-color)',
+                  boxShadow: isValueFocused ? `0 0 0 3.5px ${isMoney ? 'rgba(122,168,144,0.25)' : 'rgba(255,138,138,0.25)'}` : 'none',
+                  transition: 'all 0.15s ease',
+                  flex: 1,
+                }}
                 className="comic-input" 
                 min="1"
                 step="any"
@@ -400,7 +419,7 @@ export default function RecordModal({
               }}
             >
               <Plus size={16} strokeWidth={3} />
-              <span>儲存紀錄</span>
+              <span>完成儲存</span>
             </button>
           </div>
         </form>

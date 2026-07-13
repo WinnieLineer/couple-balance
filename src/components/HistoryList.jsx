@@ -53,7 +53,7 @@ export default function HistoryList({
     <div className="comic-card" style={styles.container}>
       {/* Tab Selectors inside the history panel */}
       <div className="HistoryList-header" style={styles.header}>
-        <h3 className="HistoryList-title" style={styles.title}>付出足跡歷史紀錄</h3>
+        <h3 className="HistoryList-title" style={styles.title}>生活付出足跡明細</h3>
         
         <div className="HistoryList-tabContainer" style={styles.tabContainer}>
           <button
@@ -126,8 +126,8 @@ export default function HistoryList({
         {filteredRecords.length === 0 ? (
           <div style={styles.emptyState}>
             <Footprints size={40} color="var(--text-subtle)" style={{ marginBottom: '12px' }} />
-            <p style={styles.emptyText}>暫無付出歷史足跡</p>
-            <p style={styles.emptySubtext}>點擊下方的「新增生活記錄」來留下點滴紀錄吧</p>
+            <p style={styles.emptyText}>尚未有付出足跡</p>
+            <p style={styles.emptySubtext}>點擊下方的「登記生活付出」來留下點滴足跡吧</p>
           </div>
         ) : (
           filteredRecords.map((record) => {
@@ -201,7 +201,7 @@ export default function HistoryList({
                     onClick={() => onDeleteRecord(record.id)}
                     className="comic-btn secondary"
                     style={{ ...styles.deleteBtn, borderColor: 'var(--border-color)' }}
-                    title="刪除此筆記錄"
+                    title="刪除此筆明細"
                   >
                     <Trash2 size={13} color="var(--border-color)" />
                   </button>

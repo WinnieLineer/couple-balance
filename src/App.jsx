@@ -12,7 +12,7 @@ import ActivityLog from './components/ActivityLog';
 import PWAPrompt from './components/PWAPrompt';
 import { fetchGistData, updateGistData } from './utils/githubGist';
 
-const APP_VERSION_CODE = 2;
+const APP_VERSION_CODE = 8;
 
 export default function App() {
   // --- STATES ---
@@ -25,6 +25,7 @@ export default function App() {
   const [displayCurrency, setDisplayCurrency] = useState('TWD');
   const [myIdentity, setMyIdentity] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [addModalDefaultType, setAddModalDefaultType] = useState('money');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showWizard, setShowWizard] = useState(!localStorage.getItem('partners_config'));
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
@@ -259,7 +260,7 @@ export default function App() {
     const currentMyIdentity = localStorage.getItem('my_identity') || '';
 
     setIsSyncing(true);
-    setSyncStatus('正在同步...');
+    setSyncStatus('正在更新...');
     try {
       const cloudData = await fetchGistData(token, gistId);
 
@@ -293,8 +294,8 @@ export default function App() {
 
         const now = new Date();
         const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-        setSyncStatus(`已同步 (${timeStr})`);
-        showToast('雲端資料同步完成', 'success');
+        setSyncStatus(`已儲存 (${timeStr})`);
+        showToast('雲端資料儲存完成', 'success');
 
         // Check if we need to log 'open' for today
         const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
@@ -323,7 +324,7 @@ export default function App() {
     } catch (err) {
       console.error(err);
       setSyncStatus('連線失敗，已載入本機');
-      showToast(`同步失敗：${err.message || '連線錯誤'}`, 'error');
+      showToast(`儲存失敗：${err.message || '連線錯誤'}`, 'error');
       // Do NOT override records on failure — keep whatever is currently in state
     } finally {
       setIsSyncing(false);
@@ -357,12 +358,12 @@ export default function App() {
       
       const now = new Date();
       const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-      setSyncStatus(`已同步 (${timeStr})`);
-      showToast('數據已自動備份至雲端', 'success');
+      setSyncStatus(`已儲存 (${timeStr})`);
+      showToast('數據已自動上傳至雲端', 'success');
     } catch (err) {
       console.error(err);
-      setSyncStatus('備份失敗');
-      showToast(`備份失敗：${err.message || '連線錯誤'}`, 'error');
+      setSyncStatus('上傳失敗');
+      showToast(`上傳失敗：${err.message || '連線錯誤'}`, 'error');
     } finally {
       setIsSyncing(false);
     }
@@ -436,7 +437,7 @@ export default function App() {
     const envToken = import.meta.env.VITE_GIST_TOKEN || '';
     const envGistId = import.meta.env.VITE_GIST_ID || '';
     if (envToken && envGistId) {
-      showToast('雲端同步已由 Secrets 託管', 'info');
+      showToast('雲端儲存已由 Secrets 託管', 'info');
       return;
     }
 
@@ -486,7 +487,7 @@ export default function App() {
       colors: ['#000000', '#666666', '#CCCCCC', '#FFFFFF']
     });
 
-    showToast(`記錄成功：${record.title}`, 'success');
+    showToast(`登記成功：${record.title}`, 'success');
 
     // Push records + activity log to cloud
     pushCloudData(updatedRecords);
@@ -494,7 +495,7 @@ export default function App() {
 
   // --- DELETE RECORD ---
   const handleDeleteRecord = (id) => {
-    if (window.confirm('確定要刪除這筆生活紀錄嗎？')) {
+    if (window.confirm('確定要刪除這筆生活明細嗎？')) {
       const deletedRecord = records.find(r => r.id === id);
       const updatedRecords = records.filter(r => r.id !== id);
       setRecords(updatedRecords);
@@ -507,7 +508,7 @@ export default function App() {
         action: 'delete',
         by: localStorage.getItem('my_identity') || myIdentity || 'p1',
         recordId: id,
-        recordTitle: deletedRecord?.title || '未知紀錄',
+        recordTitle: deletedRecord?.title || '未知明細',
         recordValue: deletedRecord?.value || 0,
         recordType: deletedRecord?.type || 'money',
         recordCurrency: deletedRecord?.currency || 'TWD',
@@ -519,7 +520,7 @@ export default function App() {
 
       // Write local storage
       localStorage.setItem('cached_records', JSON.stringify(updatedRecords));
-      showToast('記錄已刪除', 'info');
+      showToast('項目已刪除', 'info');
 
       // Push updated records + deletion log to cloud
       pushCloudData(updatedRecords);
@@ -611,6 +612,11 @@ export default function App() {
     );
   }
 
+  const openAddModal = (type = 'money') => {
+    setAddModalDefaultType(type);
+    setIsAddModalOpen(true);
+  };
+
   return (
     <div 
       style={{ position: 'relative', overflow: 'hidden', minHeight: '100vh', userSelect: isDragging ? 'none' : 'auto' }}
@@ -634,12 +640,12 @@ export default function App() {
         </span>
         <span style={{ fontWeight: '800', fontSize: '0.85rem' }}>
           {refreshState === 'loading' 
-            ? 'sync data from cloud...' 
+            ? 'updating...' 
             : refreshState === 'success' 
-              ? '同步完成！' 
+              ? '更新完成！' 
               : pullDistance >= 50 
-                ? '放開以開始同步' 
-                : '下拉同步雲端資料'}
+                ? '放開以開始更新' 
+                : '下拉更新雲端資料'}
         </span>
       </div>
 
@@ -673,7 +679,7 @@ export default function App() {
               height: '52px',
               border: 'var(--border-thick)',
               borderRadius: '12px',
-              backgroundColor: 'var(--color-coffee-cream)',
+              backgroundColor: '#FFFFFF',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -693,7 +699,7 @@ export default function App() {
           <div>
             <h1 className="app-title">HeartSync</h1>
             <div>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: '800' }}>✨ 雙向奔赴，記錄我們的生活心意平衡</span>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: '800' }}>✨ 雙向奔赴，細數我們的生活心意平衡</span>
             </div>
           </div>
         </div>
@@ -718,7 +724,7 @@ export default function App() {
 
           {/* Sync Status Texts */}
           <span style={styles.syncStatusText}>
-            {isSyncing ? '正在同步中...' : syncStatus}
+            {isSyncing ? '正在更新中...' : syncStatus}
           </span>
         </div>
 
@@ -731,22 +737,39 @@ export default function App() {
               style={styles.actionBtn}
             >
               <RefreshCw size={14} className={isSyncing ? 'animate-spin-slow' : ''} />
-              <span>手動同步</span>
+              <span>手動更新</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* --- RECORD HISTORY & DETAILED LOGS --- */}
-      <div style={{ marginBottom: '28px' }}>
-        <HistoryList
-          records={records}
-          onDeleteRecord={handleDeleteRecord}
+      {/* --- DUAL SCALES SECTION (MOVED TO TOP FOR UI/UX HIERARCHY) --- */}
+      <div className="scales-grid" style={{ ...styles.scalesGrid, marginBottom: '28px' }}>
+        <BalanceScale 
+          type="money"
+          p1Value={p1Money}
+          p2Value={p2Money}
           p1Name={partners.p1.name}
           p2Name={partners.p2.name}
           p1Role={partners.p1.role}
           p2Role={partners.p2.role}
-          displayCurrency={displayCurrency}
+          unit={displayCurrency === 'TWD' ? '元' : displayCurrency === 'SGD' ? 'SGD' : 'USD'}
+          currency={displayCurrency}
+          label={`共同金錢天秤 (${displayCurrency === 'TWD' ? 'NT$' : displayCurrency === 'SGD' ? 'S$' : 'US$'}) 💸`}
+          onClick={() => openAddModal('money')}
+        />
+
+        <BalanceScale 
+          type="love"
+          p1Value={p1Love}
+          p2Value={p2Love}
+          p1Name={partners.p1.name}
+          p2Name={partners.p2.name}
+          p1Role={partners.p1.role}
+          p2Role={partners.p2.role}
+          unit="點"
+          label="家事與心意天秤 🧹"
+          onClick={() => openAddModal('love')}
         />
       </div>
 
@@ -765,31 +788,16 @@ export default function App() {
         />
       </div>
 
-      {/* --- DUAL SCALES SECTION --- */}
-      <div className="scales-grid" style={{ ...styles.scalesGrid, marginBottom: '28px' }}>
-        <BalanceScale 
-          type="money"
-          p1Value={p1Money}
-          p2Value={p2Money}
+      {/* --- RECORD HISTORY & DETAILED LOGS (MOVED TO BOTTOM) --- */}
+      <div style={{ marginBottom: '28px' }}>
+        <HistoryList
+          records={records}
+          onDeleteRecord={handleDeleteRecord}
           p1Name={partners.p1.name}
           p2Name={partners.p2.name}
           p1Role={partners.p1.role}
           p2Role={partners.p2.role}
-          unit={displayCurrency === 'TWD' ? '元' : displayCurrency === 'SGD' ? 'SGD' : 'USD'}
-          currency={displayCurrency}
-          label={`共同金錢天秤 (${displayCurrency === 'TWD' ? 'NT$' : displayCurrency === 'SGD' ? 'S$' : 'US$'}) 💸`}
-        />
-
-        <BalanceScale 
-          type="love"
-          p1Value={p1Love}
-          p2Value={p2Love}
-          p1Name={partners.p1.name}
-          p2Name={partners.p2.name}
-          p1Role={partners.p1.role}
-          p2Role={partners.p2.role}
-          unit="點"
-          label="家事與心意天秤 🧹"
+          displayCurrency={displayCurrency}
         />
       </div>
       </div>
@@ -845,6 +853,7 @@ export default function App() {
         p1Role={partners.p1.role}
         p2Role={partners.p2.role}
         defaultByPartner={myIdentity}
+        defaultType={addModalDefaultType}
       />
 
       {/* --- SYSTEM CUTE TOAST ALERT (RENDERED OUTSIDE CONTAINER TO FIX VIEWPORT POSITIONING) --- */}
@@ -864,9 +873,9 @@ export default function App() {
       {/* --- FLOATING ACTION TRIGGER BUTTON --- */}
       <div className="floating-action-wrapper">
         <button 
-          onClick={() => setIsAddModalOpen(true)}
+          onClick={() => openAddModal('money')}
           className="comic-btn floating-btn"
-          title="新增生活付出記錄"
+          title="登記生活付出"
         >
           <Plus size={28} strokeWidth={3.5} />
         </button>

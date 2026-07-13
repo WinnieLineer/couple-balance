@@ -76,7 +76,7 @@ export default function OnboardingWizard({
 
     const finalToken = (import.meta.env.VITE_GIST_TOKEN || localStorage.getItem('gist_token') || '').trim();
     if (!finalToken) {
-      setLocalError('⚠️ 系統未檢測到 VITE_GIST_TOKEN，無法自動建立雲端同步，請點擊「本機離線體驗」！');
+      setLocalError('⚠️ 系統未檢測到 VITE_GIST_TOKEN，無法自動建立雲端連線，請點擊「本機離線體驗」！');
       return;
     }
 
@@ -102,7 +102,7 @@ export default function OnboardingWizard({
       saveConfig(finalToken, finalGistId, customPartners, 'p1');
 
       const inviteUrl = `https://winnie-lin.space/couple-balance/?gistId=${finalGistId}`;
-      const inviteMsg = `Hi！我已經在 HeartSync 建立了我們的專屬生活付出天秤囉！⚖️\n\n🔗 點擊此連結直接加入（免複製貼上）：\n${inviteUrl}\n\n開啟後在引導精靈中確認身份，即可即時雙向同步！✨`;
+      const inviteMsg = `Hi！我已經在 HeartSync 建立了我們的專屬生活付出天秤囉！⚖️\n\n🔗 點擊此連結直接加入（免複製貼上）：\n${inviteUrl}\n\n開啟後在引導精靈中確認身份，即可即時雙向連線！✨`;
       
       setInvitationText(inviteMsg);
       setLocalSuccess('雲端天秤資料庫已建立成功！');
@@ -180,7 +180,7 @@ export default function OnboardingWizard({
           <div style={{ textAlign: 'center', marginBottom: '16px', borderBottom: '2.5px solid #000000', paddingBottom: '10px' }}>
             <div style={styles.popIcon}>🎉</div>
             <h2 style={styles.wizardTitle}>雲端資料庫建立成功！</h2>
-            <p style={styles.wizardSubtitle}>已將專屬天秤安全建置在 GitHub 雲端！快邀請您的伴侶開始記錄付出吧。</p>
+            <p style={styles.wizardSubtitle}>已將專屬天秤安全建置在 GitHub 雲端！快邀請您的伴侶開始登記付出吧。</p>
           </div>
 
           <div style={styles.wizardBody}>
@@ -233,7 +233,7 @@ export default function OnboardingWizard({
                 color: wizardMode === 'create' ? '#FFFFFF' : '#000000',
               }}
             >
-              🆕 建立新同步天秤
+              🆕 建立新雲端天秤
             </button>
             <button
               type="button"
@@ -339,7 +339,7 @@ export default function OnboardingWizard({
               // --- CREATE SCALE ---
               <>
                 <div style={styles.wizardSection}>
-                  <h3 style={styles.sectionHeader}>設定代表暱稱與小狗角色</h3>
+                  <h3 style={styles.sectionHeader}>設定代表稱呼與角色</h3>
                   
                   <div style={styles.namesRow}>
                     {/* Partner 1 Input */}
@@ -420,7 +420,7 @@ export default function OnboardingWizard({
                   <div style={styles.infoBanner}>
                     <span style={{ fontSize: '1.2rem' }}>☁️</span>
                     <p style={{ fontSize: '0.78rem', color: '#333', fontWeight: '700', lineHeight: '1.5', margin: 0 }}>
-                      系統檢測到內建 GitHub Gist 同步，當您點擊「開始使用」時，將<b>自動為您建立專屬雲端同步庫</b>！您只需在完成後將邀請複製發送給伴侶即可！
+                      系統檢測到內建 GitHub Gist 同步，當您點擊「開始使用」時，將<b>自動為您建立專屬雲端備份庫</b>！您只需在完成後將邀請複製發送給伴侶即可！
                     </p>
                   </div>
 
@@ -434,7 +434,7 @@ export default function OnboardingWizard({
                   className="comic-btn"
                   style={{ width: '100%', padding: '12px', justifyContent: 'center', backgroundColor: '#000000', color: '#FFFFFF' }}
                 >
-                  {isCreatingGist ? '⏳ 正在為您建立雲端同步...' : '🚀 建立天秤並開始體驗'}
+                  {isCreatingGist ? '⏳ 正在為您建立雲端備份...' : '🚀 建立天秤並開始體驗'}
                 </button>
                 
                 <button

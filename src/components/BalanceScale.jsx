@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Landmark, Heart } from 'lucide-react';
 
 export default function BalanceScale({ 
@@ -11,7 +11,8 @@ export default function BalanceScale({
   p2Role = 'brown_dog',
   unit = '元',
   label = '付出天秤',
-  currency = 'TWD'
+  currency = 'TWD',
+  onClick
 }) {
   const diff = p1Value - p2Value;
   const absDiff = Math.abs(diff);
@@ -112,11 +113,46 @@ export default function BalanceScale({
     </g>
   );
 
+  const [hoveredDog, setHoveredDog] = useState(null);
+
+  const renderSpeechBubble = (x, y, text, isLeft) => (
+    <g transform={`translate(${x}, ${y})`}>
+      <g className="animate-pop" style={{ pointerEvents: 'none' }}>
+        {/* Speech bubble background */}
+        <path 
+          d={isLeft 
+            ? "M 10 0 L 90 0 A 8 8 0 0 1 98 8 L 98 22 A 8 8 0 0 1 90 30 L 50 30 L 40 38 L 40 30 L 10 30 A 8 8 0 0 1 2 22 L 2 8 A 8 8 0 0 1 10 0 Z" 
+            : "M 10 0 L 90 0 A 8 8 0 0 1 98 8 L 98 22 A 8 8 0 0 1 90 30 L 60 30 L 60 38 L 50 30 L 10 30 A 8 8 0 0 1 2 22 L 2 8 A 8 8 0 0 1 10 0 Z"
+          }
+          fill="#FFFFFF" 
+          stroke="var(--border-color)" 
+          strokeWidth="2.2" 
+          filter="drop-shadow(2px 2px 0px var(--shadow-color))"
+        />
+        <text 
+          x="50" 
+          y="19" 
+          textAnchor="middle" 
+          fontSize="9.5" 
+          fontWeight="850" 
+          fill="var(--text-primary)"
+        >
+          {text}
+        </text>
+      </g>
+    </g>
+  );
+
   const headerBg = type === 'money' ? 'var(--color-money-bg)' : 'var(--color-love-bg)';
   const badgeColor = type === 'money' ? 'var(--color-money-accent)' : 'var(--color-love-accent)';
 
   return (
-    <div className="comic-card" style={styles.card}>
+    <div 
+      className="comic-card BalanceScale-card animate-pop" 
+      style={{ ...styles.card, cursor: 'pointer' }}
+      onClick={onClick}
+      title={`點擊快速登記一筆${type === 'money' ? '金錢支出' : '家事心意'}付出`}
+    >
       {/* Tiny decorative paper tape for stationary look */}
       <div className="paper-tape" style={{ backgroundColor: type === 'money' ? 'rgba(122, 168, 144, 0.2)' : 'rgba(255, 138, 138, 0.2)' }} />
 
@@ -126,7 +162,7 @@ export default function BalanceScale({
         </div>
         <div>
           <h3 style={styles.label}>{label}</h3>
-          <p style={styles.subtext}>雙方付出差額與天秤動態</p>
+          <p style={styles.subtext}>雙方付出差額與天秤動態 (點擊卡片快速記帳)</p>
         </div>
       </div>
 
@@ -134,10 +170,10 @@ export default function BalanceScale({
       <div style={styles.scaleContainer}>
         <svg viewBox="0 0 300 200" style={styles.scaleSvg}>
           {/* 1. Base pedestal (Wood texture) */}
-          <path d="M 105 180 L 195 180 L 175 160 L 125 160 Z" fill="#4E3629" stroke="var(--border-color)" strokeWidth="2.5" strokeLinejoin="round" />
+          <path d="M 105 180 L 195 180 L 175 160 L 125 160 Z" fill="#000000" stroke="var(--border-color)" strokeWidth="2.5" strokeLinejoin="round" />
           
           {/* 2. Vertical post */}
-          <line x1="150" y1="65" x2="150" y2="162" stroke="#4E3629" strokeWidth="7" strokeLinecap="round" />
+          <line x1="150" y1="65" x2="150" y2="162" stroke="#000000" strokeWidth="7" strokeLinecap="round" />
           <line x1="150" y1="65" x2="150" y2="162" stroke="var(--border-color)" strokeWidth="2.5" strokeLinecap="round" />
           <circle cx="150" cy="160" r="8" fill="var(--border-color)" />
 
@@ -147,7 +183,7 @@ export default function BalanceScale({
             y1={ly} 
             x2={rx} 
             y2={ry} 
-            stroke="#D69A6B" 
+            stroke="#FF9F1C" 
             strokeWidth="7" 
             strokeLinecap="round" 
             style={styles.transition}
@@ -163,7 +199,7 @@ export default function BalanceScale({
             style={styles.transition}
           />
           {/* Fulcrum indicator */}
-          <circle cx="150" cy="65" r="7" fill="#FFC857" stroke="var(--border-color)" strokeWidth="2.5" />
+          <circle cx="150" cy="65" r="7" fill="#FFE033" stroke="var(--border-color)" strokeWidth="2.5" />
 
           {/* --- LEFT PAN (Partner 1) --- */}
           <g style={styles.transition}>
@@ -174,8 +210,18 @@ export default function BalanceScale({
             <path d={`M ${lx - 32} ${ly + 60} C ${lx - 32} ${ly + 72}, ${lx + 32} ${ly + 72}, ${lx + 32} ${ly + 60} Z`} fill="#FFFDF9" stroke="var(--border-color)" strokeWidth="2.5" />
 
             {/* DYNAMIC DOG FOR P1 */}
-            <g transform={`translate(${lx - 20}, ${ly + 20})`}>
-              {p1Role === 'white_dog' ? renderWhiteDog(diff > 0) : renderBrownDog(diff > 0)}
+            <g 
+              transform={`translate(${lx - 20}, ${ly + 20})`}
+              onMouseEnter={(e) => { e.stopPropagation(); setHoveredDog('p1'); }}
+              onMouseLeave={(e) => { e.stopPropagation(); setHoveredDog(null); }}
+              style={{ cursor: 'pointer' }}
+            >
+              <g className="dog-idle-float-white">
+                {p1Role === 'white_dog' ? renderWhiteDog(diff > 0) : renderBrownDog(diff > 0)}
+                {hoveredDog === 'p1' && (
+                  renderSpeechBubble(-30, -46, type === 'money' ? '記帳啦！汪！🐶' : '洗碗交給我！🐶', true)
+                )}
+              </g>
             </g>
           </g>
 
@@ -188,8 +234,18 @@ export default function BalanceScale({
             <path d={`M ${rx - 32} ${ry + 60} C ${rx - 32} ${ry + 72}, ${rx + 32} ${ry + 72}, ${rx + 32} ${ry + 60} Z`} fill="#FFFDF9" stroke="var(--border-color)" strokeWidth="2.5" />
 
             {/* DYNAMIC DOG FOR P2 */}
-            <g transform={`translate(${rx - 20}, ${ry + 20})`}>
-              {p2Role === 'white_dog' ? renderWhiteDog(diff < 0) : renderBrownDog(diff < 0)}
+            <g 
+              transform={`translate(${rx - 20}, ${ry + 20})`}
+              onMouseEnter={(e) => { e.stopPropagation(); setHoveredDog('p2'); }}
+              onMouseLeave={(e) => { e.stopPropagation(); setHoveredDog(null); }}
+              style={{ cursor: 'pointer' }}
+            >
+              <g className="dog-idle-float-brown">
+                {p2Role === 'white_dog' ? renderWhiteDog(diff < 0) : renderBrownDog(diff < 0)}
+                {hoveredDog === 'p2' && (
+                  renderSpeechBubble(-30, -46, type === 'money' ? '花在哪裡？🐻' : '今天搥背！🐻', false)
+                )}
+              </g>
             </g>
           </g>
         </svg>

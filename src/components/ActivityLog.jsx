@@ -7,7 +7,7 @@ export default function ActivityLog({ activityLog = [], p1Name = '伴侶一', p2
   if (activityLog.length === 0) {
     return (
       <div style={{ textAlign: 'center', padding: '24px', color: '#888', fontWeight: '800', fontSize: '0.9rem' }}>
-        📭 暫無任何活動紀錄
+        📭 暫無任何活動日誌
       </div>
     );
   }
@@ -96,10 +96,10 @@ export default function ActivityLog({ activityLog = [], p1Name = '伴侶一', p2
       >
         <ScrollText size={16} strokeWidth={2.5} />
         <span style={{ fontWeight: 900, fontSize: '0.92rem' }}>
-          活動紀錄 <span style={styles.badge}>{activityLog.length}</span>
+          活動日誌 <span style={styles.badge}>{activityLog.length}</span>
         </span>
         <span style={{ marginLeft: 'auto', opacity: 0.6, fontSize: '0.75rem' }}>
-          （僅記錄，不可刪除）
+          （僅供查看，不可刪除）
         </span>
         {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
       </button>
