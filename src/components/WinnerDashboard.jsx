@@ -23,39 +23,45 @@ export default function WinnerDashboard({
 
   const symbol = getCurrencySymbol(currency);
 
-  // White Dog SVG Badge (Quiet, B&W outline style)
+  // White Dog SVG Badge (Quiet, B&W outline style with blush)
   const renderWhiteDogBadge = () => (
     <svg viewBox="0 0 100 80" style={styles.dogBadgeSvg}>
-      <ellipse cx="50" cy="55" rx="20" ry="15" fill="#FFFFFF" stroke="#000000" strokeWidth="3.5" />
-      <circle cx="34" cy="62" r="7" fill="#FFFFFF" stroke="#000000" strokeWidth="2.5" />
-      <path d="M 30 55 Q 20 50 25 42" fill="none" stroke="#000000" strokeWidth="3.5" strokeLinecap="round" />
-      <ellipse cx="30" cy="28" rx="6" ry="10" fill="#FFFFFF" stroke="#000000" strokeWidth="3.5" />
-      <ellipse cx="70" cy="28" rx="6" ry="10" fill="#FFFFFF" stroke="#000000" strokeWidth="3.5" />
-      <ellipse cx="50" cy="35" rx="20" ry="17" fill="#FFFFFF" stroke="#000000" strokeWidth="3.5" />
-      <circle cx="43" cy="33" r="3" fill="#000000" />
-      <circle cx="57" cy="33" r="3" fill="#000000" />
-      <polygon points="48,37 52,37 50,40" fill="#000000" />
-      <path d="M 47 43 Q 50 46 53 43" fill="none" stroke="#000000" strokeWidth="2.5" strokeLinecap="round" />
-      <circle cx="44" cy="68" r="6" fill="#FFFFFF" stroke="#000000" strokeWidth="2.5" />
-      <circle cx="56" cy="68" r="6" fill="#FFFFFF" stroke="#000000" strokeWidth="2.5" />
+      <ellipse cx="50" cy="55" rx="20" ry="15" fill="#FFFFFF" stroke="var(--border-color)" strokeWidth="3.5" />
+      <circle cx="34" cy="62" r="7" fill="#FFFFFF" stroke="var(--border-color)" strokeWidth="2.5" />
+      <path d="M 30 55 Q 20 50 25 42" fill="none" stroke="var(--border-color)" strokeWidth="3.5" strokeLinecap="round" />
+      <ellipse cx="30" cy="28" rx="6" ry="10" fill="#FFFFFF" stroke="var(--border-color)" strokeWidth="3.5" />
+      <ellipse cx="70" cy="28" rx="6" ry="10" fill="#FFFFFF" stroke="var(--border-color)" strokeWidth="3.5" />
+      <ellipse cx="50" cy="35" rx="20" ry="17" fill="#FFFFFF" stroke="var(--border-color)" strokeWidth="3.5" />
+      <circle cx="43" cy="33" r="3" fill="var(--border-color)" />
+      <circle cx="57" cy="33" r="3" fill="var(--border-color)" />
+      {/* Cheeks */}
+      <circle cx="38" cy="37" r="3.5" fill="#FFB7B2" opacity="0.9" />
+      <circle cx="62" cy="37" r="3.5" fill="#FFB7B2" opacity="0.9" />
+      <polygon points="48,37 52,37 50,40" fill="var(--border-color)" />
+      <path d="M 47 43 Q 50 46 53 43" fill="none" stroke="var(--border-color)" strokeWidth="2.5" strokeLinecap="round" />
+      <circle cx="44" cy="68" r="6" fill="#FFFFFF" stroke="var(--border-color)" strokeWidth="2.5" />
+      <circle cx="56" cy="68" r="6" fill="#FFFFFF" stroke="var(--border-color)" strokeWidth="2.5" />
     </svg>
   );
 
-  // Gray Dog SVG Badge (Quiet, B&W line-art style)
+  // Gray Dog SVG Badge (Quiet, B&W line-art style with blush and caramel fill)
   const renderGrayDogBadge = () => (
     <svg viewBox="0 0 100 80" style={styles.dogBadgeSvg}>
-      <ellipse cx="50" cy="55" rx="20" ry="15" fill="#D2D2D2" stroke="#000000" strokeWidth="3.5" />
-      <circle cx="34" cy="62" r="7" fill="#D2D2D2" stroke="#000000" strokeWidth="2.5" />
-      <path d="M 30 55 Q 20 50 25 42" fill="none" stroke="#000000" strokeWidth="3.5" strokeLinecap="round" />
-      <ellipse cx="30" cy="28" rx="6" ry="10" fill="#D2D2D2" stroke="#000000" strokeWidth="3.5" />
-      <ellipse cx="70" cy="28" rx="6" ry="10" fill="#D2D2D2" stroke="#000000" strokeWidth="3.5" />
-      <ellipse cx="50" cy="35" rx="20" ry="17" fill="#D2D2D2" stroke="#000000" strokeWidth="3.5" />
-      <circle cx="43" cy="33" r="3" fill="#000000" />
-      <circle cx="57" cy="33" r="3" fill="#000000" />
-      <polygon points="48,37 52,37 50,40" fill="#000000" />
-      <path d="M 47 43 Q 50 46 53 43" fill="none" stroke="#000000" strokeWidth="2.5" strokeLinecap="round" />
-      <circle cx="44" cy="68" r="6" fill="#D2D2D2" stroke="#000000" strokeWidth="2.5" />
-      <circle cx="56" cy="68" r="6" fill="#D2D2D2" stroke="#000000" strokeWidth="2.5" />
+      <ellipse cx="50" cy="55" rx="20" ry="15" fill="#D4A373" stroke="var(--border-color)" strokeWidth="3.5" />
+      <circle cx="34" cy="62" r="7" fill="#D4A373" stroke="var(--border-color)" strokeWidth="2.5" />
+      <path d="M 30 55 Q 20 50 25 42" fill="none" stroke="var(--border-color)" strokeWidth="3.5" strokeLinecap="round" />
+      <ellipse cx="30" cy="28" rx="6" ry="10" fill="#D4A373" stroke="var(--border-color)" strokeWidth="3.5" />
+      <ellipse cx="70" cy="28" rx="6" ry="10" fill="#D4A373" stroke="var(--border-color)" strokeWidth="3.5" />
+      <ellipse cx="50" cy="35" rx="20" ry="17" fill="#D4A373" stroke="var(--border-color)" strokeWidth="3.5" />
+      <circle cx="43" cy="33" r="3" fill="var(--border-color)" />
+      <circle cx="57" cy="33" r="3" fill="var(--border-color)" />
+      {/* Cheeks */}
+      <circle cx="38" cy="37" r="3.5" fill="#FFA4A4" opacity="0.9" />
+      <circle cx="62" cy="37" r="3.5" fill="#FFA4A4" opacity="0.9" />
+      <polygon points="48,37 52,37 50,40" fill="var(--border-color)" />
+      <path d="M 47 43 Q 50 46 53 43" fill="none" stroke="var(--border-color)" strokeWidth="2.5" strokeLinecap="round" />
+      <circle cx="44" cy="68" r="6" fill="#D4A373" stroke="var(--border-color)" strokeWidth="2.5" />
+      <circle cx="56" cy="68" r="6" fill="#D4A373" stroke="var(--border-color)" strokeWidth="2.5" />
     </svg>
   );
 
@@ -107,7 +113,7 @@ export default function WinnerDashboard({
             <div style={styles.avatarWrapper}>
               {p1Role === 'white_dog' ? renderWhiteDogBadge() : renderGrayDogBadge()}
             </div>
-            <span style={styles.roleName}>{p1Name} (白狗)</span>
+            <span style={styles.roleName}>{p1Name}</span>
           </div>
           <div style={styles.statsBody}>
             <div style={styles.statItem}>
@@ -127,7 +133,7 @@ export default function WinnerDashboard({
             <div style={styles.avatarWrapper}>
               {p2Role === 'white_dog' ? renderWhiteDogBadge() : renderGrayDogBadge()}
             </div>
-            <span style={styles.roleName}>{p2Name} (灰狗)</span>
+            <span style={styles.roleName}>{p2Name}</span>
           </div>
           <div style={styles.statsBody}>
             <div style={styles.statItem}>
@@ -156,11 +162,11 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#000000',
-    borderRadius: '8px',
+    backgroundColor: 'var(--text-primary)',
+    borderRadius: '10px',
     padding: '8px 16px',
     marginBottom: '16px',
-    boxShadow: '2px 2px 0px rgba(0,0,0,0.15)',
+    boxShadow: 'var(--shadow-xs)',
   },
   bannerText: {
     fontWeight: '900',
@@ -181,23 +187,24 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '12px',
-    transition: 'transform 0.2s ease',
+    transition: 'transform 0.22s var(--ease-snappy), box-shadow 0.22s var(--ease-snappy)',
   },
   summaryCard: {
     width: '100%',
-    backgroundColor: '#FFFFFF',
-    backgroundImage: 'repeating-linear-gradient(-45deg, #F5F5F3 0px, #F5F5F3 4px, #FFFFFF 4px, #FFFFFF 12px)',
+    backgroundColor: 'var(--bg-secondary)',
+    backgroundImage: 'linear-gradient(rgba(214, 154, 107, 0.12) 1.5px, transparent 1.5px), linear-gradient(90deg, rgba(214, 154, 107, 0.12) 1.5px, transparent 1.5px)',
+    backgroundSize: '16px 16px',
     padding: '22px 26px',
     display: 'flex',
     flexDirection: 'column',
     gap: '12px',
-    transition: 'transform 0.2s ease',
+    transition: 'transform 0.22s var(--ease-snappy), box-shadow 0.22s var(--ease-snappy)',
   },
   cardHeader: {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
-    borderBottom: '3px solid #000000',
+    borderBottom: 'var(--border-thick)',
     paddingBottom: '10px',
   },
   avatarWrapper: {
@@ -211,7 +218,7 @@ const styles = {
   roleName: {
     fontWeight: '900',
     fontSize: '1rem',
-    color: '#000000',
+    color: 'var(--text-primary)',
     letterSpacing: '0.5px',
   },
   statsBody: {
@@ -226,13 +233,13 @@ const styles = {
   },
   statLabel: {
     fontSize: '0.78rem',
-    color: '#666666',
+    color: 'var(--text-muted)',
     fontWeight: '800',
   },
   statValue: {
     fontSize: '1.45rem',
     fontWeight: '950',
-    color: '#000000',
+    color: 'var(--text-primary)',
     letterSpacing: '-0.5px',
   },
   summaryBody: {
@@ -247,40 +254,40 @@ const styles = {
   },
   balanceLabel: {
     fontSize: '0.82rem',
-    color: '#555555',
+    color: 'var(--text-muted)',
     fontWeight: '900',
     letterSpacing: '0.5px',
   },
   balanceValueContainer: {
     fontSize: '1.1rem',
-    color: '#000000',
+    color: 'var(--text-primary)',
     fontWeight: '800',
   },
   balancedText: {
     display: 'inline-flex',
     alignItems: 'center',
-    backgroundColor: '#000000',
+    backgroundColor: 'var(--text-primary)',
     color: '#FFFFFF',
     padding: '6px 12px',
-    borderRadius: '8px',
+    borderRadius: '10px',
     fontSize: '0.85rem',
     fontWeight: '900',
-    border: '2.5px solid #000000',
-    boxShadow: '3px 3px 0px rgba(0,0,0,0.2)',
+    border: '2.5px solid var(--border-color)',
+    boxShadow: 'var(--shadow-xs)',
   },
   imbalancedText: {
-    color: '#000000',
+    color: 'var(--text-primary)',
     fontWeight: '800',
   },
   highlight: {
     fontWeight: '950',
-    color: '#000000',
+    color: 'var(--text-primary)',
     textDecoration: 'underline',
     fontSize: '1.25rem',
   },
   dividerLine: {
     height: '0px',
-    borderTop: '2.5px dashed #000000',
+    borderTop: '2px dashed var(--border-color)',
     margin: '4px 0',
   }
 };

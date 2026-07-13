@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Plus, Trash2, ScrollText } from 'lucide-react';
 
-export default function ActivityLog({ activityLog = [], p1Name = '伴侶一', p2Name = '伴侶二' }) {
+export default function ActivityLog({ activityLog = [], p1Name = '伴侶一', p2Name = '伴侶二', alwaysExpanded = false }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  if (activityLog.length === 0) return null;
+  if (activityLog.length === 0) {
+    return (
+      <div style={{ textAlign: 'center', padding: '24px', color: '#888', fontWeight: '800', fontSize: '0.9rem' }}>
+        📭 暫無任何活動紀錄
+      </div>
+    );
+  }
 
   const formatTime = (isoStr) => {
     try {
@@ -21,6 +27,64 @@ export default function ActivityLog({ activityLog = [], p1Name = '伴侶一', p2
 
   // Most recent first
   const sorted = [...activityLog].reverse();
+
+  const renderEntries = () => (
+    sorted.map((entry, idx) => {
+      const isAdd = entry.action === 'add';
+      const isOpen = entry.action === 'open';
+      const valueStr =
+        entry.recordType === 'money'
+          ? `${entry.recordValue} ${entry.recordCurrency || 'TWD'}`
+          : `${entry.recordValue} 點`;
+
+      return (
+        <div key={entry.id || idx} style={styles.entry}>
+          {/* Timeline dot */}
+          <div style={{ ...styles.dot, backgroundColor: isAdd || isOpen ? '#000' : '#888' }}>
+            {isOpen ? (
+              <span style={{ fontSize: '10px' }}>👋</span>
+            ) : isAdd ? (
+              <Plus size={10} strokeWidth={3} color="#fff" />
+            ) : (
+              <Trash2 size={10} strokeWidth={3} color="#fff" />
+            )}
+          </div>
+
+          {/* Vertical line (not on last item) */}
+          {idx < sorted.length - 1 && <div style={styles.line} />}
+
+          {/* Content */}
+          <div style={styles.entryContent}>
+            <div style={styles.entryMain}>
+              <span style={styles.who}>{getPartnerName(entry.by)}</span>
+              <span style={{ ...styles.action, color: isAdd || isOpen ? '#000' : '#888' }}>
+                {isOpen ? ' 登入了 ' : isAdd ? ' 新增了 ' : ' 刪除了 '}
+              </span>
+              {isOpen ? (
+                <span style={styles.recordTitle}>「HeartSync 天秤」</span>
+              ) : (
+                <>
+                  <span style={styles.recordTitle}>「{entry.recordTitle}」</span>
+                  <span style={styles.value}>
+                    {entry.recordType === 'money' ? '💸' : '💝'} {valueStr}
+                  </span>
+                </>
+              )}
+            </div>
+            <div style={styles.timestamp}>{formatTime(entry.timestamp)}</div>
+          </div>
+        </div>
+      );
+    })
+  );
+
+  if (alwaysExpanded) {
+    return (
+      <div style={styles.modalLogList}>
+        {renderEntries()}
+      </div>
+    );
+  }
 
   return (
     <div style={styles.wrapper}>
@@ -43,53 +107,7 @@ export default function ActivityLog({ activityLog = [], p1Name = '伴侶一', p2
       {/* Log entries */}
       {isExpanded && (
         <div style={styles.logContainer}>
-          {sorted.map((entry, idx) => {
-            const isAdd = entry.action === 'add';
-            const isOpen = entry.action === 'open';
-            const valueStr =
-              entry.recordType === 'money'
-                ? `${entry.recordValue} ${entry.recordCurrency || 'TWD'}`
-                : `${entry.recordValue} 點`;
-
-            return (
-              <div key={entry.id || idx} style={styles.entry}>
-                {/* Timeline dot */}
-                <div style={{ ...styles.dot, backgroundColor: isAdd || isOpen ? '#000' : '#888' }}>
-                  {isOpen ? (
-                    <span style={{ fontSize: '10px' }}>👋</span>
-                  ) : isAdd ? (
-                    <Plus size={10} strokeWidth={3} color="#fff" />
-                  ) : (
-                    <Trash2 size={10} strokeWidth={3} color="#fff" />
-                  )}
-                </div>
-
-                {/* Vertical line (not on last item) */}
-                {idx < sorted.length - 1 && <div style={styles.line} />}
-
-                {/* Content */}
-                <div style={styles.entryContent}>
-                  <div style={styles.entryMain}>
-                    <span style={styles.who}>{getPartnerName(entry.by)}</span>
-                    <span style={{ ...styles.action, color: isAdd || isOpen ? '#000' : '#888' }}>
-                      {isOpen ? ' 登入了 ' : isAdd ? ' 新增了 ' : ' 刪除了 '}
-                    </span>
-                    {isOpen ? (
-                      <span style={styles.recordTitle}>「HeartSync 天秤」</span>
-                    ) : (
-                      <>
-                        <span style={styles.recordTitle}>「{entry.recordTitle}」</span>
-                        <span style={styles.value}>
-                          {entry.recordType === 'money' ? '💸' : '💝'} {valueStr}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                  <div style={styles.timestamp}>{formatTime(entry.timestamp)}</div>
-                </div>
-              </div>
-            );
-          })}
+          {renderEntries()}
         </div>
       )}
     </div>
@@ -106,7 +124,7 @@ const styles = {
     alignItems: 'center',
     gap: '8px',
     padding: '12px 18px',
-    border: '3px solid #000',
+    border: '4px solid #000',
     backgroundColor: '#FFFFFF',
     cursor: 'pointer',
     fontFamily: 'inherit',
@@ -126,7 +144,7 @@ const styles = {
     lineHeight: '1.4',
   },
   logContainer: {
-    border: '3px solid #000',
+    border: '4px solid #000',
     marginTop: '12px',
     borderRadius: '12px',
     backgroundColor: '#FFFFFF',
@@ -135,6 +153,11 @@ const styles = {
     overflowY: 'auto',
     boxShadow: 'var(--shadow-flat)',
     position: 'relative',
+  },
+  modalLogList: {
+    padding: '14px 14px 4px 14px',
+    position: 'relative',
+    backgroundColor: '#FFFFFF',
   },
   entry: {
     display: 'flex',

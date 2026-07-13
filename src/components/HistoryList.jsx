@@ -61,10 +61,11 @@ export default function HistoryList({
             className={`tab-btn HistoryList-tab ${activeTab === 'money' ? 'active' : ''}`}
             style={{
               ...styles.tab,
-              backgroundColor: activeTab === 'money' ? '#000000' : '#FFFFFF',
-              color: activeTab === 'money' ? '#FFFFFF' : '#666666',
-              border: '2.5px solid #000000',
-              boxShadow: activeTab === 'money' ? '2px 2px 0px #FFFFFF' : 'none',
+              backgroundColor: activeTab === 'money' ? 'var(--color-money-accent)' : '#FFFFFF',
+              color: activeTab === 'money' ? '#FFFFFF' : 'var(--text-muted)',
+              borderColor: 'var(--border-color)',
+              boxShadow: activeTab === 'money' ? 'var(--shadow-xs)' : 'none',
+              transform: activeTab === 'money' ? 'translate(-1px, -1px)' : 'none',
             }}
           >
             金錢支出 ({records.filter(r => r.type === 'money').length})
@@ -74,10 +75,11 @@ export default function HistoryList({
             className={`tab-btn HistoryList-tab ${activeTab === 'love' ? 'active' : ''}`}
             style={{
               ...styles.tab,
-              backgroundColor: activeTab === 'love' ? '#000000' : '#FFFFFF',
-              color: activeTab === 'love' ? '#FFFFFF' : '#666666',
-              border: '2.5px solid #000000',
-              boxShadow: activeTab === 'love' ? '2px 2px 0px #FFFFFF' : 'none',
+              backgroundColor: activeTab === 'love' ? 'var(--color-love-accent)' : '#FFFFFF',
+              color: activeTab === 'love' ? '#FFFFFF' : 'var(--text-muted)',
+              borderColor: 'var(--border-color)',
+              boxShadow: activeTab === 'love' ? 'var(--shadow-xs)' : 'none',
+              transform: activeTab === 'love' ? 'translate(-1px, -1px)' : 'none',
             }}
           >
             家事心意 ({records.filter(r => r.type === 'love').length})
@@ -88,14 +90,15 @@ export default function HistoryList({
       {/* Search Bar */}
       <div style={{
         ...styles.searchContainer,
-        boxShadow: isSearchFocused ? '5px 5px 0px #000000' : '3px 3px 0px #000000',
-        transform: isSearchFocused ? 'translate(-1px, -1px)' : 'translate(0, 0)',
+        borderColor: 'var(--border-color)',
+        boxShadow: isSearchFocused ? 'var(--shadow-sm)' : 'var(--shadow-xs)',
+        transform: isSearchFocused ? 'translate(-1.5px, -1.5px)' : 'translate(0, 0)',
       }}>
         <Search
           size={16}
           style={{
             ...styles.searchIcon,
-            color: isSearchFocused ? '#000000' : '#888888',
+            color: isSearchFocused ? 'var(--text-primary)' : 'var(--text-subtle)',
           }}
         />
         <input
@@ -122,7 +125,7 @@ export default function HistoryList({
       <div style={styles.listWrapper}>
         {filteredRecords.length === 0 ? (
           <div style={styles.emptyState}>
-            <Footprints size={40} color="#666666" style={{ marginBottom: '12px' }} />
+            <Footprints size={40} color="var(--text-subtle)" style={{ marginBottom: '12px' }} />
             <p style={styles.emptyText}>暫無付出歷史足跡</p>
             <p style={styles.emptySubtext}>點擊下方的「新增生活記錄」來留下點滴紀錄吧</p>
           </div>
@@ -144,33 +147,33 @@ export default function HistoryList({
                 className="comic-card animate-pop HistoryList-itemCard" 
                 style={{ 
                   ...styles.itemCard,
-                  borderLeft: isWhite ? '8px solid #000000' : '8px solid #D2D2D2',
+                  borderLeft: isWhite ? '8px solid var(--border-color)' : '8px solid var(--color-warm-gold)',
                   backgroundColor: '#FFFFFF'
                 }}
               >
                 {/* Left side: Avatar & Info */}
                 <div className="HistoryList-itemLeft" style={styles.itemLeft}>
                   {/* Miniature Dog typographic label */}
-                  <div style={{ 
-                    ...styles.dogBadge, 
-                    backgroundColor: isWhite ? '#FFFFFF' : '#D2D2D2',
-                    borderColor: '#000000',
-                    color: '#000000',
-                    fontWeight: '900',
-                    fontSize: '0.78rem'
-                  }}>
-                    {isWhite ? '白' : '灰'}
+                  <div 
+                    title={isWhite ? '白狗角色' : '褐狗角色'}
+                    style={{ 
+                      ...styles.dogBadge, 
+                      backgroundColor: isWhite ? '#FFFFFF' : '#F5E6D8',
+                      borderColor: 'var(--border-color)',
+                    }} 
+                  >
+                    <span style={{ fontSize: '0.85rem' }}>{isWhite ? '🐶' : '🐻'}</span>
                   </div>
 
                   <div className="HistoryList-itemMeta" style={styles.itemMeta}>
                     <div className="HistoryList-itemTitle" style={styles.itemTitle}>{record.title}</div>
                     <div className="HistoryList-itemDetails" style={styles.itemDetails}>
                       <span style={styles.userSpan}>
-                        <User size={12} style={{ marginRight: '4px' }} />
+                        <User size={12} style={{ marginRight: '4px', color: 'var(--text-subtle)' }} />
                         {name}
                       </span>
                       <span style={styles.dateSpan}>
-                        <Calendar size={12} style={{ marginRight: '4px' }} />
+                        <Calendar size={12} style={{ marginRight: '4px', color: 'var(--text-subtle)' }} />
                         {formatDate(record.date)}
                       </span>
                     </div>
@@ -197,10 +200,10 @@ export default function HistoryList({
                   <button
                     onClick={() => onDeleteRecord(record.id)}
                     className="comic-btn secondary"
-                    style={styles.deleteBtn}
+                    style={{ ...styles.deleteBtn, borderColor: 'var(--border-color)' }}
                     title="刪除此筆記錄"
                   >
-                    <Trash2 size={13} color="#000000" />
+                    <Trash2 size={13} color="var(--border-color)" />
                   </button>
                 </div>
               </div>
@@ -216,8 +219,8 @@ const styles = {
   container: {
     backgroundColor: '#FFFFFF',
     padding: '24px',
-    border: '3px solid #000000',
-    boxShadow: '4px 4px 0px #000000',
+    border: 'var(--border-thick)',
+    boxShadow: 'var(--shadow-flat)',
   },
   header: {
     display: 'flex',
@@ -225,14 +228,14 @@ const styles = {
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: '12px',
-    borderBottom: '2.5px dashed #000000',
+    borderBottom: '2px dashed var(--border-color)',
     paddingBottom: '16px',
     marginBottom: '20px',
   },
   title: {
     fontSize: '1.2rem',
     fontWeight: '800',
-    color: '#000000',
+    color: 'var(--text-primary)',
     letterSpacing: '0.5px',
   },
   tabContainer: {
@@ -242,21 +245,21 @@ const styles = {
   tab: {
     fontSize: '0.8rem',
     padding: '6px 14px',
-    borderRadius: '8px',
+    borderRadius: '10px',
     fontWeight: '800',
     cursor: 'pointer',
-    transition: 'all 0.1s ease',
+    transition: 'all 0.2s var(--ease-snappy)',
   },
   searchContainer: {
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
-    border: '3px solid #000000',
+    border: 'var(--border-thick)',
     borderRadius: '12px',
     backgroundColor: '#FFFFFF',
     padding: '10px 14px',
     marginBottom: '16px',
-    transition: 'box-shadow 0.15s ease, transform 0.15s ease',
+    transition: 'box-shadow 0.2s ease, transform 0.2s ease',
     cursor: 'text',
   },
   searchIcon: {
@@ -270,7 +273,7 @@ const styles = {
     fontSize: '0.88rem',
     fontWeight: '700',
     fontFamily: 'inherit',
-    color: '#000000',
+    color: 'var(--text-primary)',
     backgroundColor: 'transparent',
     minWidth: 0,
   },
@@ -280,7 +283,7 @@ const styles = {
     cursor: 'pointer',
     fontSize: '0.82rem',
     fontWeight: '900',
-    color: '#888888',
+    color: 'var(--text-subtle)',
     padding: '0 2px',
     lineHeight: 1,
     flexShrink: 0,
@@ -305,23 +308,23 @@ const styles = {
   emptyText: {
     fontWeight: '800',
     fontSize: '0.95rem',
-    color: '#000000',
+    color: 'var(--text-primary)',
     marginBottom: '6px',
   },
   emptySubtext: {
     fontSize: '0.8rem',
-    color: '#666666',
+    color: 'var(--text-muted)',
     fontWeight: '700',
   },
   itemCard: {
     padding: '14px 18px',
-    boxShadow: '3px 3px 0px #000000',
-    border: '3px solid #000000',
-    borderRadius: '0px', // clean layout blocks
+    boxShadow: 'var(--shadow-sm)',
+    border: 'var(--border-thick)',
+    borderRadius: '14px', /* Rounded paper slip card feel */
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    transition: 'transform 0.15s',
+    transition: 'transform 0.22s var(--ease-snappy), box-shadow 0.22s var(--ease-snappy)',
   },
   itemLeft: {
     display: 'flex',
@@ -333,11 +336,11 @@ const styles = {
     width: '28px',
     height: '28px',
     borderRadius: '50%',
-    border: '2.5px solid #000000',
+    border: '2px solid var(--border-color)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '1.5px 1.5px 0px #000000',
+    boxShadow: 'var(--shadow-xs)',
   },
   itemMeta: {
     display: 'flex',
@@ -347,13 +350,13 @@ const styles = {
   itemTitle: {
     fontWeight: '800',
     fontSize: '0.98rem',
-    color: '#000000',
+    color: 'var(--text-primary)',
   },
   itemDetails: {
     display: 'flex',
     gap: '12px',
     fontSize: '0.78rem',
-    color: '#666666',
+    color: 'var(--text-muted)',
     fontWeight: '700',
   },
   userSpan: {
@@ -380,26 +383,27 @@ const styles = {
     gap: '2px',
   },
   moneyVal: {
-    color: '#000000',
+    color: 'var(--text-primary)',
     fontSize: '1.02rem',
   },
   convertedVal: {
     fontSize: '0.75rem',
-    color: '#666666',
+    color: 'var(--text-muted)',
     fontWeight: '700',
   },
   loveVal: {
-    color: '#000000',
+    color: 'var(--text-primary)',
   },
   deleteBtn: {
     padding: '6px',
     borderRadius: '8px',
-    boxShadow: '1.5px 1.5px 0px #000000',
+    boxShadow: 'var(--shadow-xs)',
     backgroundColor: '#FFFFFF',
-    border: '2px solid #000000',
+    border: '1.8px solid var(--border-color)',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    transition: 'transform 0.15s var(--ease-snappy), box-shadow 0.15s var(--ease-snappy)',
   }
 };

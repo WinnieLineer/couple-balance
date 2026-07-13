@@ -88,6 +88,37 @@ export default function RecordModal({
     onClose();
   };
 
+  const isMoney = recordType === 'money';
+  const activeColor = isMoney ? 'var(--color-money-accent)' : 'var(--color-love-accent)';
+  const activeBg = isMoney ? 'var(--color-money-bg)' : 'var(--color-love-bg)';
+
+  const getPartnerStyle = (key) => {
+    const isSelected = byPartner === key;
+    const role = key === 'p1' ? p1Role : p2Role;
+    const isWhite = role === 'white_dog';
+    
+    if (isSelected) {
+      return {
+        ...styles.partnerCard,
+        backgroundColor: isWhite ? '#FFFFFF' : '#F5E6D8',
+        borderColor: 'var(--border-color)',
+        borderWidth: '2.5px',
+        transform: 'translate(-1.5px, -1.5px)',
+        boxShadow: 'var(--shadow-sm)',
+        opacity: 1,
+      };
+    }
+    return {
+      ...styles.partnerCard,
+      backgroundColor: '#FFFFFF',
+      borderColor: 'var(--border-color)',
+      borderWidth: '1.8px',
+      transform: 'none',
+      boxShadow: 'var(--shadow-xs)',
+      opacity: 0.65,
+    };
+  };
+
   return (
     <div 
       style={styles.overlay}
@@ -99,6 +130,9 @@ export default function RecordModal({
       onTouchEnd={(e) => e.stopPropagation()}
     >
       <div className="comic-card animate-pop RecordModal-card" style={styles.modalCard}>
+        {/* Decorative diagonal tape */}
+        <div className="paper-tape" style={{ backgroundColor: isMoney ? 'rgba(122, 168, 144, 0.2)' : 'rgba(255, 138, 138, 0.2)' }} />
+
         {/* Memo Paper Header Decoration */}
         <div style={styles.memoHeader}>
           <div style={styles.binderRings}>
@@ -109,7 +143,7 @@ export default function RecordModal({
             <div style={styles.ring} />
           </div>
           <button onClick={onClose} style={styles.closeBtn} className="comic-btn secondary">
-            <X size={16} />
+            <X size={16} strokeWidth={3} />
           </button>
         </div>
 
@@ -123,11 +157,14 @@ export default function RecordModal({
             className="RecordModal-typeBtn"
             style={{ 
               ...styles.typeBtn, 
-              backgroundColor: recordType === 'money' ? 'var(--color-light-gray)' : '#FFFFFF',
-              borderColor: 'var(--text-primary)'
+              backgroundColor: isMoney ? 'var(--color-money-bg)' : '#FFFFFF',
+              borderColor: 'var(--border-color)',
+              color: isMoney ? 'var(--color-money-accent-hover)' : 'var(--text-muted)',
+              boxShadow: isMoney ? 'var(--shadow-sm)' : 'var(--shadow-xs)',
+              transform: isMoney ? 'translate(-1.5px, -1.5px)' : 'none',
             }}
           >
-            <Landmark size={18} />
+            <Landmark size={18} color={isMoney ? 'var(--color-money-accent)' : 'var(--text-muted)'} />
             <span>金錢帳單</span>
           </button>
 
@@ -137,11 +174,14 @@ export default function RecordModal({
             className="RecordModal-typeBtn"
             style={{ 
               ...styles.typeBtn, 
-              backgroundColor: recordType === 'love' ? 'var(--color-light-gray)' : '#FFFFFF',
-              borderColor: 'var(--text-primary)'
+              backgroundColor: !isMoney ? 'var(--color-love-bg)' : '#FFFFFF',
+              borderColor: 'var(--border-color)',
+              color: !isMoney ? 'var(--color-love-accent-hover)' : 'var(--text-muted)',
+              boxShadow: !isMoney ? 'var(--shadow-sm)' : 'var(--shadow-xs)',
+              transform: !isMoney ? 'translate(-1.5px, -1.5px)' : 'none',
             }}
           >
-            <Heart size={18} fill={recordType === 'love' ? 'var(--text-primary)' : 'none'} />
+            <Heart size={18} color={!isMoney ? 'var(--color-love-accent)' : 'var(--text-muted)'} fill={!isMoney ? 'var(--color-love-accent)' : 'none'} />
             <span>家事與心意</span>
           </button>
         </div>
@@ -156,30 +196,24 @@ export default function RecordModal({
             <div className="RecordModal-partnerSelector" style={styles.partnerSelector}>
               <div 
                 onClick={() => setByPartner('p1')}
-                className="RecordModal-partnerCard"
-                style={{ 
-                  ...styles.partnerCard, 
-                  backgroundColor: byPartner === 'p1' ? 'var(--bg-primary)' : '#FFFFFF',
-                  borderColor: byPartner === 'p1' ? 'var(--text-primary)' : 'var(--border-color)',
-                  borderWidth: byPartner === 'p1' ? '3px' : '2px'
-                }}
+                style={getPartnerStyle('p1')}
               >
-                <span className="RecordModal-partnerName" style={styles.partnerName}>{p1Name} ({p1Role === 'white_dog' ? '白狗' : '灰狗'})</span>
-                {byPartner === 'p1' && <Check size={16} color="var(--text-primary)" strokeWidth={3} />}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '1.2rem' }}>{p1Role === 'white_dog' ? '🐶' : '🐻'}</span>
+                  <span className="RecordModal-partnerName" style={styles.partnerName}>{p1Name}</span>
+                </div>
+                {byPartner === 'p1' && <Check size={16} color="var(--border-color)" strokeWidth={3.5} />}
               </div>
 
               <div 
                 onClick={() => setByPartner('p2')}
-                className="RecordModal-partnerCard"
-                style={{ 
-                  ...styles.partnerCard, 
-                  backgroundColor: byPartner === 'p2' ? 'var(--bg-primary)' : '#FFFFFF',
-                  borderColor: byPartner === 'p2' ? 'var(--text-primary)' : 'var(--border-color)',
-                  borderWidth: byPartner === 'p2' ? '3px' : '2px'
-                }}
+                style={getPartnerStyle('p2')}
               >
-                <span className="RecordModal-partnerName" style={styles.partnerName}>{p2Name} ({p2Role === 'white_dog' ? '白狗' : '灰狗'})</span>
-                {byPartner === 'p2' && <Check size={16} color="var(--text-primary)" strokeWidth={3} />}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '1.2rem' }}>{p2Role === 'white_dog' ? '🐶' : '🐻'}</span>
+                  <span className="RecordModal-partnerName" style={styles.partnerName}>{p2Name}</span>
+                </div>
+                {byPartner === 'p2' && <Check size={16} color="var(--border-color)" strokeWidth={3.5} />}
               </div>
             </div>
           </div>
@@ -192,7 +226,7 @@ export default function RecordModal({
             </label>
             <input 
               type="text" 
-              placeholder={recordType === 'money' ? '例如：買全聯菜肉、繳電費...' : '例如：掃地洗衣服、搥背...' }
+              placeholder={isMoney ? '例如：買全聯菜肉、繳電費...' : '例如：掃地洗衣服、搥背...' }
               value={title} 
               onChange={(e) => setTitle(e.target.value)} 
               className="comic-input" 
@@ -204,13 +238,27 @@ export default function RecordModal({
           <div style={styles.formGroup}>
             <label style={styles.presetLabel}>推薦快捷標籤：</label>
             <div style={styles.presetsList}>
-              {(recordType === 'money' ? MONEY_PRESETS : LOVE_PRESETS).map((item, idx) => (
+              {(isMoney ? MONEY_PRESETS : LOVE_PRESETS).map((item, idx) => (
                 <button
                   key={idx}
                   type="button"
                   onClick={() => handlePresetClick(item)}
                   className="RecordModal-presetTag"
-                  style={styles.presetTag}
+                  style={{
+                    ...styles.presetTag,
+                    backgroundColor: '#FFFFFF',
+                    borderColor: 'var(--border-color)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = activeBg;
+                    e.currentTarget.style.transform = 'translate(-1px, -1px)';
+                    e.currentTarget.style.boxShadow = '3.5px 3.5px 0px var(--shadow-color)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#FFFFFF';
+                    e.currentTarget.style.transform = 'none';
+                    e.currentTarget.style.boxShadow = '2.5px 2.5px 0px var(--shadow-color)';
+                  }}
                 >
                   {item.tag}
                   {item.points && <span style={styles.presetPoints}>+{item.points}</span>}
@@ -220,7 +268,7 @@ export default function RecordModal({
           </div>
 
           {/* Currency selection for money */}
-          {recordType === 'money' && (
+          {isMoney && (
             <div style={styles.formGroup}>
               <label style={styles.label}>
                 交易幣別
@@ -238,9 +286,11 @@ export default function RecordModal({
                     className="RecordModal-currencyBtn"
                     style={{
                       ...styles.currencyBtn,
-                      backgroundColor: currency === curr.code ? '#000000' : '#FFFFFF',
-                      color: currency === curr.code ? '#FFFFFF' : '#000000',
-                      border: '2.5px solid #000000',
+                      backgroundColor: currency === curr.code ? 'var(--text-primary)' : '#FFFFFF',
+                      color: currency === curr.code ? '#FFFFFF' : 'var(--text-primary)',
+                      border: '2px solid var(--border-color)',
+                      boxShadow: currency === curr.code ? 'var(--shadow-sm)' : 'var(--shadow-xs)',
+                      transform: currency === curr.code ? 'translate(-1px, -1px)' : 'none',
                     }}
                   >
                     {curr.name}
@@ -253,19 +303,19 @@ export default function RecordModal({
           {/* Amount / Hearts value */}
           <div style={styles.formGroup}>
             <label style={styles.label}>
-              {recordType === 'money' ? '付出金額' : '努力點數 (心意值)'}
+              {isMoney ? '付出金額' : '努力點數 (心意值)'}
             </label>
             <div style={styles.valueInputRow}>
               <input 
                 type="number" 
-                placeholder={recordType === 'money' ? `${currency === 'TWD' ? 'NT$' : currency === 'SGD' ? 'S$' : 'US$'} 金額` : '點數值'} 
+                placeholder={isMoney ? `${currency === 'TWD' ? 'NT$' : currency === 'SGD' ? 'S$' : 'US$'} 金額` : '點數值'} 
                 value={value} 
                 onChange={(e) => setValue(e.target.value)} 
                 className="comic-input" 
                 min="1"
                 step="any"
               />
-              {recordType === 'money' && (
+              {isMoney && (
                 <span style={styles.unitText}>
                   {currency === 'TWD' ? '元 (TWD)' : currency === 'SGD' ? '元 (SGD)' : '元 (USD)'}
                 </span>
@@ -273,7 +323,7 @@ export default function RecordModal({
             </div>
 
             {/* Quick point triggers for chores */}
-            {recordType === 'love' && (
+            {!isMoney && (
               <div style={styles.quickPointsRow}>
                 {[5, 10, 15, 20, 30].map((pts) => (
                   <button
@@ -281,7 +331,21 @@ export default function RecordModal({
                     type="button"
                     onClick={() => handleQuickPoints(pts)}
                     className="RecordModal-quickPointBtn"
-                    style={styles.quickPointBtn}
+                    style={{
+                      ...styles.quickPointBtn,
+                      borderColor: 'var(--border-color)',
+                      boxShadow: 'var(--shadow-xs)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'var(--color-love-bg)';
+                      e.currentTarget.style.transform = 'translate(-1px, -1px)';
+                      e.currentTarget.style.boxShadow = '3px 3px 0px var(--shadow-color)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#FFFFFF';
+                      e.currentTarget.style.transform = 'none';
+                      e.currentTarget.style.boxShadow = '2px 2px 0px var(--shadow-color)';
+                    }}
                   >
                     +{pts} 點
                   </button>
@@ -290,7 +354,7 @@ export default function RecordModal({
             )}
 
             {/* HEART POINT COZY EVALUATION GUIDE */}
-            {recordType === 'love' && (
+            {!isMoney && (
               <div style={styles.guideWrapper}>
                 <details style={styles.guideDetails}>
                   <summary style={styles.guideSummary}>
@@ -315,16 +379,27 @@ export default function RecordModal({
               type="button" 
               onClick={onClose} 
               className="comic-btn secondary"
-              style={{ flex: 1 }}
+              style={{ flex: 1, borderColor: 'var(--border-color)' }}
             >
               取消
             </button>
             <button 
               type="submit" 
-              className={`comic-btn ${recordType === 'love' ? 'pink' : ''}`}
-              style={{ flex: 2 }}
+              className="comic-btn"
+              style={{ 
+                flex: 2, 
+                backgroundColor: activeColor, 
+                borderColor: 'var(--border-color)',
+                color: '#FFFFFF'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = isMoney ? 'var(--color-money-accent-hover)' : 'var(--color-love-accent-hover)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = activeColor;
+              }}
             >
-              <Plus size={16} />
+              <Plus size={16} strokeWidth={3} />
               <span>儲存紀錄</span>
             </button>
           </div>
@@ -341,10 +416,10 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
-    backdropFilter: 'blur(10px)',
+    backgroundColor: 'rgba(44, 30, 20, 0.4)',
+    backdropFilter: 'blur(12px) saturate(110%)',
     display: 'flex',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'center',
     zIndex: 9999,
     padding: '24px 16px 40px 16px',
@@ -358,11 +433,11 @@ const styles = {
     padding: '28px 24px 24px 24px',
     position: 'relative',
     flexShrink: 0,
-    backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px)',
+    backgroundImage: 'linear-gradient(rgba(44, 30, 20, 0.03) 1px, transparent 1px)',
     backgroundSize: '100% 28px',
     boxShadow: 'var(--shadow-lg)',
-    border: '3.5px solid #000000',
-    borderRadius: '20px',
+    border: 'var(--border-thick)',
+    borderRadius: '22px',
   },
   memoHeader: {
     display: 'flex',
@@ -381,9 +456,9 @@ const styles = {
     width: '14px',
     height: '28px',
     borderRadius: '8px',
-    border: '3px solid #000000',
-    backgroundColor: '#EFEFED',
-    boxShadow: '2.5px 2.5px 0px #000000',
+    border: '2px solid var(--border-color)',
+    backgroundColor: '#F5D061', /* Matte gold color rings */
+    boxShadow: 'var(--shadow-xs)',
   },
   closeBtn: {
     padding: '4px',
@@ -393,17 +468,18 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '2px 2px 0px #000000',
-    border: '2.5px solid #000000',
+    boxShadow: 'var(--shadow-xs)',
+    border: '2px solid var(--border-color)',
     backgroundColor: '#FFFFFF',
     cursor: 'pointer',
+    transition: 'transform 0.15s var(--ease-snappy), box-shadow 0.15s var(--ease-snappy)',
   },
   title: {
     fontSize: '1.45rem',
     fontWeight: '950',
     textAlign: 'center',
     marginBottom: '20px',
-    color: '#000000',
+    color: 'var(--text-primary)',
     letterSpacing: '-0.5px',
   },
   typeSelector: {
@@ -414,8 +490,8 @@ const styles = {
   typeBtn: {
     flex: 1,
     padding: '10px 14px',
-    borderRadius: '12px',
-    border: '3px solid #000000',
+    borderRadius: '14px',
+    border: '2.5px solid var(--border-color)',
     fontFamily: 'inherit',
     fontWeight: '800',
     fontSize: '0.92rem',
@@ -424,9 +500,7 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     gap: '6px',
-    boxShadow: '3px 3px 0px #000000',
-    color: '#000000',
-    transition: 'transform 0.1s, box-shadow 0.1s',
+    transition: 'transform 0.2s var(--ease-snappy), box-shadow 0.2s var(--ease-snappy), background-color 0.15s ease',
   },
   form: {
     display: 'flex',
@@ -441,7 +515,7 @@ const styles = {
   label: {
     fontSize: '0.88rem',
     fontWeight: '900',
-    color: '#000000',
+    color: 'var(--text-primary)',
     display: 'flex',
     alignItems: 'center',
   },
@@ -452,15 +526,13 @@ const styles = {
   partnerCard: {
     flex: 1,
     padding: '10px 14px',
-    borderRadius: '12px',
-    border: '3px solid #000000',
+    borderRadius: '14px',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     userSelect: 'none',
-    transition: 'all 0.1s ease',
-    boxShadow: 'var(--shadow-xs)',
+    transition: 'all 0.2s var(--ease-snappy)',
   },
   dogIndicator: {
     fontSize: '1.2rem',
@@ -468,12 +540,12 @@ const styles = {
   partnerName: {
     fontWeight: '800',
     fontSize: '0.9rem',
-    color: '#000000',
+    color: 'var(--text-primary)',
   },
   presetLabel: {
     fontSize: '0.82rem',
     fontWeight: '800',
-    color: '#666666',
+    color: 'var(--text-muted)',
   },
   presetsList: {
     display: 'flex',
@@ -482,22 +554,22 @@ const styles = {
   },
   presetTag: {
     background: '#FFFFFF',
-    border: '2.5px solid #000000',
+    border: '1.8px solid var(--border-color)',
     borderRadius: '10px',
     padding: '5px 10px',
     fontSize: '0.8rem',
     fontWeight: '800',
-    color: '#000000',
+    color: 'var(--text-primary)',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     gap: '4px',
-    boxShadow: '2.5px 2.5px 0px #000000',
-    transition: 'transform 0.1s, box-shadow 0.1s',
+    boxShadow: '2.5px 2.5px 0px var(--shadow-color)',
+    transition: 'transform 0.18s var(--ease-snappy), box-shadow 0.18s var(--ease-snappy), background-color 0.15s ease',
   },
   presetPoints: {
-    backgroundColor: '#EFEFED',
-    border: '1.5px solid #000000',
+    backgroundColor: 'var(--bg-primary)',
+    border: '1.5px solid var(--border-color)',
     padding: '1px 5px',
     borderRadius: '6px',
     fontSize: '0.72rem',
@@ -511,7 +583,7 @@ const styles = {
   unitText: {
     fontSize: '0.95rem',
     fontWeight: '800',
-    color: '#000000',
+    color: 'var(--text-primary)',
   },
   quickPointsRow: {
     display: 'flex',
@@ -521,23 +593,21 @@ const styles = {
   quickPointBtn: {
     flex: 1,
     padding: '6px 8px',
-    borderRadius: '8px',
-    border: '2.5px solid #000000',
+    borderRadius: '10px',
     backgroundColor: '#FFFFFF',
     fontFamily: 'inherit',
     fontWeight: '800',
     fontSize: '0.78rem',
     cursor: 'pointer',
-    color: '#000000',
-    boxShadow: '2px 2px 0px #000000',
-    transition: 'transform 0.1s, box-shadow 0.1s',
+    color: 'var(--text-primary)',
+    transition: 'transform 0.18s var(--ease-snappy), box-shadow 0.18s var(--ease-snappy), background-color 0.15s ease',
   },
   errorText: {
-    color: '#000000',
+    color: 'var(--text-primary)',
     backgroundColor: '#FFFFFF',
     padding: '10px 14px',
-    borderRadius: '10px',
-    border: '3px solid #000000',
+    borderRadius: '12px',
+    border: '2.5px solid var(--border-color)',
     fontSize: '0.85rem',
     fontWeight: '900',
     boxShadow: 'var(--shadow-xs)',
@@ -553,7 +623,7 @@ const styles = {
   },
   guideDetails: {
     backgroundColor: '#FFFFFF',
-    border: '2.5px dashed #000000',
+    border: '2px dashed var(--border-color)',
     borderRadius: '12px',
     padding: '10px 14px',
     cursor: 'pointer',
@@ -561,7 +631,7 @@ const styles = {
   guideSummary: {
     fontSize: '0.78rem',
     fontWeight: '800',
-    color: '#000000',
+    color: 'var(--text-primary)',
     outline: 'none',
     userSelect: 'none',
   },
@@ -571,12 +641,12 @@ const styles = {
     flexDirection: 'column',
     gap: '6px',
     cursor: 'default',
-    borderTop: '2px dashed #000000',
+    borderTop: '1.5px dashed var(--border-color)',
     paddingTop: '8px',
   },
   guideRow: {
     fontSize: '0.75rem',
-    color: '#666666',
+    color: 'var(--text-muted)',
     lineHeight: '1.45',
     textAlign: 'left',
   },
@@ -594,8 +664,7 @@ const styles = {
     fontWeight: '700',
     fontSize: '0.82rem',
     cursor: 'pointer',
-    boxShadow: '2px 2px 0px #000000',
-    transition: 'transform 0.1s, background-color 0.1s',
+    transition: 'transform 0.18s var(--ease-snappy), background-color 0.15s ease, box-shadow 0.18s var(--ease-snappy)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',

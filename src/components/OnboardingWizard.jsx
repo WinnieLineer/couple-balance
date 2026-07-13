@@ -307,7 +307,7 @@ export default function OnboardingWizard({
                         color: selectedJoinIdentity === 'p1' ? '#FFFFFF' : '#000000',
                       }}
                     >
-                      我是 {fetchedPartners.p1.name} ({fetchedPartners.p1.role === 'white_dog' ? '白狗' : '灰狗'})
+                      我是 {fetchedPartners.p1.name}
                     </button>
                     <button
                       type="button"
@@ -319,7 +319,7 @@ export default function OnboardingWizard({
                         color: selectedJoinIdentity === 'p2' ? '#FFFFFF' : '#000000',
                       }}
                     >
-                      我是 {fetchedPartners.p2.name} ({fetchedPartners.p2.role === 'white_dog' ? '白狗' : '灰狗'})
+                      我是 {fetchedPartners.p2.name}
                     </button>
                   </div>
 
@@ -346,9 +346,6 @@ export default function OnboardingWizard({
                     <div style={styles.inputCol}>
                       <label style={styles.label}>
                         伴侶一 姓名
-                        <span style={{ fontSize: '0.75rem', color: '#666666', marginLeft: '6px', fontWeight: '800' }}>
-                          ({p1Role === 'white_dog' ? '白狗' : '灰狗'})
-                        </span>
                       </label>
                       <input 
                         type="text" 
@@ -376,9 +373,6 @@ export default function OnboardingWizard({
                     <div style={styles.inputCol}>
                       <label style={styles.label}>
                         伴侶二 姓名
-                        <span style={{ fontSize: '0.75rem', color: '#666666', marginLeft: '6px', fontWeight: '800' }}>
-                          ({p2Role === 'white_dog' ? '白狗' : '灰狗'})
-                        </span>
                       </label>
                       <input 
                         type="text" 
@@ -405,7 +399,7 @@ export default function OnboardingWizard({
                           color: myIdentity === 'p1' ? '#FFFFFF' : '#000000',
                         }}
                       >
-                        {p1Name} ({p1Role === 'white_dog' ? '白狗' : '灰狗'})
+                        {p1Name}
                       </button>
                       <button
                         type="button"
@@ -417,7 +411,7 @@ export default function OnboardingWizard({
                           color: myIdentity === 'p2' ? '#FFFFFF' : '#000000',
                         }}
                       >
-                        {p2Name} ({p2Role === 'white_dog' ? '白狗' : '灰狗'})
+                        {p2Name}
                       </button>
                     </div>
                   </div>
@@ -465,11 +459,11 @@ const styles = {
   wizardOverlay: {
     position: 'fixed',
     top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    backdropFilter: 'blur(8px)',
-    WebkitBackdropFilter: 'blur(8px)',
+    backgroundColor: 'rgba(44, 30, 20, 0.4)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
     display: 'flex',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10000,
     padding: '24px 16px 40px 16px',
@@ -482,10 +476,11 @@ const styles = {
     flexShrink: 0,
     backgroundColor: '#FFFFFF',
     padding: '24px',
-    border: '3px solid #000000',
-    boxShadow: '8px 8px 0px #000000',
-    borderRadius: '16px',
-    animation: 'pop 0.25s ease-out',
+    border: 'var(--border-thick)',
+    boxShadow: 'var(--shadow-lg)',
+    borderRadius: '22px',
+    animation: 'pop 0.28s var(--ease-snappy)',
+    position: 'relative',
   },
   popIcon: {
     display: 'inline-flex',
@@ -493,22 +488,22 @@ const styles = {
     justifyContent: 'center',
     width: '44px',
     height: '44px',
-    border: '3px solid #000000',
+    border: '2px solid var(--border-color)',
     borderRadius: '50%',
     marginBottom: '8px',
     fontSize: '1.3rem',
-    boxShadow: '2.5px 2.5px 0px #000000',
+    boxShadow: 'var(--shadow-xs)',
     backgroundColor: '#FFFFFF',
   },
   wizardTitle: {
     fontSize: '1.25rem',
     fontWeight: '950',
-    color: '#000000',
+    color: 'var(--text-primary)',
     marginBottom: '6px',
   },
   wizardSubtitle: {
     fontSize: '0.82rem',
-    color: '#666666',
+    color: 'var(--text-muted)',
     lineHeight: '1.5',
     fontWeight: '700',
   },
@@ -516,7 +511,7 @@ const styles = {
     display: 'flex',
     gap: '8px',
     marginBottom: '16px',
-    borderBottom: '2.5px solid #000000',
+    borderBottom: 'var(--border-thick)',
     paddingBottom: '10px',
   },
   tabBtn: {
@@ -525,10 +520,10 @@ const styles = {
     fontSize: '0.8rem',
     fontWeight: '850',
     cursor: 'pointer',
-    border: '2.5px solid #000000',
-    borderRadius: '8px',
-    boxShadow: '2px 2px 0px #000000',
-    transition: 'all 0.1s ease',
+    border: '2.2px solid var(--border-color)',
+    borderRadius: '10px',
+    boxShadow: 'var(--shadow-xs)',
+    transition: 'transform 0.15s var(--ease-snappy), box-shadow 0.15s var(--ease-snappy), background-color 0.15s ease',
     fontFamily: 'inherit',
   },
   wizardBody: {
@@ -538,17 +533,17 @@ const styles = {
   },
   wizardSection: {
     backgroundColor: '#FFFFFF',
-    border: '2.5px solid #000000',
-    borderRadius: '12px',
+    border: '2px solid var(--border-color)',
+    borderRadius: '14px',
     padding: '16px',
-    boxShadow: '3px 3px 0px #000000',
+    boxShadow: 'var(--shadow-sm)',
   },
   sectionHeader: {
     fontSize: '0.92rem',
     fontWeight: '900',
-    color: '#000000',
+    color: 'var(--text-primary)',
     marginBottom: '12px',
-    borderBottom: '2px dashed #000000',
+    borderBottom: '1.8px dashed var(--border-color)',
     paddingBottom: '6px',
   },
   namesRow: {
@@ -565,16 +560,19 @@ const styles = {
   label: {
     fontSize: '0.8rem',
     fontWeight: '900',
-    color: '#000000',
+    color: 'var(--text-primary)',
     display: 'flex',
     alignItems: 'center',
   },
   inputField: {
     padding: '8px 12px',
-    border: '2.5px solid #000000',
+    border: '1.8px solid var(--border-color)',
     fontSize: '0.85rem',
     fontWeight: '800',
-    borderRadius: '8px',
+    borderRadius: '10px',
+    outline: 'none',
+    color: 'var(--text-primary)',
+    boxShadow: 'var(--shadow-xs)',
   },
   swapCol: {
     display: 'flex',
@@ -583,13 +581,15 @@ const styles = {
   },
   swapBtn: {
     padding: '8px',
-    borderRadius: '8px',
-    boxShadow: '1.5px 1.5px 0px #000000',
+    borderRadius: '10px',
+    boxShadow: 'var(--shadow-xs)',
     backgroundColor: '#FFFFFF',
-    border: '2.5px solid #000000',
+    border: '1.8px solid var(--border-color)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    cursor: 'pointer',
+    transition: 'transform 0.15s var(--ease-snappy), box-shadow 0.15s var(--ease-snappy)',
   },
   identityRow: {
     display: 'flex',
@@ -600,54 +600,58 @@ const styles = {
     flex: 1,
     padding: '8px 10px',
     fontSize: '0.78rem',
-    border: '2.5px solid #000000',
-    boxShadow: '1.5px 1.5px 0px #000000',
+    border: '2px solid var(--border-color)',
+    boxShadow: 'var(--shadow-xs)',
     justifyContent: 'center',
     fontWeight: '850',
+    borderRadius: '10px',
   },
   infoBanner: {
     display: 'flex',
     gap: '8px',
     alignItems: 'flex-start',
-    backgroundColor: '#F8F8F8',
-    border: '2.5px solid #000000',
+    backgroundColor: 'var(--bg-secondary)',
+    border: '1.8px solid var(--border-color)',
     padding: '10px',
     marginTop: '16px',
-    borderRadius: '8px',
+    borderRadius: '10px',
+    fontSize: '0.78rem',
+    color: 'var(--text-muted)',
   },
   invitationTextarea: {
     width: '100%',
-    padding: '8px',
+    padding: '10px',
     fontFamily: 'inherit',
     fontSize: '0.8rem',
     fontWeight: '800',
     lineHeight: '1.5',
-    border: '2.5px solid #000000',
-    backgroundColor: '#F8F8F8',
+    border: '2.2px solid var(--border-color)',
+    backgroundColor: 'var(--bg-secondary)',
     resize: 'none',
     marginTop: '6px',
-    borderRadius: '6px',
+    borderRadius: '10px',
+    color: 'var(--text-primary)',
   },
   localErrorText: {
     color: '#D8000C',
     backgroundColor: '#FFD2D2',
     border: '2px solid #D8000C',
-    padding: '6px 12px',
+    padding: '8px 12px',
     fontSize: '0.78rem',
     fontWeight: '850',
     marginTop: '10px',
-    borderRadius: '6px',
+    borderRadius: '10px',
   },
   localSuccessText: {
-    color: '#000000',
-    backgroundColor: '#FAFAFA',
-    border: '2.5px solid #000000',
-    padding: '6px 12px',
+    color: 'var(--text-primary)',
+    backgroundColor: 'var(--bg-secondary)',
+    border: '2px solid var(--border-color)',
+    padding: '8px 12px',
     fontSize: '0.78rem',
     fontWeight: '900',
     marginTop: '10px',
-    borderRadius: '6px',
+    borderRadius: '10px',
     textAlign: 'center',
-    boxShadow: '2.5px 2.5px 0px rgba(0,0,0,0.15)',
+    boxShadow: 'var(--shadow-xs)',
   }
 };

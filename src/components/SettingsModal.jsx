@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, Coins, Users, Cloud, ArrowLeftRight, Copy, RefreshCw, CloudOff } from 'lucide-react';
+import { X, Coins, Users, Cloud, ArrowLeftRight, Copy, RefreshCw, CloudOff, History } from 'lucide-react';
 import { createSecretGist } from '../utils/githubGist';
+import ActivityLog from './ActivityLog';
 
 export default function SettingsModal({
   isOpen,
@@ -17,9 +18,10 @@ export default function SettingsModal({
   myIdentity,
   onUpdateMyIdentity,
   displayCurrency,
-  onUpdateCurrency
+  onUpdateCurrency,
+  activityLog
 }) {
-  const [activeTab, setActiveTab] = useState('currency'); // 'currency' | 'partners' | 'cloud'
+  const [activeTab, setActiveTab] = useState('currency'); // 'currency' | 'partners' | 'cloud' | 'activity'
 
   // Partners state
   const [p1Name, setP1Name] = useState(partners.p1.name || '伴侶一');
@@ -196,6 +198,13 @@ export default function SettingsModal({
             <Cloud size={16} />
             <span>雲端與同步</span>
           </button>
+          <button
+            className={`settings-tab-link ${activeTab === 'activity' ? 'active' : ''}`}
+            onClick={() => { setActiveTab('activity'); setLocalError(''); setLocalSuccess(''); }}
+          >
+            <History size={16} />
+            <span>活動紀錄</span>
+          </button>
         </div>
 
         {/* TAB 1: CURRENCY */}
@@ -237,16 +246,13 @@ export default function SettingsModal({
         {activeTab === 'partners' && (
           <div style={styles.tabContent}>
             <p style={styles.tabDescription}>
-              在此修改雙方在天秤上顯示的暱稱，並選擇象徵的角色（白狗與灰狗）。
+              在此修改雙方在天秤上顯示的暱稱，並選擇象徵的角色。
             </p>
             <div className="names-row" style={styles.namesRow}>
               {/* Partner 1 Input */}
               <div style={styles.inputCol}>
                 <label style={styles.label}>
                   伴侶一 姓名
-                  <span style={{ fontSize: '0.75rem', color: '#666666', marginLeft: '6px', fontWeight: '800' }}>
-                    ({p1Role === 'white_dog' ? '白狗' : '灰狗'})
-                  </span>
                 </label>
                 <input 
                   type="text" 
@@ -274,9 +280,6 @@ export default function SettingsModal({
               <div style={styles.inputCol}>
                 <label style={styles.label}>
                   伴侶二 姓名
-                  <span style={{ fontSize: '0.75rem', color: '#666666', marginLeft: '6px', fontWeight: '800' }}>
-                    ({p2Role === 'white_dog' ? '白狗' : '灰狗'})
-                  </span>
                 </label>
                 <input 
                   type="text" 
@@ -302,7 +305,7 @@ export default function SettingsModal({
                     color: myIdentity === 'p1' ? '#FFFFFF' : '#000000',
                   }}
                 >
-                  我是 {p1Name} ({p1Role === 'white_dog' ? '白狗' : '灰狗'})
+                  我是 {p1Name}
                 </button>
                 <button
                   type="button"
@@ -314,7 +317,7 @@ export default function SettingsModal({
                     color: myIdentity === 'p2' ? '#FFFFFF' : '#000000',
                   }}
                 >
-                  我是 {p2Name} ({p2Role === 'white_dog' ? '白狗' : '灰狗'})
+                  我是 {p2Name}
                 </button>
               </div>
             </div>
@@ -455,6 +458,30 @@ export default function SettingsModal({
             {localSuccess && <div style={styles.localSuccessText}>{localSuccess}</div>}
           </div>
         )}
+
+        {/* TAB 4: ACTIVITY */}
+        {activeTab === 'activity' && (
+          <div style={styles.tabContent}>
+            <p style={styles.tabDescription}>
+              共同天秤的所有歷史操作日誌（唯讀不可篡改），用於核對和追溯。
+            </p>
+            <div style={{
+              maxHeight: '320px',
+              overflowY: 'auto',
+              border: 'var(--border-thick)',
+              borderRadius: '16px',
+              backgroundColor: '#FFFFFF',
+              boxShadow: 'var(--shadow-sm)',
+            }}>
+              <ActivityLog 
+                alwaysExpanded={true}
+                activityLog={activityLog}
+                p1Name={partners.p1.name}
+                p2Name={partners.p2.name}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -465,11 +492,11 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '16px',
-    animation: 'pop 0.15s ease-out',
+    animation: 'pop 0.18s var(--ease-snappy)',
   },
   tabDescription: {
     fontSize: '0.82rem',
-    color: '#666666',
+    color: 'var(--text-muted)',
     fontWeight: '700',
     lineHeight: '1.55',
   },
@@ -488,9 +515,9 @@ const styles = {
     fontWeight: '800',
     fontSize: '0.9rem',
     cursor: 'pointer',
-    border: '3px solid #000000',
-    borderRadius: '12px',
-    transition: 'all 0.15s ease',
+    border: '2.5px solid var(--border-color)',
+    borderRadius: '14px',
+    transition: 'transform 0.18s var(--ease-snappy), box-shadow 0.18s var(--ease-snappy), background-color 0.15s ease',
   },
   namesRow: {
     display: 'flex',
@@ -506,16 +533,18 @@ const styles = {
   label: {
     fontSize: '0.82rem',
     fontWeight: '900',
-    color: '#000000',
+    color: 'var(--text-primary)',
     display: 'flex',
     alignItems: 'center',
   },
   inputField: {
     padding: '10px 14px',
-    border: '3px solid #000000',
+    border: '2px solid var(--border-color)',
     fontSize: '0.88rem',
     fontWeight: '800',
     borderRadius: '10px',
+    outline: 'none',
+    color: 'var(--text-primary)',
   },
   swapCol: {
     display: 'flex',
@@ -527,10 +556,12 @@ const styles = {
     borderRadius: '10px',
     boxShadow: 'var(--shadow-xs)',
     backgroundColor: '#FFFFFF',
-    border: '2.5px solid #000000',
+    border: '1.8px solid var(--border-color)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    cursor: 'pointer',
+    transition: 'transform 0.15s var(--ease-snappy), box-shadow 0.15s var(--ease-snappy)',
   },
   identityRow: {
     display: 'flex',
@@ -541,66 +572,69 @@ const styles = {
     flex: 1,
     padding: '10px',
     fontSize: '0.8rem',
-    border: '3px solid #000000',
+    border: '2.2px solid var(--border-color)',
     boxShadow: 'var(--shadow-xs)',
     justifyContent: 'center',
     fontWeight: '800',
+    borderRadius: '10px',
   },
   toggleRow: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: '#FFFFFF',
-    border: '3px solid #000000',
+    border: '2.5px solid var(--border-color)',
     padding: '12px 14px',
-    borderRadius: '12px',
+    borderRadius: '14px',
     flexWrap: 'wrap',
     gap: '10px',
     boxShadow: 'var(--shadow-xs)',
   },
   shareCard: {
     backgroundColor: '#FFFFFF',
-    border: '3px solid #000000',
+    border: '2.5px solid var(--border-color)',
     padding: '16px',
-    borderRadius: '12px',
+    borderRadius: '14px',
     boxShadow: 'var(--shadow-sm)',
   },
   shareTitle: {
     fontSize: '0.85rem',
     fontWeight: '900',
-    borderBottom: '2.5px dashed #000000',
+    borderBottom: '2px dashed var(--border-color)',
     paddingBottom: '6px',
     marginBottom: '8px',
   },
   readonlyInput: {
     flex: 1,
-    backgroundColor: '#EFEFED',
+    backgroundColor: 'var(--bg-secondary)',
     padding: '8px 10px',
-    border: '3.5px solid #000000',
+    border: '2px solid var(--border-color)',
     fontFamily: 'monospace',
     fontWeight: '800',
     fontSize: '0.8rem',
     height: '36px',
-    borderRadius: '8px',
+    borderRadius: '10px',
+    color: 'var(--text-primary)',
+    outline: 'none',
   },
   localErrorText: {
-    color: '#000000',
+    color: '#D8000C',
     backgroundColor: '#FFFFFF',
-    border: '3px solid #000000',
+    border: '2.2px solid #D8000C',
     padding: '8px 12px',
     fontSize: '0.82rem',
     fontWeight: '900',
-    borderRadius: '8px',
+    borderRadius: '12px',
     boxShadow: 'var(--shadow-xs)',
   },
   localSuccessText: {
-    color: '#000000',
+    color: 'var(--text-primary)',
     backgroundColor: '#FFFFFF',
-    border: '3px solid #000000',
+    border: '2.2px solid var(--border-color)',
     padding: '8px 12px',
     fontSize: '0.82rem',
     fontWeight: '900',
-    borderRadius: '8px',
+    borderRadius: '12px',
     textAlign: 'center',
     boxShadow: 'var(--shadow-xs)',
   }

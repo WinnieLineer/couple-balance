@@ -654,24 +654,42 @@ export default function App() {
       {/* --- APP HEADER --- */}
       <header className="header" style={styles.header}>
         <div className="title-container" style={{ minWidth: 0, flex: 1 }}>
-          {/* Authentic peeking Maltese dog mascot image from the favicon */}
-          <img 
-            src="./favicon.png" 
-            alt="Mascot" 
-            className="animate-float"
-            style={{ 
-              width: '64px', 
-              height: '64px', 
-              alignSelf: 'flex-end', 
-              marginBottom: '-6px', 
-              zIndex: 5,
-              border: '3.5px solid #000000',
+          {/* Neo Brutalism Quirky Logo Badge */}
+          <div style={{ display: 'inline-flex', position: 'relative', width: '60px', height: '60px', flexShrink: 0, alignSelf: 'center', marginRight: '6px' }}>
+            <div style={{
+              position: 'absolute',
+              top: '4px',
+              left: '4px',
+              width: '52px',
+              height: '52px',
               borderRadius: '12px',
-              backgroundColor: '#FFFFFF',
-              boxShadow: '3px 3px 0px #000000',
-              objectFit: 'contain'
-            }} 
-          />
+              backgroundColor: 'var(--shadow-color)',
+            }} />
+            <div style={{
+              position: 'absolute',
+              top: '0',
+              left: '0',
+              width: '52px',
+              height: '52px',
+              border: 'var(--border-thick)',
+              borderRadius: '12px',
+              backgroundColor: 'var(--color-coffee-cream)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '1.6rem',
+              transform: 'rotate(-4deg)',
+              transition: 'transform 0.2s var(--ease-snappy)',
+              cursor: 'pointer',
+              zIndex: 5,
+              userSelect: 'none',
+            }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'rotate(2deg) scale(1.08)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'rotate(-4deg) scale(1)'}
+            >
+              ⚖️
+            </div>
+          </div>
           <div>
             <h1 className="app-title">HeartSync</h1>
             <div>
@@ -680,56 +698,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* Header Actions: Settings Gear Icon + Add Button */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
-          {/* ⚙️ 系統設定按鈕 */}
-          <button
-            onClick={() => setIsSettingsOpen(true)}
-            className="comic-btn secondary"
-            style={{
-              padding: '10px',
-              borderRadius: '50%',
-              width: '44px',
-              height: '44px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '3px 3px 0px #000000',
-              border: '3px solid #000000',
-              cursor: 'pointer',
-              transition: 'all 0.1s ease',
-              flexShrink: 0,
-            }}
-            title="打開系統設定"
-          >
-            <Settings size={20} />
-          </button>
-
-          {/* ➕ 新增付出按鈕（最右） */}
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="comic-btn"
-            style={{
-              padding: '10px',
-              borderRadius: '50%',
-              width: '44px',
-              height: '44px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: '#000000',
-              color: '#FFFFFF',
-              boxShadow: '3px 3px 0px rgba(0,0,0,0.35)',
-              border: '3px solid #000000',
-              cursor: 'pointer',
-              transition: 'all 0.12s ease',
-              flexShrink: 0,
-            }}
-            title="新增生活付出記錄"
-          >
-            <Plus size={22} strokeWidth={3} />
-          </button>
-        </div>
       </header>
 
       {/* --- STATUS & SETTINGS BAR --- */}
@@ -766,73 +734,39 @@ export default function App() {
               <span>手動同步</span>
             </button>
           )}
-
-          <button 
-            onClick={() => setIsSettingsOpen(true)} 
-            className="comic-btn action-btn"
-            style={{ ...styles.actionBtn, backgroundColor: '#000000', color: '#FFFFFF' }}
-          >
-            <Settings size={14} />
-            <span>系統設定</span>
-          </button>
         </div>
       </div>
 
-      {/* --- INITIAL NICKNAMES WIZARD (FOR NEW USERS) --- */}
-      {showWizard && (
-        <OnboardingWizard
-          partners={partners}
-          onUpdatePartners={handleUpdatePartners}
-          myIdentity={myIdentity}
-          onUpdateMyIdentity={(val) => {
-            setMyIdentity(val);
-            localStorage.setItem('my_identity', val);
-          }}
-          saveConfig={saveConfig}
-          onCloseWizard={() => setShowWizard(false)}
+      {/* --- RECORD HISTORY & DETAILED LOGS --- */}
+      <div style={{ marginBottom: '28px' }}>
+        <HistoryList
+          records={records}
+          onDeleteRecord={handleDeleteRecord}
+          p1Name={partners.p1.name}
+          p2Name={partners.p2.name}
+          p1Role={partners.p1.role}
+          p2Role={partners.p2.role}
+          displayCurrency={displayCurrency}
         />
-      )}
-
-      {/* --- SYSTEM UNIFIED SETTINGS MODAL --- */}
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        syncConfig={syncConfig}
-        saveConfig={saveConfig}
-        syncStatus={syncStatus}
-        onPull={() => pullCloudData()}
-        isSyncing={isSyncing}
-        offlineMode={offlineMode}
-        setOfflineMode={handleSetOfflineMode}
-        partners={partners}
-        onUpdatePartners={handleUpdatePartners}
-        myIdentity={myIdentity}
-        onUpdateMyIdentity={(val) => {
-          setMyIdentity(val);
-          localStorage.setItem('my_identity', val);
-        }}
-        displayCurrency={displayCurrency}
-        onUpdateCurrency={(val) => {
-          setDisplayCurrency(val);
-          localStorage.setItem('display_currency', val);
-        }}
-      />
+      </div>
 
       {/* --- WINNER DASHBOARD --- */}
-      <WinnerDashboard 
-        p1Money={p1Money}
-        p2Money={p2Money}
-        p1Love={p1Love}
-        p2Love={p2Love}
-        p1Name={partners.p1.name}
-        p2Name={partners.p2.name}
-        p1Role={partners.p1.role}
-        p2Role={partners.p2.role}
-        currency={displayCurrency}
-      />
+      <div style={{ marginBottom: '28px' }}>
+        <WinnerDashboard 
+          p1Money={p1Money}
+          p2Money={p2Money}
+          p1Love={p1Love}
+          p2Love={p2Love}
+          p1Name={partners.p1.name}
+          p2Name={partners.p2.name}
+          p1Role={partners.p1.role}
+          p2Role={partners.p2.role}
+          currency={displayCurrency}
+        />
+      </div>
 
       {/* --- DUAL SCALES SECTION --- */}
-      <div className="scales-grid" style={styles.scalesGrid}>
+      <div className="scales-grid" style={{ ...styles.scalesGrid, marginBottom: '28px' }}>
         <BalanceScale 
           type="money"
           p1Value={p1Money}
@@ -858,40 +792,50 @@ export default function App() {
           label="家事與心意天秤 🧹"
         />
       </div>
-
-      {/* --- RECORD HISTORY & DETAILED LOGS --- */}
-      <div style={{ marginTop: '24px' }}>
-        <HistoryList
-          records={records}
-          onDeleteRecord={handleDeleteRecord}
-          p1Name={partners.p1.name}
-          p2Name={partners.p2.name}
-          p1Role={partners.p1.role}
-          p2Role={partners.p2.role}
-          displayCurrency={displayCurrency}
-        />
       </div>
 
-      {/* --- IMMUTABLE ACTIVITY LOG --- */}
-      <ActivityLog
+      {/* --- INITIAL NICKNAMES WIZARD (FOR NEW USERS - RENDERED OUTSIDE CONTAINER TO FIX VIEWPORT POSITIONING) --- */}
+      {showWizard && (
+        <OnboardingWizard
+          partners={partners}
+          onUpdatePartners={handleUpdatePartners}
+          myIdentity={myIdentity}
+          onUpdateMyIdentity={(val) => {
+            setMyIdentity(val);
+            localStorage.setItem('my_identity', val);
+          }}
+          saveConfig={saveConfig}
+          onCloseWizard={() => setShowWizard(false)}
+        />
+      )}
+
+      {/* --- SYSTEM UNIFIED SETTINGS MODAL (RENDERED OUTSIDE CONTAINER TO FIX VIEWPORT POSITIONING) --- */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        syncConfig={syncConfig}
+        saveConfig={saveConfig}
+        syncStatus={syncStatus}
+        onPull={() => pullCloudData()}
+        isSyncing={isSyncing}
+        offlineMode={offlineMode}
+        setOfflineMode={handleSetOfflineMode}
+        partners={partners}
+        onUpdatePartners={handleUpdatePartners}
+        myIdentity={myIdentity}
+        onUpdateMyIdentity={(val) => {
+          setMyIdentity(val);
+          localStorage.setItem('my_identity', val);
+        }}
+        displayCurrency={displayCurrency}
+        onUpdateCurrency={(val) => {
+          setDisplayCurrency(val);
+          localStorage.setItem('display_currency', val);
+        }}
         activityLog={activityLog}
-        p1Name={partners.p1.name}
-        p2Name={partners.p2.name}
       />
 
-      {/* --- FLOATING ACTION TRIGGER BUTTON --- */}
-      <div className="floating-action-wrapper" style={styles.floatingActionWrapper}>
-        <button 
-          onClick={() => setIsAddModalOpen(true)}
-          className="comic-btn floating-btn"
-          style={styles.floatingBtn}
-        >
-          <Plus size={20} strokeWidth={3} />
-          <span>新增付出紀錄</span>
-        </button>
-      </div>
-
-      {/* --- ADD RECORD FORM MODAL --- */}
+      {/* --- ADD RECORD FORM MODAL (RENDERED OUTSIDE CONTAINER TO FIX VIEWPORT POSITIONING) --- */}
       <RecordModal 
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
@@ -903,12 +847,12 @@ export default function App() {
         defaultByPartner={myIdentity}
       />
 
-      {/* --- SYSTEM CUTE TOAST ALERT --- */}
+      {/* --- SYSTEM CUTE TOAST ALERT (RENDERED OUTSIDE CONTAINER TO FIX VIEWPORT POSITIONING) --- */}
       {toast.show && (
         <div className="toast-alert" style={styles.toast}>
           <div style={{
             ...styles.toastDot,
-            backgroundColor: toast.type === 'success' ? '#000000' : '#666666'
+            backgroundColor: toast.type === 'success' ? 'var(--border-color)' : 'var(--text-muted)'
           }} />
           <span style={{ fontWeight: '800', fontSize: '0.9rem' }}>{toast.message}</span>
         </div>
@@ -916,6 +860,27 @@ export default function App() {
 
       {/* --- PWA APP INSTALLATION PROMPT --- */}
       <PWAPrompt />
+
+      {/* --- FLOATING ACTION TRIGGER BUTTON --- */}
+      <div className="floating-action-wrapper">
+        <button 
+          onClick={() => setIsAddModalOpen(true)}
+          className="comic-btn floating-btn"
+          title="新增生活付出記錄"
+        >
+          <Plus size={28} strokeWidth={3.5} />
+        </button>
+      </div>
+
+      {/* --- FLOATING SETTINGS TRIGGER BUTTON --- */}
+      <div className="floating-settings-wrapper">
+        <button 
+          onClick={() => setIsSettingsOpen(true)}
+          className="settings-btn"
+          title="開啟系統設定"
+        >
+          <Settings size={22} strokeWidth={2.5} />
+        </button>
       </div>
     </div>
   );
@@ -941,7 +906,7 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: '12px',
-    borderBottom: '3px solid #000000',
+    borderBottom: 'var(--border-thick)',
     paddingBottom: '20px',
     marginBottom: '28px',
   },
@@ -955,10 +920,10 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    border: '3px solid #000000',
-    borderRadius: '12px',
+    border: 'var(--border-thick)',
+    borderRadius: '16px',
     padding: '10px 16px',
-    boxShadow: '4px 4px 0px #000000',
+    boxShadow: 'var(--shadow-sm)',
     flexWrap: 'wrap',
     gap: '12px',
     marginBottom: '24px',
@@ -973,23 +938,23 @@ const styles = {
     alignItems: 'center',
     gap: '6px',
     padding: '4px 12px',
-    borderRadius: '8px',
+    borderRadius: '10px',
     fontSize: '0.8rem',
     fontWeight: '800',
-    border: '2.5px solid #000000',
+    border: '1.8px solid var(--border-color)',
     position: 'relative',
   },
   dotPulse: {
     width: '7px',
     height: '7px',
-    backgroundColor: '#000000',
+    backgroundColor: 'var(--border-color)',
     borderRadius: '50%',
     display: 'inline-block',
   },
   syncStatusText: {
     fontSize: '0.85rem',
     fontWeight: '800',
-    color: '#666666',
+    color: 'var(--text-muted)',
   },
   buttonGroup: {
     display: 'flex',
@@ -998,39 +963,23 @@ const styles = {
   actionBtn: {
     padding: '6px 14px',
     fontSize: '0.82rem',
-    borderRadius: '8px',
-    boxShadow: '2px 2px 0px #000000',
+    borderRadius: '10px',
+    boxShadow: 'var(--shadow-xs)',
     backgroundColor: '#FFFFFF',
-    border: '2.5px solid #000000',
-  },
-  floatingActionWrapper: {
-    position: 'fixed',
-    bottom: '24px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    zIndex: 999,
-  },
-  floatingBtn: {
-    padding: '16px 28px',
-    fontSize: '1.05rem',
-    borderRadius: '16px',
-    boxShadow: '4px 4px 0px #000000',
-    backgroundColor: '#FFFFFF',
-    color: '#000000',
-    border: '3px solid #000000',
-    fontWeight: '800',
+    border: '1.8px solid var(--border-color)',
+    transition: 'transform 0.18s var(--ease-snappy), box-shadow 0.18s var(--ease-snappy), background-color 0.1s ease',
   },
   toast: {
-    border: '3px solid #000000',
-    boxShadow: '4px 4px 0px #000000',
+    border: 'var(--border-thick)',
+    boxShadow: 'var(--shadow-sm)',
     backgroundColor: '#FFFFFF',
-    color: '#000000',
+    color: 'var(--text-primary)',
   },
   toastDot: {
     width: '8px',
     height: '8px',
     borderRadius: '50%',
-    border: '1px solid #000000',
+    border: '1.5px solid var(--border-color)',
   },
   pullIndicator: {
     position: 'absolute',
@@ -1045,6 +994,6 @@ const styles = {
     zIndex: 10,
     fontWeight: '900',
     fontSize: '0.88rem',
-    color: '#000000',
+    color: 'var(--text-primary)',
   }
 };
