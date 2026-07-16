@@ -9,15 +9,21 @@ export default function WinnerDashboard({
   p2Name = '老婆',
   p1Role = 'white_dog',
   p2Role = 'brown_dog',
-  currency = 'TWD'
+  currency = 'TWD',
+  lovePointRate = 50
 }) {
   const moneyDiff = p1Money - p2Money;
   const loveDiff = p1Love - p2Love;
+  
+  const p1Total = p1Money + (p1Love * lovePointRate);
+  const p2Total = p2Money + (p2Love * lovePointRate);
+  const totalDiff = p1Total - p2Total;
 
   const getCurrencySymbol = (code) => {
     if (code === 'TWD') return 'NT$';
     if (code === 'SGD') return 'S$';
     if (code === 'USD') return 'US$';
+    if (code === 'CNY') return '¥';
     return 'NT$';
   };
 
@@ -91,14 +97,35 @@ export default function WinnerDashboard({
 
           {/* Chore Balance */}
           <div style={styles.summaryItem}>
-            <span style={styles.balanceLabel}>🧹 家事與心意點數差額比對</span>
+            <span style={styles.balanceLabel}>🧹 家事勞動差額與價值折算</span>
             <div style={styles.balanceValueContainer}>
               {loveDiff === 0 ? (
-                <span style={styles.balancedText}>🎉 雙方付出心意點數已完美平衡！</span>
+                <span style={styles.balancedText}>🎉 雙方付出家事勞動已完美平衡！</span>
               ) : (
                 <span style={styles.imbalancedText}>
-                  <strong>{loveDiff > 0 ? p1Name : p2Name}</strong> 多付出了 <strong style={styles.highlight}>{Math.abs(loveDiff)} 點</strong> 的溫馨關懷
+                  <strong>{loveDiff > 0 ? p1Name : p2Name}</strong> 多付出了 <strong style={styles.highlight}>{Math.abs(loveDiff)} 點</strong> 的家事勞動 (折合 <strong style={styles.highlight}>{symbol} {(Math.abs(loveDiff) * lovePointRate).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</strong> 勞動價值)
                 </span>
+              )}
+            </div>
+          </div>
+
+          <div style={styles.dividerLine} />
+
+          {/* Combined Net Contribution Balance */}
+          <div style={styles.summaryItem}>
+            <span style={styles.balanceLabel}>⚖️ 雙方金錢與家事勞動綜合折算 (生活總貢獻)</span>
+            <div style={styles.balanceValueContainer}>
+              {totalDiff === 0 ? (
+                <span style={styles.balancedText}>🎉 雙方金錢與勞動綜合付出已完美平衡！</span>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <span style={styles.imbalancedText}>
+                    <strong>{totalDiff > 0 ? p1Name : p2Name}</strong> 綜合付出（金錢 + 勞動折算）高出 <strong style={styles.highlight}>{symbol} {Math.abs(totalDiff).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</strong>
+                  </span>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: '750', marginTop: '2px' }}>
+                    💡 計算公式：實際金錢支出 + (家事勞動點數 × {symbol}{lovePointRate} / 點)
+                  </div>
+                </div>
               )}
             </div>
           </div>
@@ -121,8 +148,12 @@ export default function WinnerDashboard({
               <span style={styles.statValue}>{symbol} {p1Money.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</span>
             </div>
             <div style={styles.statItem}>
-              <span style={styles.statLabel}>家事心意點數</span>
-              <span style={styles.statValue}>{p1Love} 點</span>
+              <span style={styles.statLabel}>家事勞動點數</span>
+              <span style={styles.statValue}>{p1Love} 點 <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '700' }}>({symbol} {(p1Love * lovePointRate).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })})</span></span>
+            </div>
+            <div style={styles.statItem}>
+              <span style={styles.statLabel}>綜合付出價值</span>
+              <span style={{ ...styles.statValue, color: 'var(--color-money-accent-hover)' }}>{symbol} {p1Total.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</span>
             </div>
           </div>
         </div>
@@ -141,8 +172,12 @@ export default function WinnerDashboard({
               <span style={styles.statValue}>{symbol} {p2Money.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</span>
             </div>
             <div style={styles.statItem}>
-              <span style={styles.statLabel}>家事心意點數</span>
-              <span style={styles.statValue}>{p2Love} 點</span>
+              <span style={styles.statLabel}>家事勞動點數</span>
+              <span style={styles.statValue}>{p2Love} 點 <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '700' }}>({symbol} {(p2Love * lovePointRate).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })})</span></span>
+            </div>
+            <div style={styles.statItem}>
+              <span style={styles.statLabel}>綜合付出價值</span>
+              <span style={{ ...styles.statValue, color: 'var(--color-money-accent-hover)' }}>{symbol} {p2Total.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</span>
             </div>
           </div>
         </div>

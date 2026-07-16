@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Plus, Trash2, ScrollText } from 'lucide-react';
 
-export default function ActivityLog({ activityLog = [], p1Name = '伴侶一', p2Name = '伴侶二', alwaysExpanded = false }) {
+export default function ActivityLog({ 
+  activityLog = [], 
+  p1Name = '伴侶一', 
+  p2Name = '伴侶二', 
+  alwaysExpanded = false,
+  lovePointRate = 50,
+  displayCurrency = 'TWD'
+}) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   if (activityLog.length === 0) {
@@ -32,10 +39,18 @@ export default function ActivityLog({ activityLog = [], p1Name = '伴侶一', p2
     sorted.map((entry, idx) => {
       const isAdd = entry.action === 'add';
       const isOpen = entry.action === 'open';
+      const getCurrencySymbol = (code) => {
+        if (code === 'TWD') return 'NT$';
+        if (code === 'SGD') return 'S$';
+        if (code === 'USD') return 'US$';
+        if (code === 'CNY') return '¥';
+        return 'NT$';
+      };
+
       const valueStr =
         entry.recordType === 'money'
           ? `${entry.recordValue} ${entry.recordCurrency || 'TWD'}`
-          : `${entry.recordValue} 點`;
+          : `${entry.recordValue} 點 (折合 ${getCurrencySymbol(displayCurrency)} ${(entry.recordValue * lovePointRate).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })})`;
 
       return (
         <div key={entry.id || idx} style={styles.entry}>

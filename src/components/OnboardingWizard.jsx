@@ -102,7 +102,7 @@ export default function OnboardingWizard({
       saveConfig(finalToken, finalGistId, customPartners, 'p1');
 
       const inviteUrl = `https://winnie-lin.space/couple-balance/?gistId=${finalGistId}`;
-      const inviteMsg = `Hi！我已經在 HeartSync 建立了我們的專屬生活付出天秤囉！⚖️\n\n🔗 點擊此連結直接加入（免複製貼上）：\n${inviteUrl}\n\n開啟後在引導精靈中確認身份，即可即時雙向連線！✨`;
+      const inviteMsg = `Hi！我已經在 HeartSync 建立了我們的專屬生活付出天秤囉！⚖️\n\n🔗 點擊此連結直接加入（免複製貼上）：\n${inviteUrl}\n\n開啟後在引導精靈中確認身分，即可即時雙向連線！✨`;
       
       setInvitationText(inviteMsg);
       setLocalSuccess('雲端天秤資料庫已建立成功！');
@@ -136,7 +136,7 @@ export default function OnboardingWizard({
       
       if (cloudData && cloudData.partners) {
         setFetchedPartners(cloudData.partners);
-        setLocalSuccess('雲端連線成功！請在下方選擇您的代表身份。');
+        setLocalSuccess('雲端連線成功！請在下方選擇您的代表身分。');
       } else {
         throw new Error('雲端天秤中未檢測到伴侶數據，請確認 ID 是否正確！');
       }
@@ -150,7 +150,7 @@ export default function OnboardingWizard({
   // Complete Onboarding (Join Flow)
   const handleCompleteJoin = () => {
     if (!selectedJoinIdentity) {
-      setLocalError('請選擇您在這台裝置上的代表身份！');
+      setLocalError('請選擇您在這台裝置上的代表身分！');
       return;
     }
     
@@ -215,7 +215,7 @@ export default function OnboardingWizard({
           <div style={{ textAlign: 'center', marginBottom: '20px', borderBottom: '3px solid #000000', paddingBottom: '14px' }}>
             <div style={styles.popIcon}>⚖️</div>
             <h2 style={styles.wizardTitle}>歡迎使用 HeartSync</h2>
-            <p style={styles.wizardSubtitle}>設定代表名稱或連結現有的生活天秤，開啟兩人的共同生活心意平衡之旅。</p>
+            <p style={styles.wizardSubtitle}>設定代表名稱或連結現有的生活天秤，開啟兩人的共同生活「金錢與勞動雙平衡」之旅。</p>
           </div>
 
           {/* Wizard Mode Tabs */}
@@ -288,11 +288,11 @@ export default function OnboardingWizard({
               ) : (
                 // --- SELECT IDENTITY ---
                 <div style={styles.wizardSection}>
-                  <h3 style={styles.sectionHeader}>🎉 連線成功！請選定您的身份</h3>
+                  <h3 style={styles.sectionHeader}>🎉 連線成功！請選定您的身分</h3>
                   <p style={{ fontSize: '0.82rem', color: '#666666', marginBottom: '16px', fontWeight: '700', lineHeight: '1.4' }}>
                     已成功連接！已從雲端載入設定好的伴侶名稱：<br />
-                    🤍 <b>{fetchedPartners.p1.name}</b> 與 🖤 <b>{fetchedPartners.p2.name}</b><br />
-                    請挑選「您自己」在這台裝置上的身份以進行預設記帳：
+                    🤍 <b>{fetchedPartners.p1.name}</b> 和 🖤 <b>{fetchedPartners.p2.name}</b><br />
+                    請挑選「您自己」在這台裝置上的身分以進行預設記帳：
                   </p>
 
                   <label style={styles.label}>我是哪一位？</label>
@@ -387,7 +387,7 @@ export default function OnboardingWizard({
 
                   {/* Principal selector */}
                   <div style={{ marginTop: '16px' }}>
-                    <label style={styles.label}>這台裝置的主要使用者是誰？（用以預設記帳身份）</label>
+                    <label style={styles.label}>這台裝置的主要使用者是誰？（用以預設記帳身分）</label>
                     <div style={styles.identityRow}>
                       <button
                         type="button"
@@ -420,7 +420,7 @@ export default function OnboardingWizard({
                   <div style={styles.infoBanner}>
                     <span style={{ fontSize: '1.2rem' }}>☁️</span>
                     <p style={{ fontSize: '0.78rem', color: '#333', fontWeight: '700', lineHeight: '1.5', margin: 0 }}>
-                      系統檢測到內建 GitHub Gist 同步，當您點擊「開始使用」時，將<b>自動為您建立專屬雲端備份庫</b>！您只需在完成後將邀請複製發送給伴侶即可！
+                      系統檢測到內建 GitHub Gist 同步，當您點擊「開始使用」時，將<b>自動為您建立專屬雲端資料庫</b>！您只需在完成後將邀請複製發送給伴侶即可！
                     </p>
                   </div>
 
@@ -434,7 +434,7 @@ export default function OnboardingWizard({
                   className="comic-btn"
                   style={{ width: '100%', padding: '12px', justifyContent: 'center', backgroundColor: '#000000', color: '#FFFFFF' }}
                 >
-                  {isCreatingGist ? '⏳ 正在為您建立雲端備份...' : '🚀 建立天秤並開始體驗'}
+                  {isCreatingGist ? '⏳ 正在為您建立雲端資料庫...' : '🚀 建立天秤並開始體驗'}
                 </button>
                 
                 <button

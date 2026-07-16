@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Cloud, CloudOff, RefreshCw, Settings } from 'lucide-react';
+import { Plus, Cloud, CloudOff, RefreshCw, Settings, Check, ArrowUpDown } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 import SettingsModal from './components/SettingsModal';
@@ -12,7 +12,7 @@ import ActivityLog from './components/ActivityLog';
 import PWAPrompt from './components/PWAPrompt';
 import { fetchGistData, updateGistData } from './utils/githubGist';
 
-const APP_VERSION_CODE = 8;
+const APP_VERSION_CODE = 9;
 
 export default function App() {
   // --- STATES ---
@@ -23,6 +23,7 @@ export default function App() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [offlineMode, setOfflineMode] = useState(false);
   const [displayCurrency, setDisplayCurrency] = useState('TWD');
+  const [lovePointRate, setLovePointRate] = useState(50);
   const [myIdentity, setMyIdentity] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [addModalDefaultType, setAddModalDefaultType] = useState('money');
@@ -34,6 +35,129 @@ export default function App() {
   const [isDragging, setIsDragging] = useState(false);
   const [refreshState, setRefreshState] = useState('idle'); // 'idle' | 'pulling' | 'loading' | 'success'
 
+  // Reordering and Exchange rate states
+  const [isReordering, setIsReordering] = useState(false);
+  const [exchangeRates, setExchangeRates] = useState({
+    TWD: 1.0,
+    USD: 32.5,
+    SGD: 24.0,
+    CNY: 4.5,
+  });
+  const [ratesLastUpdated, setRatesLastUpdated] = useState('');
+
+  // Custom layout ordering
+  const [layoutOrder, setLayoutOrder] = useState(() => {
+    const cached = localStorage.getItem('layout_order');
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length === 3) return parsed;
+      } catch (e) {}
+    }
+    return ['scales', 'dashboard', 'history'];
+  });
+  const [draggedId, setDraggedId] = useState(null);
+
+  const handleDragStart = (e, id) => {
+    setDraggedId(id);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e, overId) => {
+    e.preventDefault();
+    if (draggedId === null || draggedId === overId) return;
+    const oldIdx = layoutOrder.indexOf(draggedId);
+    const newIdx = layoutOrder.indexOf(overId);
+    const updated = [...layoutOrder];
+    updated.splice(oldIdx, 1);
+    updated.splice(newIdx, 0, draggedId);
+    setLayoutOrder(updated);
+    localStorage.setItem('layout_order', JSON.stringify(updated));
+  };
+
+  const handleDragEnd = () => {
+    setDraggedId(null);
+  };
+
+  const moveUp = (id) => {
+    const idx = layoutOrder.indexOf(id);
+    if (idx === 0) return;
+    const updated = [...layoutOrder];
+    const temp = updated[idx - 1];
+    updated[idx - 1] = updated[idx];
+    updated[idx] = temp;
+    setLayoutOrder(updated);
+    localStorage.setItem('layout_order', JSON.stringify(updated));
+  };
+
+  const moveDown = (id) => {
+    const idx = layoutOrder.indexOf(id);
+    if (idx === layoutOrder.length - 1) return;
+    const updated = [...layoutOrder];
+    const temp = updated[idx + 1];
+    updated[idx + 1] = updated[idx];
+    updated[idx] = temp;
+    setLayoutOrder(updated);
+    localStorage.setItem('layout_order', JSON.stringify(updated));
+  };
+
+  const renderLayoutControl = (id, label) => (
+    <div 
+      draggable
+      onDragStart={(e) => handleDragStart(e, id)}
+      onDragOver={(e) => handleDragOver(e, id)}
+      onDragEnd={handleDragEnd}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '6px 14px',
+        backgroundColor: '#000000',
+        color: '#FFFFFF',
+        borderRadius: '12px 12px 0 0',
+        fontSize: '0.75rem',
+        fontWeight: '800',
+        cursor: 'grab',
+        borderLeft: 'var(--border-thick)',
+        borderRight: 'var(--border-thick)',
+        borderTop: 'var(--border-thick)',
+        borderColor: 'var(--border-color)',
+        marginBottom: '-3px',
+        userSelect: 'none',
+        boxShadow: '3px 0px 0px var(--shadow-color)',
+        transform: draggedId === id ? 'scale(0.98)' : 'none',
+        opacity: draggedId === id ? 0.6 : 1,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <span>⠿</span>
+        <span>{label}</span>
+      </div>
+      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }} onClick={(e) => e.stopPropagation()}>
+        <button 
+          onClick={() => moveUp(id)} 
+          disabled={layoutOrder.indexOf(id) === 0}
+          style={{ 
+            background: 'none', border: 'none', color: '#fff', cursor: 'pointer', opacity: layoutOrder.indexOf(id) === 0 ? 0.3 : 1, padding: '2px 4px', fontSize: '0.75rem', fontWeight: '900' 
+          }}
+          title="向上移"
+        >
+          ▲
+        </button>
+        <button 
+          onClick={() => moveDown(id)} 
+          disabled={layoutOrder.indexOf(id) === layoutOrder.length - 1}
+          style={{ 
+            background: 'none', border: 'none', color: '#fff', cursor: 'pointer', opacity: layoutOrder.indexOf(id) === layoutOrder.length - 1 ? 0.3 : 1, padding: '2px 4px', fontSize: '0.75rem', fontWeight: '900' 
+          }}
+          title="向下移"
+        >
+          ▼
+        </button>
+      </div>
+    </div>
+  );
+
   // --- REFS: always hold latest values so async callbacks don't capture stale closures ---
   const syncConfigRef = useRef({ token: '', gistId: '' });
   const recordsRef = useRef([]);
@@ -43,18 +167,58 @@ export default function App() {
 
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || (!import.meta.env.VITE_GIST_TOKEN);
 
-  // Fixed Exchange Rates for multi-currency conversion
+  // Fallback fixed Exchange Rates for multi-currency conversion
   const EXCHANGE_RATES = {
     TWD: 1.0,
     USD: 32.5,
     SGD: 24.0,
+    CNY: 4.5,
   };
 
   const convertValue = (val, from = 'TWD', to = 'TWD') => {
-    const fromRate = EXCHANGE_RATES[from] || 1.0;
-    const toRate = EXCHANGE_RATES[to] || 1.0;
+    const fromRate = exchangeRates[from] || EXCHANGE_RATES[from] || 1.0;
+    const toRate = exchangeRates[to] || EXCHANGE_RATES[to] || 1.0;
     return (val * fromRate) / toRate;
   };
+
+  // Fetch exchange rates from public API on mount
+  useEffect(() => {
+    const fetchRates = async () => {
+      try {
+        const res = await fetch('https://open.er-api.com/v6/latest/TWD');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.rates) {
+            const usdRate = data.rates.USD ? 1 / data.rates.USD : 32.5;
+            const sgdRate = data.rates.SGD ? 1 / data.rates.SGD : 24.0;
+            const cnyRate = data.rates.CNY ? 1 / data.rates.CNY : 4.5;
+            setExchangeRates({
+              TWD: 1.0,
+              USD: parseFloat(usdRate.toFixed(2)),
+              SGD: parseFloat(sgdRate.toFixed(2)),
+              CNY: parseFloat(cnyRate.toFixed(2)),
+            });
+            
+            // Format time_last_update_utc to readable format
+            if (data.time_last_update_utc) {
+              const d = new Date(data.time_last_update_utc);
+              if (!isNaN(d.getTime())) {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const date = String(d.getDate()).padStart(2, '0');
+                const hours = String(d.getHours()).padStart(2, '0');
+                const minutes = String(d.getMinutes()).padStart(2, '0');
+                setRatesLastUpdated(`${year}/${month}/${date} ${hours}:${minutes} (UTC)`);
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to fetch dynamic exchange rates, using defaults.', e);
+      }
+    };
+    fetchRates();
+  }, []);
 
   // Default partner details (overwritten on mount by cache or wizard)
   const [partners, setPartners] = useState({
@@ -193,6 +357,15 @@ export default function App() {
     // 4. Load cached display currency
     const savedCurrency = localStorage.getItem('display_currency') || 'TWD';
     setDisplayCurrency(savedCurrency);
+
+    // 4b. Load cached love point rate
+    const savedLovePointRate = localStorage.getItem('love_point_rate');
+    if (savedLovePointRate) {
+      const parsedRate = parseFloat(savedLovePointRate);
+      if (!isNaN(parsedRate)) {
+        setLovePointRate(parsedRate);
+      }
+    }
 
     // 5. Request notification permission on PWA startup
     try {
@@ -706,100 +879,101 @@ export default function App() {
 
       </header>
 
-      {/* --- STATUS & SETTINGS BAR --- */}
-      <div className="status-container" style={styles.statusContainer}>
-        <div className="status-badges" style={styles.statusBadges}>
-          {syncConfig.token && syncConfig.gistId && !offlineMode ? (
-            <div style={{ ...styles.badge, backgroundColor: '#FFFFFF' }}>
-              <Cloud size={16} />
-              <span>雲端已連線</span>
-              <span className="dot-pulse" style={styles.dotPulse} />
-            </div>
-          ) : (
-            <div style={{ ...styles.badge, backgroundColor: '#FFFFFF', color: '#666666' }}>
-              <CloudOff size={16} />
-              <span>離線體驗中</span>
-            </div>
-          )}
-
-          {/* Sync Status Texts */}
-          <span style={styles.syncStatusText}>
-            {isSyncing ? '正在更新中...' : syncStatus}
-          </span>
+      {/* --- STATUS & SETTINGS BAR (EXCHANGE RATES DISPLAY WITH SOURCE) --- */}
+      <div className="status-container" style={{ ...styles.statusContainer, flexDirection: 'column', gap: '4px', alignItems: 'center', justifyContent: 'center', minHeight: 'auto', padding: '10px 16px' }}>
+        <div className="status-badges" style={{ ...styles.statusBadges, gap: '6px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: '900', letterSpacing: '0.5px' }}>📊 匯率基準 (來源: ExchangeRate-API)：</span>
+          <span style={{ ...styles.badge, backgroundColor: '#FFFFFF', padding: '3px 8px', fontSize: '0.75rem', fontWeight: '800' }}>1 USD = {exchangeRates.USD} TWD</span>
+          <span style={{ ...styles.badge, backgroundColor: '#FFFFFF', padding: '3px 8px', fontSize: '0.75rem', fontWeight: '800' }}>1 SGD = {exchangeRates.SGD} TWD</span>
+          <span style={{ ...styles.badge, backgroundColor: '#FFFFFF', padding: '3px 8px', fontSize: '0.75rem', fontWeight: '800' }}>1 CNY = {exchangeRates.CNY} TWD</span>
         </div>
-
-        <div className="button-group" style={styles.buttonGroup}>
-          {syncConfig.token && syncConfig.gistId && !offlineMode && (
-            <button 
-              onClick={() => pullCloudData()} 
-              className="comic-btn secondary action-btn" 
-              disabled={isSyncing}
-              style={styles.actionBtn}
-            >
-              <RefreshCw size={14} className={isSyncing ? 'animate-spin-slow' : ''} />
-              <span>手動更新</span>
-            </button>
-          )}
-        </div>
+        {ratesLastUpdated && (
+          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: '750', marginTop: '2px' }}>
+            ⏰ 更新時間：{ratesLastUpdated}
+          </div>
+        )}
       </div>
 
-      {/* --- DUAL SCALES SECTION (MOVED TO TOP FOR UI/UX HIERARCHY) --- */}
-      <div className="scales-grid" style={{ ...styles.scalesGrid, marginBottom: '28px' }}>
-        <BalanceScale 
-          type="money"
-          p1Value={p1Money}
-          p2Value={p2Money}
-          p1Name={partners.p1.name}
-          p2Name={partners.p2.name}
-          p1Role={partners.p1.role}
-          p2Role={partners.p2.role}
-          unit={displayCurrency === 'TWD' ? '元' : displayCurrency === 'SGD' ? 'SGD' : 'USD'}
-          currency={displayCurrency}
-          label={`共同金錢天秤 (${displayCurrency === 'TWD' ? 'NT$' : displayCurrency === 'SGD' ? 'S$' : 'US$'}) 💸`}
-          onClick={() => openAddModal('money')}
-        />
+      {/* --- DRAGGABLE CUSTOMIZABLE SECTIONS --- */}
+      {layoutOrder.map((sectionId) => {
+        if (sectionId === 'scales') {
+          return (
+            <div key="scales" style={{ marginBottom: '28px' }}>
+              {isReordering && renderLayoutControl('scales', '共同金錢與家事勞動天秤區')}
+              <div className="scales-grid" style={styles.scalesGrid}>
+                <BalanceScale 
+                  type="money"
+                  p1Value={p1Money}
+                  p2Value={p2Money}
+                  p1Name={partners.p1.name}
+                  p2Name={partners.p2.name}
+                  p1Role={partners.p1.role}
+                  p2Role={partners.p2.role}
+                  unit={displayCurrency === 'TWD' ? '元' : displayCurrency === 'SGD' ? 'SGD' : displayCurrency === 'CNY' ? 'CNY' : 'USD'}
+                  currency={displayCurrency}
+                  label={`共同金錢天秤 (${displayCurrency === 'TWD' ? 'NT$' : displayCurrency === 'SGD' ? 'S$' : displayCurrency === 'CNY' ? '¥' : 'US$'}) 💸`}
+                  onClick={() => openAddModal('money')}
+                  lovePointRate={lovePointRate}
+                  exchangeRates={exchangeRates}
+                />
 
-        <BalanceScale 
-          type="love"
-          p1Value={p1Love}
-          p2Value={p2Love}
-          p1Name={partners.p1.name}
-          p2Name={partners.p2.name}
-          p1Role={partners.p1.role}
-          p2Role={partners.p2.role}
-          unit="點"
-          label="家事與心意天秤 🧹"
-          onClick={() => openAddModal('love')}
-        />
-      </div>
-
-      {/* --- WINNER DASHBOARD --- */}
-      <div style={{ marginBottom: '28px' }}>
-        <WinnerDashboard 
-          p1Money={p1Money}
-          p2Money={p2Money}
-          p1Love={p1Love}
-          p2Love={p2Love}
-          p1Name={partners.p1.name}
-          p2Name={partners.p2.name}
-          p1Role={partners.p1.role}
-          p2Role={partners.p2.role}
-          currency={displayCurrency}
-        />
-      </div>
-
-      {/* --- RECORD HISTORY & DETAILED LOGS (MOVED TO BOTTOM) --- */}
-      <div style={{ marginBottom: '28px' }}>
-        <HistoryList
-          records={records}
-          onDeleteRecord={handleDeleteRecord}
-          p1Name={partners.p1.name}
-          p2Name={partners.p2.name}
-          p1Role={partners.p1.role}
-          p2Role={partners.p2.role}
-          displayCurrency={displayCurrency}
-        />
-      </div>
+                <BalanceScale 
+                  type="love"
+                  p1Value={p1Love}
+                  p2Value={p2Love}
+                  p1Name={partners.p1.name}
+                  p2Name={partners.p2.name}
+                  p1Role={partners.p1.role}
+                  p2Role={partners.p2.role}
+                  unit="點"
+                  label="家事與勞動天秤 🧹"
+                  onClick={() => openAddModal('love')}
+                  lovePointRate={lovePointRate}
+                  exchangeRates={exchangeRates}
+                />
+              </div>
+            </div>
+          );
+        }
+        if (sectionId === 'dashboard') {
+          return (
+            <div key="dashboard" style={{ marginBottom: '28px' }}>
+              {isReordering && renderLayoutControl('dashboard', '付出差額與生活總貢獻分析區')}
+              <WinnerDashboard 
+                p1Money={p1Money}
+                p2Money={p2Money}
+                p1Love={p1Love}
+                p2Love={p2Love}
+                p1Name={partners.p1.name}
+                p2Name={partners.p2.name}
+                p1Role={partners.p1.role}
+                p2Role={partners.p2.role}
+                currency={displayCurrency}
+                lovePointRate={lovePointRate}
+              />
+            </div>
+          );
+        }
+        if (sectionId === 'history') {
+          return (
+            <div key="history" style={{ marginBottom: '28px' }}>
+              {isReordering && renderLayoutControl('history', '付出歷史足跡明細區')}
+              <HistoryList
+                records={records}
+                onDeleteRecord={handleDeleteRecord}
+                p1Name={partners.p1.name}
+                p2Name={partners.p2.name}
+                p1Role={partners.p1.role}
+                p2Role={partners.p2.role}
+                displayCurrency={displayCurrency}
+                lovePointRate={lovePointRate}
+                exchangeRates={exchangeRates}
+              />
+            </div>
+          );
+        }
+        return null;
+      })}
       </div>
 
       {/* --- INITIAL NICKNAMES WIZARD (FOR NEW USERS - RENDERED OUTSIDE CONTAINER TO FIX VIEWPORT POSITIONING) --- */}
@@ -840,6 +1014,11 @@ export default function App() {
           setDisplayCurrency(val);
           localStorage.setItem('display_currency', val);
         }}
+        lovePointRate={lovePointRate}
+        onUpdateLovePointRate={(val) => {
+          setLovePointRate(val);
+          localStorage.setItem('love_point_rate', val.toString());
+        }}
         activityLog={activityLog}
       />
 
@@ -854,6 +1033,8 @@ export default function App() {
         p2Role={partners.p2.role}
         defaultByPartner={myIdentity}
         defaultType={addModalDefaultType}
+        currency={displayCurrency}
+        lovePointRate={lovePointRate}
       />
 
       {/* --- SYSTEM CUTE TOAST ALERT (RENDERED OUTSIDE CONTAINER TO FIX VIEWPORT POSITIONING) --- */}
@@ -882,7 +1063,19 @@ export default function App() {
       </div>
 
       {/* --- FLOATING SETTINGS TRIGGER BUTTON --- */}
-      <div className="floating-settings-wrapper">
+      <div className="floating-settings-wrapper" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <button 
+          onClick={() => setIsReordering(!isReordering)}
+          className="settings-btn"
+          style={{
+            backgroundColor: isReordering ? '#FFE033' : '#FFFFFF',
+            color: '#000000',
+            border: '2.5px solid #000000',
+          }}
+          title={isReordering ? "儲存並完成排序" : "調整版面順序"}
+        >
+          {isReordering ? <Check size={20} strokeWidth={3} /> : <ArrowUpDown size={20} strokeWidth={2.5} />}
+        </button>
         <button 
           onClick={() => setIsSettingsOpen(true)}
           className="settings-btn"

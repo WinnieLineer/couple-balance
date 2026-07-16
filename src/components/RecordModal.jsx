@@ -28,8 +28,19 @@ export default function RecordModal({
   p1Role = 'white_dog',
   p2Role = 'brown_dog',
   defaultByPartner = 'p1',
-  defaultType = 'money'
+  defaultType = 'money',
+  displayCurrency = 'TWD',
+  lovePointRate = 50
 }) {
+  const getCurrencySymbol = (code) => {
+    if (code === 'TWD') return 'NT$';
+    if (code === 'SGD') return 'S$';
+    if (code === 'USD') return 'US$';
+    if (code === 'CNY') return '¥';
+    return 'NT$';
+  };
+  const symbol = getCurrencySymbol(displayCurrency);
+
   const [recordType, setRecordType] = useState(defaultType); // 'money' or 'love'
   const [byPartner, setByPartner] = useState(defaultByPartner); // 'p1' (husband) or 'p2' (wife)
   const [title, setTitle] = useState('');
@@ -71,7 +82,7 @@ export default function RecordModal({
 
     const numVal = parseFloat(value);
     if (isNaN(numVal) || numVal <= 0) {
-      setError(recordType === 'money' ? '請輸入大於 0 的金額數字喔！' : '請輸入大於 0 的心意點數喔！');
+      setError(recordType === 'money' ? '請輸入大於 0 的金額數字喔！' : '請輸入大於 0 的勞動點數喔！');
       return;
     }
 
@@ -186,7 +197,7 @@ export default function RecordModal({
             }}
           >
             <Heart size={18} color={!isMoney ? 'var(--color-love-accent)' : 'var(--text-muted)'} fill={!isMoney ? 'var(--color-love-accent)' : 'none'} />
-            <span>家事及心意</span>
+            <span>家事與勞動</span>
           </button>
         </div>
 
@@ -288,7 +299,8 @@ export default function RecordModal({
                 {[
                   { code: 'TWD', name: 'TWD (NT$)' },
                   { code: 'SGD', name: 'SGD (S$)' },
-                  { code: 'USD', name: 'USD (US$)' }
+                  { code: 'USD', name: 'USD (US$)' },
+                  { code: 'CNY', name: 'CNY (¥)' }
                 ].map((curr) => (
                   <button
                     key={curr.code}
@@ -314,7 +326,7 @@ export default function RecordModal({
           {/* Amount / Hearts value */}
           <div style={styles.formGroup}>
             <label style={styles.label}>
-              {isMoney ? '付出金額' : '努力點數 (心意值)'}
+              {isMoney ? '付出金額' : `勞動點數 (折合 ${symbol} ${((parseFloat(value) || 0) * lovePointRate).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })})`}
             </label>
             <div style={styles.valueInputRow}>
               <input 
@@ -377,13 +389,13 @@ export default function RecordModal({
               <div style={styles.guideWrapper}>
                 <details style={styles.guideDetails}>
                   <summary style={styles.guideSummary}>
-                    不知道點數如何評估？點我看對照指南
+                    不知道點數如何評估？點我看「勞動與家事對照折算表」
                   </summary>
                   <div style={styles.guideContent}>
-                    <div style={styles.guideRow}><strong>+5 點 (輕微心意)</strong>：倒垃圾、順手倒溫水、買咖啡、洗水果</div>
-                    <div style={styles.guideRow}><strong>+10 點 (日常付出)</strong>：辛苦洗碗、吸地拖地、洗曬衣服、整理房間</div>
-                    <div style={styles.guideRow}><strong>+20 點 (深度奉獻)</strong>：親自下廚做飯、專車接送、搥背按摩半小時</div>
-                    <div style={styles.guideRow}><strong>+30 點 (史詩級寵愛)</strong>：大掃除整理全家、生病通宵照顧、驚喜手工禮</div>
+                    <div style={styles.guideRow}><strong>+5 點 (輕微勞動，折合 {symbol} {5 * lovePointRate})</strong>：倒垃圾、順手倒溫水、買咖啡、洗水果</div>
+                    <div style={styles.guideRow}><strong>+10 點 (日常勞動，折合 {symbol} {10 * lovePointRate})</strong>：辛苦洗碗、吸地拖地、洗曬衣服、整理房間</div>
+                    <div style={styles.guideRow}><strong>+20 點 (深度勞動，折合 {symbol} {20 * lovePointRate})</strong>：親自下廚做飯、專車接送、搥背按摩半小時</div>
+                    <div style={styles.guideRow}><strong>+30 點 (史詩勞動，折合 {symbol} {30 * lovePointRate})</strong>：大掃除整理全家、生病通宵照顧、驚喜手工禮</div>
                   </div>
                 </details>
               </div>

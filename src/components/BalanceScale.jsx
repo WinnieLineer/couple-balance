@@ -12,7 +12,9 @@ export default function BalanceScale({
   unit = '元',
   label = '付出天秤',
   currency = 'TWD',
-  onClick
+  onClick,
+  lovePointRate = 50,
+  exchangeRates
 }) {
   const diff = p1Value - p2Value;
   const absDiff = Math.abs(diff);
@@ -22,9 +24,11 @@ export default function BalanceScale({
     TWD: 1.0,
     USD: 32.5,
     SGD: 24.0,
+    CNY: 4.5,
   };
 
-  const rate = EXCHANGE_RATES[currency] || 1.0;
+  const rates = exchangeRates || EXCHANGE_RATES;
+  const rate = rates[currency] || 1.0;
   const diffInBase = type === 'money' ? diff * rate : diff;
 
   // Calculate tilt angle: cap at 18 degrees to prevent excessive tilt
@@ -49,6 +53,7 @@ export default function BalanceScale({
     if (code === 'TWD') return 'NT$';
     if (code === 'SGD') return 'S$';
     if (code === 'USD') return 'US$';
+    if (code === 'CNY') return '¥';
     return 'NT$';
   };
 
@@ -56,7 +61,7 @@ export default function BalanceScale({
   const formatVal = (val) => {
     return type === 'money' 
       ? `${getCurrencySymbol(currency)} ${val.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}` 
-      : `${val} 點`;
+      : `${val} 點 (${getCurrencySymbol(currency)} ${(val * lovePointRate).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })})`;
   };
 
   // Helper to render White Dog SVG nodes
@@ -151,7 +156,7 @@ export default function BalanceScale({
       className="comic-card BalanceScale-card animate-pop" 
       style={{ ...styles.card, cursor: 'pointer' }}
       onClick={onClick}
-      title={`點擊快速登記一筆${type === 'money' ? '金錢支出' : '家事心意'}付出`}
+      title={`點擊快速登記一筆${type === 'money' ? '金錢支出' : '家事勞動'}付出`}
     >
       {/* Tiny decorative paper tape for stationary look */}
       <div className="paper-tape" style={{ backgroundColor: type === 'money' ? 'rgba(122, 168, 144, 0.2)' : 'rgba(255, 138, 138, 0.2)' }} />
@@ -162,7 +167,7 @@ export default function BalanceScale({
         </div>
         <div>
           <h3 style={styles.label}>{label}</h3>
-          <p style={styles.subtext}>雙方付出差額與天秤動態 (點擊卡片快速記帳)</p>
+          <p style={styles.subtext}>雙方付出差額及天秤動態</p>
         </div>
       </div>
 
@@ -273,7 +278,9 @@ export default function BalanceScale({
               </span>
               <span> 多付出 </span>
               <span style={styles.differenceText}>
-                {type === 'money' ? `${getCurrencySymbol(currency)} ${absDiff.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}` : `${absDiff} ${unit}`}
+                {type === 'money' 
+                  ? `${getCurrencySymbol(currency)} ${absDiff.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}` 
+                  : `${absDiff} ${unit} (${getCurrencySymbol(currency)} ${(absDiff * lovePointRate).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })})`}
               </span>
             </div>
           )}

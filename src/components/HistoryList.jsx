@@ -5,6 +5,7 @@ const EXCHANGE_RATES = {
   TWD: 1.0,
   USD: 32.5,
   SGD: 24.0,
+  CNY: 4.5,
 };
 
 const convertValue = (val, from = 'TWD', to = 'TWD') => {
@@ -20,8 +21,17 @@ export default function HistoryList({
   p2Name = '伴侶二',
   p1Role = 'white_dog',
   p2Role = 'brown_dog',
-  displayCurrency = 'TWD'
+  displayCurrency = 'TWD',
+  lovePointRate = 50,
+  exchangeRates
 }) {
+  const convertValueLocal = (val, from = 'TWD', to = 'TWD') => {
+    const rates = exchangeRates || EXCHANGE_RATES;
+    const fromRate = rates[from] || 1.0;
+    const toRate = rates[to] || 1.0;
+    return (val * fromRate) / toRate;
+  };
+
   const [activeTab, setActiveTab] = useState('money'); // 'money' or 'love'
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -46,6 +56,7 @@ export default function HistoryList({
     if (code === 'TWD') return 'NT$';
     if (code === 'SGD') return 'S$';
     if (code === 'USD') return 'US$';
+    if (code === 'CNY') return '¥';
     return 'NT$';
   };
 
@@ -82,7 +93,7 @@ export default function HistoryList({
               transform: activeTab === 'love' ? 'translate(-1px, -1px)' : 'none',
             }}
           >
-            家事心意 ({records.filter(r => r.type === 'love').length})
+            家事勞動 ({records.filter(r => r.type === 'love').length})
           </button>
         </div>
       </div>
@@ -139,7 +150,7 @@ export default function HistoryList({
             // Money conversions display
             const origCurrency = record.currency || 'TWD';
             const showConverted = record.type === 'money' && origCurrency !== displayCurrency;
-            const convertedVal = showConverted ? convertValue(record.value, origCurrency, displayCurrency) : 0;
+            const convertedVal = showConverted ? convertValueLocal(record.value, origCurrency, displayCurrency) : 0;
             
             return (
               <div 
@@ -193,7 +204,12 @@ export default function HistoryList({
                         )}
                       </div>
                     ) : (
-                      <span className="HistoryList-loveVal" style={styles.loveVal}>+{record.value} 點</span>
+                      <div style={styles.moneyContainer}>
+                        <span className="HistoryList-loveVal" style={styles.loveVal}>+{record.value} 點</span>
+                        <span className="HistoryList-convertedVal" style={styles.convertedVal}>
+                          ({getCurrencySymbol(displayCurrency)} {(record.value * lovePointRate).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })})
+                        </span>
+                      </div>
                     )}
                   </div>
 

@@ -19,9 +19,12 @@ export default function SettingsModal({
   onUpdateMyIdentity,
   displayCurrency,
   onUpdateCurrency,
+  lovePointRate = 50,
+  onUpdateLovePointRate,
   activityLog
 }) {
   const [activeTab, setActiveTab] = useState('currency'); // 'currency' | 'partners' | 'cloud' | 'activity'
+  const [lovePointRateInput, setLovePointRateInput] = useState(lovePointRate.toString());
 
   // Partners state
   const [p1Name, setP1Name] = useState(partners.p1.name || '伴侶一');
@@ -47,6 +50,10 @@ export default function SettingsModal({
   useEffect(() => {
     setGistIdInput(syncConfig.gistId || '');
   }, [syncConfig]);
+
+  useEffect(() => {
+    setLovePointRateInput(lovePointRate.toString());
+  }, [lovePointRate]);
 
   // No body overflow lock needed — the modal-backdrop overlay handles scrolling
 
@@ -182,7 +189,7 @@ export default function SettingsModal({
             onClick={() => { setActiveTab('currency'); setLocalError(''); setLocalSuccess(''); }}
           >
             <Coins size={16} />
-            <span>顯示幣別</span>
+            <span>幣別與折算</span>
           </button>
           <button
             className={`settings-tab-link ${activeTab === 'partners' ? 'active' : ''}`}
@@ -207,19 +214,19 @@ export default function SettingsModal({
           </button>
         </div>
 
-        {/* TAB 1: CURRENCY */}
+        {/* TAB 1: CURRENCY & VALUATION */}
         {activeTab === 'currency' && (
           <div style={styles.tabContent}>
             <p style={styles.tabDescription}>
               選擇用於生活記帳與對比的預設幣別，系統將自動依據固定匯率折算呈現。
             </p>
             <div style={styles.currencySelectorContainer}>
-              {['TWD', 'SGD', 'USD'].map((curr) => (
+              {['TWD', 'SGD', 'USD', 'CNY'].map((curr) => (
                 <button
                   key={curr}
                   onClick={() => {
                     onUpdateCurrency(curr);
-                    setLocalSuccess(`💱 已成功切換為 ${curr === 'TWD' ? '台幣 TWD' : curr === 'SGD' ? '新幣 SGD' : '美金 USD'}！`);
+                    setLocalSuccess(`💱 已成功切換為 ${curr === 'TWD' ? '台幣 TWD' : curr === 'SGD' ? '新幣 SGD' : curr === 'CNY' ? '人民幣 CNY' : '美金 USD'}！`);
                     setTimeout(() => setLocalSuccess(''), 2000);
                   }}
                   className="comic-btn secondary"
@@ -232,12 +239,44 @@ export default function SettingsModal({
                   }}
                 >
                   <span style={{ fontSize: '1.2rem', marginRight: '4px' }}>
-                    {curr === 'TWD' ? '🇹🇼' : curr === 'SGD' ? '🇸🇬' : '🇺🇸'}
+                    {curr === 'TWD' ? '🇹🇼' : curr === 'SGD' ? '🇸🇬' : curr === 'CNY' ? '🇨🇳' : '🇺🇸'}
                   </span>
-                  <span>{curr === 'TWD' ? 'TWD (台幣)' : curr === 'SGD' ? 'SGD (新幣)' : 'USD (美金)'}</span>
+                  <span>{curr === 'TWD' ? 'TWD (台幣)' : curr === 'SGD' ? 'SGD (新幣)' : curr === 'CNY' ? 'CNY (人民幣)' : 'USD (美金)'}</span>
                 </button>
               ))}
             </div>
+
+            <div style={{ marginTop: '10px', borderTop: '2px dashed var(--border-color)', paddingTop: '16px' }}>
+              <label style={styles.label}>
+                🧹 家事勞動點數折算金額
+              </label>
+              <p style={{ ...styles.tabDescription, marginTop: '2px', marginBottom: '8px' }}>
+                設定每 1 點家事勞動點數折合多少金錢（與上方預設幣別同值），使付出更具體。
+              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontWeight: '800', fontSize: '0.9rem' }}>1 點 ＝</span>
+                <input 
+                  type="number"
+                  min="1"
+                  step="any"
+                  value={lovePointRateInput}
+                  onChange={(e) => {
+                    const rawVal = e.target.value;
+                    setLovePointRateInput(rawVal);
+                    const val = parseFloat(rawVal);
+                    if (!isNaN(val) && val > 0) {
+                      onUpdateLovePointRate(val);
+                    }
+                  }}
+                  className="comic-input"
+                  style={{ width: '120px', padding: '8px 12px', borderColor: 'var(--border-color)', borderWidth: '2px', borderRadius: '8px' }}
+                />
+                <span style={{ fontWeight: '800', fontSize: '0.9rem' }}>
+                  {displayCurrency === 'TWD' ? '元 (TWD)' : displayCurrency === 'SGD' ? '元 (SGD)' : displayCurrency === 'CNY' ? '元 (CNY)' : '元 (USD)'}
+                </span>
+              </div>
+            </div>
+
             {localSuccess && <div style={styles.localSuccessText}>{localSuccess}</div>}
           </div>
         )}
@@ -340,6 +379,36 @@ export default function SettingsModal({
             <p style={styles.tabDescription}>
               設定 GitHub Gist 進行雲端備份，讓您與伴侶的資料隨時保持一致。
             </p>
+
+            {/* Cloud Status Card (moved from top of screen) */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              backgroundColor: syncConfig.token && syncConfig.gistId && !offlineMode ? 'var(--color-money-bg)' : '#FFFFFF',
+              padding: '12px 16px',
+              borderRadius: '12px',
+              border: '2px solid var(--border-color)',
+              boxShadow: 'var(--shadow-xs)',
+              marginBottom: '4px',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {syncConfig.token && syncConfig.gistId && !offlineMode ? (
+                  <>
+                    <Cloud size={18} color="var(--color-money-accent)" />
+                    <span style={{ fontSize: '0.85rem', fontWeight: '800', color: 'var(--color-money-accent-hover)' }}>雲端已連線 (即時同步)</span>
+                  </>
+                ) : (
+                  <>
+                    <CloudOff size={18} color="var(--text-muted)" />
+                    <span style={{ fontSize: '0.85rem', fontWeight: '800', color: 'var(--text-muted)' }}>本機離線體驗中</span>
+                  </>
+                )}
+              </div>
+              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: '750' }}>
+                {isSyncing ? '同步中...' : syncStatus}
+              </span>
+            </div>
 
             {/* Offline Mode Toggle */}
             <div style={styles.toggleRow}>
