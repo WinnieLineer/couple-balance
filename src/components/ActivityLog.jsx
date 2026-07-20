@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronDown, ChevronUp, Plus, Trash2, ScrollText, Pencil } from 'lucide-react';
+import { ChevronDown, ChevronUp, Plus, Trash2, ScrollText, Pencil, Search, X, RotateCcw } from 'lucide-react';
 
 export default function ActivityLog({ 
   activityLog = [], 
@@ -10,7 +10,11 @@ export default function ActivityLog({
   displayCurrency = 'TWD'
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [filterTab, setFilterTab] = useState('all'); // 'all' | 'login' | 'p1' | 'p2'
+  const [filterAction, setFilterAction] = useState([]);  // [] = show all
+  const [filterPerson, setFilterPerson] = useState([]);  // [] = show all
+  const [filterDateFrom, setFilterDateFrom] = useState('');
+  const [filterDateTo, setFilterDateTo] = useState('');
+  const [searchText, setSearchText] = useState('');
   const [showScrollHint, setShowScrollHint] = useState(false);
   const logRef = useRef(null);
 
@@ -26,15 +30,15 @@ export default function ActivityLog({
   useEffect(() => {
     const timer = setTimeout(checkScroll, 150);
     return () => clearTimeout(timer);
-  }, [activityLog, isExpanded, filterTab]);
+  }, [activityLog, isExpanded, filterAction, filterPerson, filterDateFrom, filterDateTo, searchText]);
 
-  if (activityLog.length === 0) {
-    return (
-      <div style={{ textAlign: 'center', padding: '24px', color: '#888', fontWeight: '800', fontSize: '0.9rem' }}>
-        📭 暫無任何活動日誌
-      </div>
-    );
-  }
+  const getCurrencySymbol = (code) => {
+    if (code === 'TWD') return 'NT$';
+    if (code === 'SGD') return 'S$';
+    if (code === 'USD') return 'US$';
+    if (code === 'CNY') return '¥';
+    return 'NT$';
+  };
 
   const formatTime = (isoStr) => {
     try {
@@ -52,65 +56,334 @@ export default function ActivityLog({
   // Most recent first
   const sorted = [...activityLog].reverse();
 
-  // Filter based on tab selection
+  // Check if any filter is active
+  const hasActiveFilter =
+    filterAction.length > 0 ||
+    filterPerson.length > 0 ||
+    filterDateFrom !== '' ||
+    filterDateTo !== '' ||
+    searchText.trim() !== '';
+
+  const resetFilters = () => {
+    setFilterAction([]);
+    setFilterPerson([]);
+    setFilterDateFrom('');
+    setFilterDateTo('');
+    setSearchText('');
+  };
+
+  // Toggle a chip in an array-based filter (id='all' resets to [])
+  const toggleAction = (id) => {
+    if (id === 'all') { setFilterAction([]); return; }
+    setFilterAction(prev =>
+      prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id]
+    );
+  };
+
+  const togglePerson = (id) => {
+    if (id === 'all') { setFilterPerson([]); return; }
+    setFilterPerson(prev =>
+      prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id]
+    );
+  };
+
+  // Multi-dimension filter (all conditions are AND, within each dimension it's OR)
   const filteredEntries = sorted.filter(entry => {
-    if (filterTab === 'login') return entry.action === 'open';
-    if (filterTab === 'p1') return entry.by === 'p1';
-    if (filterTab === 'p2') return entry.by === 'p2';
-    return true; // 'all'
+    // 1. Action type (multi-select OR — empty array = show all)
+    if (filterAction.length > 0) {
+      const actionKey = entry.action === 'open' ? 'login' : entry.action;
+      if (!filterAction.includes(actionKey)) return false;
+    }
+    // 2. Person (multi-select OR — empty array = show all)
+    if (filterPerson.length > 0) {
+      if (!filterPerson.includes(entry.by)) return false;
+    }
+    // 3. Date range
+    if (filterDateFrom || filterDateTo) {
+      const entryDate = entry.timestamp ? entry.timestamp.slice(0, 10) : '';
+      if (filterDateFrom && entryDate < filterDateFrom) return false;
+      if (filterDateTo   && entryDate > filterDateTo)   return false;
+    }
+    // 4. Keyword
+    if (searchText.trim() !== '') {
+      const q = searchText.trim().toLowerCase();
+      const byName    = getPartnerName(entry.by).toLowerCase();
+      const payerName = entry.payer ? getPartnerName(entry.payer).toLowerCase() : '';
+      const title     = (entry.recordTitle || '').toLowerCase();
+      const value     = String(entry.recordValue || '');
+      if (!(byName + payerName + title + value).includes(q)) return false;
+    }
+    return true;
   });
 
-  const renderFilterBar = () => (
-    <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' }}>
-      {[
-        { id: 'all', label: '全部' },
-        { id: 'login', label: '🚪 登入' },
-        { id: 'p1', label: `👤 ${p1Name}` },
-        { id: 'p2', label: `👤 ${p2Name}` }
-      ].map(tab => (
-        <button
-          key={tab.id}
-          type="button"
-          onClick={() => setFilterTab(tab.id)}
-          style={{
-            padding: '5px 10px',
-            fontSize: '0.74rem',
-            fontWeight: '850',
-            borderRadius: '8px',
-            border: '2px solid #000000',
-            backgroundColor: filterTab === tab.id ? '#FFE033' : '#FFFFFF',
-            cursor: 'pointer',
-            boxShadow: filterTab === tab.id ? '2px 2px 0px #000000' : 'none',
-            transform: filterTab === tab.id ? 'translate(-1px, -1px)' : 'none',
-            transition: 'all 0.1s ease',
-          }}
-        >
-          {tab.label}
-        </button>
-      ))}
+  // ─── Filter bar ────────────────────────────────────────────────
+  const renderFilterBar = () => {
+    const actionChips = [
+      { id: 'all',   label: '全部',    activeColor: '#000',    activeBg: '#000',    activeText: '#fff' },
+      { id: 'add',   label: '➕ 新增', activeColor: '#1a7a3a', activeBg: '#22c55e', activeText: '#fff' },
+      { id: 'edit',  label: '✏️ 編輯', activeColor: '#1d4ed8', activeBg: '#3b82f6', activeText: '#fff' },
+      { id: 'login', label: '🚪 登入', activeColor: '#6b21a8', activeBg: '#a855f7', activeText: '#fff' },
+    ];
+    const personChips = [
+      { id: 'all', label: '👥 全員' },
+      { id: 'p1',  label: `👤 ${p1Name}` },
+      { id: 'p2',  label: `👤 ${p2Name}` },
+    ];
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px' }}>
+
+        {/* Row 1: Action type — multi-select */}
+        <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <span style={labelStyle}>操作：</span>
+          {/* '全部' clears the array */}
+          <button
+            type="button"
+            onClick={() => toggleAction('all')}
+            style={{
+              padding: '4px 10px',
+              fontSize: '0.72rem',
+              fontWeight: 900,
+              borderRadius: '20px',
+              border: `2px solid ${filterAction.length === 0 ? '#000' : '#ccc'}`,
+              backgroundColor: filterAction.length === 0 ? '#000' : '#f5f5f5',
+              color: filterAction.length === 0 ? '#fff' : '#555',
+              cursor: 'pointer',
+              transition: 'all 0.12s ease',
+              boxShadow: filterAction.length === 0 ? '1px 2px 0px #000' : 'none',
+              transform: filterAction.length === 0 ? 'translate(-1px,-1px)' : 'none',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            全部
+          </button>
+          {actionChips.filter(c => c.id !== 'all').map(chip => {
+            const active = filterAction.includes(chip.id);
+            return (
+              <button
+                key={chip.id}
+                type="button"
+                onClick={() => toggleAction(chip.id)}
+                style={{
+                  padding: '4px 10px',
+                  fontSize: '0.72rem',
+                  fontWeight: 900,
+                  borderRadius: '20px',
+                  border: `2px solid ${active ? chip.activeColor : '#ccc'}`,
+                  backgroundColor: active ? chip.activeBg : '#f5f5f5',
+                  color: active ? chip.activeText : '#555',
+                  cursor: 'pointer',
+                  transition: 'all 0.12s ease',
+                  boxShadow: active ? `1px 2px 0px ${chip.activeColor}` : 'none',
+                  transform: active ? 'translate(-1px,-1px)' : 'none',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {chip.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Row 2: Person — multi-select */}
+        <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <span style={labelStyle}>人物：</span>
+          {/* '全員' clears the array */}
+          <button
+            type="button"
+            onClick={() => togglePerson('all')}
+            style={{
+              padding: '4px 10px',
+              fontSize: '0.72rem',
+              fontWeight: 900,
+              borderRadius: '20px',
+              border: `2px solid ${filterPerson.length === 0 ? '#000' : '#ccc'}`,
+              backgroundColor: filterPerson.length === 0 ? '#FFE033' : '#f5f5f5',
+              color: '#000',
+              cursor: 'pointer',
+              transition: 'all 0.12s ease',
+              boxShadow: filterPerson.length === 0 ? '1px 2px 0px #000' : 'none',
+              transform: filterPerson.length === 0 ? 'translate(-1px,-1px)' : 'none',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            👥 全員
+          </button>
+          {personChips.filter(c => c.id !== 'all').map(chip => {
+            const active = filterPerson.includes(chip.id);
+            return (
+              <button
+                key={chip.id}
+                type="button"
+                onClick={() => togglePerson(chip.id)}
+                style={{
+                  padding: '4px 10px',
+                  fontSize: '0.72rem',
+                  fontWeight: 900,
+                  borderRadius: '20px',
+                  border: `2px solid ${active ? '#000' : '#ccc'}`,
+                  backgroundColor: active ? '#FFE033' : '#f5f5f5',
+                  color: '#000',
+                  cursor: 'pointer',
+                  transition: 'all 0.12s ease',
+                  boxShadow: active ? '1px 2px 0px #000' : 'none',
+                  transform: active ? 'translate(-1px,-1px)' : 'none',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {chip.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Row 3: Date range */}
+        <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <span style={labelStyle}>🗓️ 日期：</span>
+          <input
+            type="date"
+            value={filterDateFrom}
+            onChange={e => setFilterDateFrom(e.target.value)}
+            style={dateInputStyle}
+          />
+          <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#888' }}>→</span>
+          <input
+            type="date"
+            value={filterDateTo}
+            onChange={e => setFilterDateTo(e.target.value)}
+            style={dateInputStyle}
+          />
+          {(filterDateFrom || filterDateTo) && (
+            <button
+              type="button"
+              onClick={() => { setFilterDateFrom(''); setFilterDateTo(''); }}
+              style={clearBtnStyle}
+              title="清除日期篩選"
+            >
+              <X size={10} strokeWidth={3} />
+            </button>
+          )}
+        </div>
+
+        {/* Row 4: Keyword search */}
+        <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+          <div style={{ position: 'relative', flex: 1 }}>
+            <Search
+              size={12}
+              strokeWidth={3}
+              style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: '#888', pointerEvents: 'none' }}
+            />
+            <input
+              type="text"
+              placeholder="搜尋記錄名稱、人名、金額…"
+              value={searchText}
+              onChange={e => setSearchText(e.target.value)}
+              style={{
+                width: '100%',
+                paddingLeft: '26px',
+                paddingRight: searchText ? '28px' : '8px',
+                paddingTop: '5px',
+                paddingBottom: '5px',
+                fontSize: '0.74rem',
+                fontWeight: 700,
+                border: '2px solid #000',
+                borderRadius: '20px',
+                outline: 'none',
+                fontFamily: 'inherit',
+                boxSizing: 'border-box',
+                backgroundColor: '#fff',
+              }}
+            />
+            {searchText && (
+              <button
+                type="button"
+                onClick={() => setSearchText('')}
+                style={{ ...clearBtnStyle, position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', border: 'none', backgroundColor: 'transparent' }}
+              >
+                <X size={11} strokeWidth={3} />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Result count + reset */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#888' }}>
+            找到 <span style={{ color: '#000', fontWeight: 900 }}>{filteredEntries.length}</span> 筆 / 共 {activityLog.length} 筆
+          </span>
+          {hasActiveFilter && (
+            <button
+              type="button"
+              onClick={resetFilters}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '3px 10px',
+                fontSize: '0.68rem',
+                fontWeight: 900,
+                border: '2px solid #000',
+                borderRadius: '20px',
+                backgroundColor: '#fff',
+                cursor: 'pointer',
+                boxShadow: '1px 1px 0 #000',
+              }}
+            >
+              <RotateCcw size={10} strokeWidth={3} /> 重設篩選
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // ─── Scroll hint ─────────────────────────────────────────────────
+  const renderScrollHint = () => (
+    <div
+      onClick={() => {
+        if (logRef.current) {
+          logRef.current.scrollTo({ top: logRef.current.scrollHeight, behavior: 'smooth' });
+        }
+      }}
+      style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'auto', cursor: 'pointer', zIndex: 100 }}
+    >
+      <div
+        className="animate-float"
+        style={{
+          backgroundColor: '#000000',
+          color: '#FFFFFF',
+          padding: '4px 10px',
+          borderRadius: '16px',
+          fontSize: '0.68rem',
+          fontWeight: '900',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+          boxShadow: 'var(--shadow-sm)',
+          opacity: 0.9,
+          border: '2px solid var(--border-color, #000)',
+        }}
+      >
+        <span>▼ 滑動查看日誌</span>
+      </div>
     </div>
   );
 
+  // ─── Entries ──────────────────────────────────────────────────────
   const renderEntries = () => {
     if (filteredEntries.length === 0) {
       return (
         <div style={{ textAlign: 'center', padding: '24px 12px', color: '#888', fontWeight: '800', fontSize: '0.82rem' }}>
-          📭 此分類下暫無任何日誌項目
+          📭 {hasActiveFilter ? '沒有符合篩選條件的日誌' : '此分類下暫無任何日誌項目'}
         </div>
       );
     }
 
     return filteredEntries.map((entry, idx) => {
-      const isAdd = entry.action === 'add';
+      const isAdd  = entry.action === 'add';
       const isOpen = entry.action === 'open';
       const isEdit = entry.action === 'edit';
-      const getCurrencySymbol = (code) => {
-        if (code === 'TWD') return 'NT$';
-        if (code === 'SGD') return 'S$';
-        if (code === 'USD') return 'US$';
-        if (code === 'CNY') return '¥';
-        return 'NT$';
-      };
+      const dotColor = isAdd ? '#1a7a3a' : isEdit ? '#1d4ed8' : isOpen ? '#6b21a8' : '#888';
 
       const valueStr =
         entry.recordType === 'money'
@@ -120,7 +393,7 @@ export default function ActivityLog({
       return (
         <div key={entry.id || idx} style={styles.entry}>
           {/* Timeline dot */}
-          <div style={{ ...styles.dot, backgroundColor: isAdd || isOpen || isEdit ? '#000' : '#888' }}>
+          <div style={{ ...styles.dot, backgroundColor: dotColor, borderColor: dotColor }}>
             {isOpen ? (
               <span style={{ fontSize: '10px' }}>👋</span>
             ) : isAdd ? (
@@ -132,8 +405,10 @@ export default function ActivityLog({
             )}
           </div>
 
-          {/* Vertical line (not on last item) */}
-          {idx < filteredEntries.length - 1 && <div style={styles.line} />}
+          {/* Vertical connector line */}
+          {idx < filteredEntries.length - 1 && (
+            <div style={{ ...styles.line, borderColor: dotColor + '44' }} />
+          )}
 
           {/* Content */}
           <div style={styles.entryContent}>
@@ -159,14 +434,12 @@ export default function ActivityLog({
                 ) : (
                   <span>
                     {' '}代{' '}
-                    <span style={styles.who}>
-                      {getPartnerName(entry.payer)}
-                    </span>
+                    <span style={styles.who}>{getPartnerName(entry.payer)}</span>
                     {' '}刪除了{' '}
                   </span>
                 )
               ) : (
-                <span style={{ ...styles.action, color: isAdd || isOpen || isEdit ? '#000' : '#888' }}>
+                <span style={{ ...styles.action, color: dotColor }}>
                   {isOpen ? ' 登入了 ' : isAdd ? ' 新增了 ' : isEdit ? ' 編輯了 ' : ' 刪除了 '}
                 </span>
               )}
@@ -188,67 +461,40 @@ export default function ActivityLog({
     });
   };
 
-  if (alwaysExpanded) {
+  // ─── Empty state ──────────────────────────────────────────────────
+  if (activityLog.length === 0) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', width: '100%', maxHeight: '340px', position: 'relative' }}>
-        <div style={{ padding: '12px 14px 4px 14px', borderBottom: '2px dashed var(--border-color, #000)' }}>
-          {renderFilterBar()}
-        </div>
-        <div 
-          ref={logRef}
-          onScroll={checkScroll}
-          style={{ ...styles.modalLogList, overflowY: 'auto', flex: 1, maxHeight: '280px' }}
-        >
-          {renderEntries()}
-        </div>
-        {showScrollHint && (
-          <div 
-            onClick={() => {
-              if (logRef.current) {
-                logRef.current.scrollTo({
-                  top: logRef.current.scrollHeight,
-                  behavior: 'smooth'
-                });
-              }
-            }}
-            style={{
-              position: 'absolute',
-              bottom: '10px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              pointerEvents: 'auto',
-              cursor: 'pointer',
-              zIndex: 100
-            }}
-          >
-            <div 
-              className="animate-float" 
-              style={{
-                backgroundColor: '#000000',
-                color: '#FFFFFF',
-                padding: '4px 10px',
-                borderRadius: '16px',
-                fontSize: '0.68rem',
-                fontWeight: '900',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                boxShadow: 'var(--shadow-sm)',
-                opacity: 0.9,
-                border: '2px solid var(--border-color, #000)'
-              }}
-            >
-              <span>▼ 滑動查看日誌</span>
-            </div>
-          </div>
-        )}
+      <div style={{ textAlign: 'center', padding: '24px', color: '#888', fontWeight: '800', fontSize: '0.9rem' }}>
+        📭 暫無任何活動日誌
       </div>
     );
   }
 
+  // ─── Always-expanded mode (inside SettingsModal) ──────────────────
+  if (alwaysExpanded) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+        <div style={{ padding: '12px 14px 4px 14px', borderBottom: '2px dashed var(--border-color, #000)' }}>
+          {renderFilterBar()}
+        </div>
+        {/* Wrap list + hint in a relative container so hint stays inside the list area */}
+        <div style={{ position: 'relative', flex: 1 }}>
+          <div
+            ref={logRef}
+            onScroll={checkScroll}
+            style={{ ...styles.modalLogList, overflowY: 'auto', maxHeight: '320px' }}
+          >
+            {renderEntries()}
+          </div>
+          {showScrollHint && renderScrollHint()}
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Collapsible mode (main page) ────────────────────────────────
   return (
     <div style={styles.wrapper}>
-      {/* Header toggle */}
       <button
         onClick={() => setIsExpanded((v) => !v)}
         className="comic-btn secondary"
@@ -264,68 +510,62 @@ export default function ActivityLog({
         {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
       </button>
 
-      {/* Log entries */}
       {isExpanded && (
-        <div style={{ ...styles.logContainer, position: 'relative' }}>
+        <div style={styles.logContainer}>
           {renderFilterBar()}
-          <div 
-            ref={logRef}
-            onScroll={checkScroll}
-            style={{ borderTop: '2px dashed var(--border-color, #000)', marginTop: '8px', paddingTop: '12px', maxHeight: '320px', overflowY: 'auto' }}
-          >
-            {renderEntries()}
-          </div>
-          {showScrollHint && (
-            <div 
-              onClick={() => {
-                if (logRef.current) {
-                  logRef.current.scrollTo({
-                    top: logRef.current.scrollHeight,
-                    behavior: 'smooth'
-                  });
-                }
-              }}
-              style={{
-                position: 'absolute',
-                bottom: '10px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                pointerEvents: 'auto',
-                cursor: 'pointer',
-                zIndex: 100
-              }}
+          {/* Wrap list + hint in a relative container so hint stays inside the list area */}
+          <div style={{ position: 'relative' }}>
+            <div
+              ref={logRef}
+              onScroll={checkScroll}
+              style={{ borderTop: '2px dashed var(--border-color, #000)', marginTop: '8px', paddingTop: '12px', maxHeight: '360px', overflowY: 'auto' }}
             >
-              <div 
-                className="animate-float" 
-                style={{
-                  backgroundColor: '#000000',
-                  color: '#FFFFFF',
-                  padding: '4px 10px',
-                  borderRadius: '16px',
-                  fontSize: '0.68rem',
-                  fontWeight: '900',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  boxShadow: 'var(--shadow-sm)',
-                  opacity: 0.9,
-                  border: '2px solid var(--border-color, #000)'
-                }}
-              >
-                <span>▼ 滑動查看日誌</span>
-              </div>
+              {renderEntries()}
             </div>
-          )}
+            {showScrollHint && renderScrollHint()}
+          </div>
         </div>
       )}
     </div>
   );
 }
 
+// ─── Shared sub-styles ────────────────────────────────────────────
+const labelStyle = {
+  fontSize: '0.68rem',
+  fontWeight: 900,
+  color: '#555',
+  whiteSpace: 'nowrap',
+};
+
+const dateInputStyle = {
+  padding: '4px 6px',
+  fontSize: '0.72rem',
+  fontWeight: 700,
+  border: '2px solid #000',
+  borderRadius: '8px',
+  outline: 'none',
+  fontFamily: 'inherit',
+  backgroundColor: '#fff',
+  cursor: 'pointer',
+};
+
+const clearBtnStyle = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '20px',
+  height: '20px',
+  border: '1.5px solid #aaa',
+  borderRadius: '50%',
+  backgroundColor: '#eee',
+  cursor: 'pointer',
+  padding: 0,
+  flexShrink: 0,
+};
+
 const styles = {
-  wrapper: {
-    marginTop: '28px',
-  },
+  wrapper: { marginTop: '28px' },
   header: {
     width: '100%',
     display: 'flex',
@@ -357,7 +597,6 @@ const styles = {
     borderRadius: '12px',
     backgroundColor: '#FFFFFF',
     padding: '20px 20px 8px 20px',
-    maxHeight: '400px',
     overflowY: 'auto',
     boxShadow: 'var(--shadow-flat)',
     position: 'relative',
@@ -392,42 +631,14 @@ const styles = {
     top: '26px',
     bottom: '0',
     width: '0px',
-    borderLeft: '2.5px dashed #000000',
+    borderLeft: '2.5px dashed #cccccc',
     zIndex: 0,
   },
-  entryContent: {
-    flex: 1,
-    paddingTop: '2px',
-  },
-  entryMain: {
-    fontSize: '0.85rem',
-    fontWeight: 700,
-    color: '#000',
-    lineHeight: '1.5',
-    flexWrap: 'wrap',
-  },
-  who: {
-    fontWeight: 900,
-    fontSize: '0.88rem',
-  },
-  action: {
-    fontWeight: 700,
-  },
-  recordTitle: {
-    fontWeight: 900,
-    fontSize: '0.88rem',
-  },
-  value: {
-    marginLeft: '4px',
-    fontSize: '0.8rem',
-    color: '#555',
-    fontWeight: 700,
-  },
-  timestamp: {
-    fontSize: '0.72rem',
-    color: '#888888',
-    fontWeight: 700,
-    marginTop: '3px',
-    fontFamily: 'monospace',
-  },
+  entryContent: { flex: 1, paddingTop: '2px' },
+  entryMain: { fontSize: '0.85rem', fontWeight: 700, color: '#000', lineHeight: '1.5', flexWrap: 'wrap' },
+  who: { fontWeight: 900, fontSize: '0.88rem' },
+  action: { fontWeight: 700 },
+  recordTitle: { fontWeight: 900, fontSize: '0.88rem' },
+  value: { marginLeft: '4px', fontSize: '0.8rem', color: '#555', fontWeight: 700 },
+  timestamp: { fontSize: '0.72rem', color: '#888888', fontWeight: 700, marginTop: '3px', fontFamily: 'monospace' },
 };

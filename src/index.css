@@ -212,8 +212,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @keyframes modalPop {
-  0%   { transform: scale(0.9) translateY(20px); opacity: 0; }
-  100% { transform: scale(1)    translateY(0);    opacity: 1; }
+  0%   { transform: translateY(16px); opacity: 0; }
+  100% { transform: translateY(0);    opacity: 1; }
 }
 
 @keyframes slideDown {
@@ -275,7 +275,8 @@ h1, h2, h3, h4, h5, h6 {
 
 .settings-modal-card {
   max-width: 560px;
-  width: 100%;
+  width: min(560px, calc(100vw - 32px));
+  min-width: min(400px, calc(100vw - 32px));
   max-height: 85vh;
   display: flex;
   flex-direction: column;
@@ -287,6 +288,7 @@ h1, h2, h3, h4, h5, h6 {
   padding: 28px;
   position: relative;
   flex-shrink: 0;
+  box-sizing: border-box;
   animation: modalPop 0.3s var(--ease-bounce);
 }
 
@@ -298,7 +300,8 @@ h1, h2, h3, h4, h5, h6 {
   -webkit-overflow-scrolling: touch;
   border-bottom: var(--border-thick);
   margin-bottom: 22px;
-  gap: 8px;
+  gap: 6px;
+  padding-bottom: 8px;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -311,17 +314,16 @@ h1, h2, h3, h4, h5, h6 {
   flex: 0 0 auto;
   white-space: nowrap;
   min-width: fit-content;
-  padding: 10px 14px;
+  padding: 7px 14px;
   font-family: inherit;
   font-weight: 800;
   font-size: 0.82rem;
   background: none;
-  border: none;
+  border: 2.5px solid transparent;
+  border-radius: 999px;
   cursor: pointer;
   color: var(--text-muted);
-  border-bottom: 3px solid transparent;
-  margin-bottom: -3px;
-  transition: color 0.15s ease, border-color 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -329,13 +331,18 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .settings-tab-link.active {
-  color: var(--text-primary);
-  border-bottom-color: var(--text-primary);
+  background-color: #000000;
+  color: #ffffff;
+  border-color: #000000;
+  box-shadow: 2px 2px 0px rgba(0,0,0,0.35);
+  transform: translate(-1px, -1px);
+  font-weight: 900;
 }
 
 .settings-tab-link:hover:not(.active) {
+  background-color: #f0f0f0;
   color: var(--text-primary);
-  opacity: 0.8;
+  border-color: #ccc;
 }
 
 .settings-modal-close {

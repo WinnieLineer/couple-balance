@@ -80,7 +80,17 @@ export default function SettingsModal({
     return () => clearTimeout(timer);
   }, [activeTab, isOpen]);
 
-  // No body overflow lock needed — the modal-backdrop overlay handles scrolling
+  // Lock body scroll when modal is open to prevent background page jumping
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -695,9 +705,11 @@ const styles = {
     display: 'flex',
     alignItems: 'flex-end',
     gap: '10px',
+    flexWrap: 'wrap',
   },
   inputCol: {
     flex: 1,
+    minWidth: '120px',
     display: 'flex',
     flexDirection: 'column',
     gap: '6px',
