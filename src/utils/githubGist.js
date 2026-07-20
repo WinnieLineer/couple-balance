@@ -9,11 +9,21 @@ const FILE_NAME = 'couple_balance_data.json';
  * Helper to construct GitHub API headers
  */
 function getHeaders(token) {
-  return {
-    'Authorization': `token ${token}`,
+  const headers = {
     'Accept': 'application/vnd.github+json',
     'Content-Type': 'application/json',
   };
+  let cleanToken = (token || '').trim();
+  if (cleanToken.toLowerCase().startsWith('token ')) {
+    cleanToken = cleanToken.substring(6).trim();
+  } else if (cleanToken.toLowerCase().startsWith('bearer ')) {
+    cleanToken = cleanToken.substring(7).trim();
+  }
+  cleanToken = cleanToken.replace(/\s/g, '');
+  if (cleanToken && cleanToken !== 'undefined' && cleanToken !== 'null') {
+    headers['Authorization'] = `token ${cleanToken}`;
+  }
+  return headers;
 }
 
 /**
@@ -62,11 +72,7 @@ export async function fetchGistData(token, gistId) {
     const timestamp = Date.now();
     const response = await fetch(`https://api.github.com/gists/${gistId}?t=${timestamp}`, {
       method: 'GET',
-      headers: {
-        ...getHeaders(token),
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-      },
+      headers: getHeaders(token),
     });
 
     if (!response.ok) {
@@ -86,12 +92,7 @@ export async function fetchGistData(token, gistId) {
       const rawTimestamp = Date.now();
       const rawUrlObj = new URL(file.raw_url);
       rawUrlObj.searchParams.set('t', rawTimestamp);
-      const rawRes = await fetch(rawUrlObj.toString(), {
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-        }
-      });
+      const rawRes = await fetch(rawUrlObj.toString());
       if (!rawRes.ok) throw new Error('Failed to fetch truncated raw file content');
       return await rawRes.json();
     }

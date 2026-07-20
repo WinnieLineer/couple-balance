@@ -6,10 +6,11 @@ export default function ActivityLog({
   p1Name = '伴侶一', 
   p2Name = '伴侶二', 
   alwaysExpanded = false,
-  lovePointRate = 50,
+  lovePointRate = 25,
   displayCurrency = 'TWD'
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [filterTab, setFilterTab] = useState('all'); // 'all' | 'login' | 'p1' | 'p2'
 
   if (activityLog.length === 0) {
     return (
@@ -35,8 +36,55 @@ export default function ActivityLog({
   // Most recent first
   const sorted = [...activityLog].reverse();
 
-  const renderEntries = () => (
-    sorted.map((entry, idx) => {
+  // Filter based on tab selection
+  const filteredEntries = sorted.filter(entry => {
+    if (filterTab === 'login') return entry.action === 'open';
+    if (filterTab === 'p1') return entry.by === 'p1';
+    if (filterTab === 'p2') return entry.by === 'p2';
+    return true; // 'all'
+  });
+
+  const renderFilterBar = () => (
+    <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' }}>
+      {[
+        { id: 'all', label: '全部' },
+        { id: 'login', label: '🚪 登入' },
+        { id: 'p1', label: `👤 ${p1Name}` },
+        { id: 'p2', label: `👤 ${p2Name}` }
+      ].map(tab => (
+        <button
+          key={tab.id}
+          type="button"
+          onClick={() => setFilterTab(tab.id)}
+          style={{
+            padding: '5px 10px',
+            fontSize: '0.74rem',
+            fontWeight: '850',
+            borderRadius: '8px',
+            border: '2px solid #000000',
+            backgroundColor: filterTab === tab.id ? '#FFE033' : '#FFFFFF',
+            cursor: 'pointer',
+            boxShadow: filterTab === tab.id ? '2px 2px 0px #000000' : 'none',
+            transform: filterTab === tab.id ? 'translate(-1px, -1px)' : 'none',
+            transition: 'all 0.1s ease',
+          }}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  );
+
+  const renderEntries = () => {
+    if (filteredEntries.length === 0) {
+      return (
+        <div style={{ textAlign: 'center', padding: '24px 12px', color: '#888', fontWeight: '800', fontSize: '0.82rem' }}>
+          📭 此分類下暫無任何日誌項目
+        </div>
+      );
+    }
+
+    return filteredEntries.map((entry, idx) => {
       const isAdd = entry.action === 'add';
       const isOpen = entry.action === 'open';
       const getCurrencySymbol = (code) => {
@@ -66,15 +114,35 @@ export default function ActivityLog({
           </div>
 
           {/* Vertical line (not on last item) */}
-          {idx < sorted.length - 1 && <div style={styles.line} />}
+          {idx < filteredEntries.length - 1 && <div style={styles.line} />}
 
           {/* Content */}
           <div style={styles.entryContent}>
             <div style={styles.entryMain}>
               <span style={styles.who}>{getPartnerName(entry.by)}</span>
-              <span style={{ ...styles.action, color: isAdd || isOpen ? '#000' : '#888' }}>
-                {isOpen ? ' 登入了 ' : isAdd ? ' 新增了 ' : ' 刪除了 '}
-              </span>
+              {entry.payer && entry.payer !== entry.by ? (
+                isAdd ? (
+                  <span>
+                    {' '}幫{' '}
+                    <span style={{ ...styles.who, color: 'var(--color-love-accent, #E22B55)' }}>
+                      {getPartnerName(entry.payer)}
+                    </span>
+                    {' '}代登記了{' '}
+                  </span>
+                ) : (
+                  <span>
+                    {' '}代{' '}
+                    <span style={styles.who}>
+                      {getPartnerName(entry.payer)}
+                    </span>
+                    {' '}刪除了{' '}
+                  </span>
+                )
+              ) : (
+                <span style={{ ...styles.action, color: isAdd || isOpen ? '#000' : '#888' }}>
+                  {isOpen ? ' 登入了 ' : isAdd ? ' 新增了 ' : ' 刪除了 '}
+                </span>
+              )}
               {isOpen ? (
                 <span style={styles.recordTitle}>「HeartSync 天秤」</span>
               ) : (
@@ -90,13 +158,18 @@ export default function ActivityLog({
           </div>
         </div>
       );
-    })
-  );
+    });
+  };
 
   if (alwaysExpanded) {
     return (
-      <div style={styles.modalLogList}>
-        {renderEntries()}
+      <div style={{ display: 'flex', flexDirection: 'column', width: '100%', maxHeight: '340px' }}>
+        <div style={{ padding: '12px 14px 4px 14px', borderBottom: '2px dashed var(--border-color, #000)' }}>
+          {renderFilterBar()}
+        </div>
+        <div style={{ ...styles.modalLogList, overflowY: 'auto', flex: 1, maxHeight: '280px' }}>
+          {renderEntries()}
+        </div>
       </div>
     );
   }
@@ -122,7 +195,10 @@ export default function ActivityLog({
       {/* Log entries */}
       {isExpanded && (
         <div style={styles.logContainer}>
-          {renderEntries()}
+          {renderFilterBar()}
+          <div style={{ borderTop: '2px dashed var(--border-color, #000)', marginTop: '8px', paddingTop: '12px', maxHeight: '320px', overflowY: 'auto' }}>
+            {renderEntries()}
+          </div>
         </div>
       )}
     </div>

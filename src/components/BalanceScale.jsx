@@ -13,7 +13,7 @@ export default function BalanceScale({
   label = '付出天秤',
   currency = 'TWD',
   onClick,
-  lovePointRate = 50,
+  lovePointRate = 25,
   exchangeRates
 }) {
   const diff = p1Value - p2Value;

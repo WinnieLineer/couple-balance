@@ -19,9 +19,11 @@ export default function SettingsModal({
   onUpdateMyIdentity,
   displayCurrency,
   onUpdateCurrency,
-  lovePointRate = 50,
+  lovePointRate = 25,
   onUpdateLovePointRate,
-  activityLog
+  activityLog,
+  isReordering,
+  onToggleReordering
 }) {
   const [activeTab, setActiveTab] = useState('currency'); // 'currency' | 'partners' | 'cloud' | 'activity'
   const [lovePointRateInput, setLovePointRateInput] = useState(lovePointRate.toString());
@@ -34,6 +36,7 @@ export default function SettingsModal({
 
   // Gist settings state
   const [gistIdInput, setGistIdInput] = useState(syncConfig.gistId || '');
+  const [gistTokenInput, setGistTokenInput] = useState(localStorage.getItem('gist_token') || '');
   const [localError, setLocalError] = useState('');
   const [localSuccess, setLocalSuccess] = useState('');
   const [invitationText, setInvitationText] = useState('');
@@ -49,11 +52,33 @@ export default function SettingsModal({
 
   useEffect(() => {
     setGistIdInput(syncConfig.gistId || '');
+    setGistTokenInput(syncConfig.token || localStorage.getItem('gist_token') || '');
   }, [syncConfig]);
 
   useEffect(() => {
-    setLovePointRateInput(lovePointRate.toString());
+    const parsedInput = parseFloat(lovePointRateInput);
+    if (isNaN(parsedInput) || Math.abs(parsedInput - lovePointRate) > 0.001) {
+      const formatted = lovePointRate % 1 === 0 ? lovePointRate.toString() : lovePointRate.toFixed(2);
+      setLovePointRateInput(formatted);
+    }
   }, [lovePointRate]);
+ 
+  const [showScrollHint, setShowScrollHint] = useState(false);
+  const bodyRef = React.useRef(null);
+
+  const checkScroll = () => {
+    if (bodyRef.current) {
+      const target = bodyRef.current;
+      const isScrollable = target.scrollHeight > target.clientHeight;
+      const isAtBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 15;
+      setShowScrollHint(isScrollable && !isAtBottom);
+    }
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(checkScroll, 150);
+    return () => clearTimeout(timer);
+  }, [activeTab, isOpen]);
 
   // No body overflow lock needed — the modal-backdrop overlay handles scrolling
 
@@ -85,9 +110,9 @@ export default function SettingsModal({
       return;
     }
     
-    const finalToken = (import.meta.env.VITE_GIST_TOKEN || localStorage.getItem('gist_token') || '').trim();
+    const finalToken = (gistTokenInput.trim() || import.meta.env.VITE_GIST_TOKEN || localStorage.getItem('gist_token') || '').trim();
     if (!finalToken) {
-      setLocalError('⚠️ 專案未設定 VITE_GIST_TOKEN，無法進行雲端儲存。');
+      setLocalError('⚠️ 請填寫 GitHub Token 以進行雲端儲存。');
       return;
     }
     
@@ -105,9 +130,9 @@ export default function SettingsModal({
     setLocalError('');
     setLocalSuccess('');
     
-    const finalToken = (import.meta.env.VITE_GIST_TOKEN || localStorage.getItem('gist_token') || '').trim();
+    const finalToken = (gistTokenInput.trim() || import.meta.env.VITE_GIST_TOKEN || localStorage.getItem('gist_token') || '').trim();
     if (!finalToken) {
-      setLocalError('⚠️ 專案未設定 VITE_GIST_TOKEN，無法一鍵自動建立雲端天秤！');
+      setLocalError('⚠️ 請填寫 GitHub Token，無法一鍵自動建立雲端天秤！');
       return;
     }
     
@@ -214,68 +239,105 @@ export default function SettingsModal({
           </button>
         </div>
 
-        {/* TAB 1: CURRENCY & VALUATION */}
-        {activeTab === 'currency' && (
-          <div style={styles.tabContent}>
-            <p style={styles.tabDescription}>
-              選擇用於生活記帳與對比的預設幣別，系統將自動依據固定匯率折算呈現。
-            </p>
-            <div style={styles.currencySelectorContainer}>
-              {['TWD', 'SGD', 'USD', 'CNY'].map((curr) => (
+        <div 
+          ref={bodyRef}
+          onScroll={checkScroll}
+          className="settings-modal-body" 
+          style={{ overflowY: 'auto', flex: 1, paddingRight: '4px', marginTop: '10px', display: 'flex', flexDirection: 'column' }}
+        >
+          {/* TAB 1: CURRENCY & VALUATION */}
+          {activeTab === 'currency' && (
+            <div style={styles.tabContent}>
+              <p style={styles.tabDescription}>
+                選擇用於生活記帳與對比的預設幣別，系統將自動依據固定匯率折算呈現。
+              </p>
+              <div style={styles.currencySelectorContainer}>
+                {['TWD', 'SGD', 'USD', 'CNY'].map((curr) => (
+                  <button
+                    key={curr}
+                    onClick={() => {
+                      onUpdateCurrency(curr);
+                      setLocalSuccess(`💱 已成功切換為 ${curr === 'TWD' ? '台幣 TWD' : curr === 'SGD' ? '新幣 SGD' : curr === 'CNY' ? '人民幣 CNY' : '美金 USD'}！`);
+                      setTimeout(() => setLocalSuccess(''), 2000);
+                    }}
+                    className="comic-btn secondary"
+                    style={{
+                      ...styles.currencyBtn,
+                      backgroundColor: displayCurrency === curr ? '#000000' : '#FFFFFF',
+                      color: displayCurrency === curr ? '#FFFFFF' : '#666666',
+                      transform: displayCurrency === curr ? 'scale(1.05)' : 'none',
+                      boxShadow: displayCurrency === curr ? '3px 3px 0px #000000' : '1px 1px 0px #000000',
+                    }}
+                  >
+                    <span style={{ fontSize: '1.2rem', marginRight: '4px' }}>
+                      {curr === 'TWD' ? '🇹🇼' : curr === 'SGD' ? '🇸🇬' : curr === 'CNY' ? '🇨🇳' : '🇺🇸'}
+                    </span>
+                    <span>{curr === 'TWD' ? 'TWD (台幣)' : curr === 'SGD' ? 'SGD (新幣)' : curr === 'CNY' ? 'CNY (人民幣)' : 'USD (美金)'}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div style={{ marginTop: '10px', borderTop: '2px dashed var(--border-color)', paddingTop: '16px' }}>
+                <label style={styles.label}>
+                  🧹 家事勞動點數折算金額
+                </label>
+                <p style={{ ...styles.tabDescription, marginTop: '2px', marginBottom: '8px' }}>
+                  設定每 1 點家事勞動點數折合多少金錢（與上方預設幣別同值），使付出更具體。
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontWeight: '800', fontSize: '0.9rem' }}>1 點 ＝</span>
+                  <input 
+                    type="number"
+                    min="1"
+                    step="any"
+                    value={lovePointRateInput}
+                    onChange={(e) => {
+                      const rawVal = e.target.value;
+                      setLovePointRateInput(rawVal);
+                      const val = parseFloat(rawVal);
+                      if (!isNaN(val) && val > 0) {
+                        onUpdateLovePointRate(val);
+                      }
+                    }}
+                    className="comic-input"
+                    style={{ width: '120px', padding: '8px 12px', borderColor: 'var(--border-color)', borderWidth: '2px', borderRadius: '8px' }}
+                  />
+                  <span style={{ fontWeight: '800', fontSize: '0.9rem' }}>
+                    {displayCurrency === 'TWD' ? '元 (TWD)' : displayCurrency === 'SGD' ? '元 (SGD)' : displayCurrency === 'CNY' ? '元 (CNY)' : '元 (USD)'}
+                  </span>
+                </div>
+              </div>
+
+              <div style={{ marginTop: '20px', borderTop: '2px dashed var(--border-color)', paddingTop: '16px', marginBottom: '10px' }}>
+                <label style={styles.label}>
+                  🧩 版面區塊排版
+                </label>
+                <p style={{ ...styles.tabDescription, marginTop: '2px', marginBottom: '8px' }}>
+                  啟動排版模式後，您可以在主畫面拖曳調整「天秤區」、「分析區」、「明細區」的上下順序。
+                </p>
                 <button
-                  key={curr}
+                  type="button"
                   onClick={() => {
-                    onUpdateCurrency(curr);
-                    setLocalSuccess(`💱 已成功切換為 ${curr === 'TWD' ? '台幣 TWD' : curr === 'SGD' ? '新幣 SGD' : curr === 'CNY' ? '人民幣 CNY' : '美金 USD'}！`);
-                    setTimeout(() => setLocalSuccess(''), 2000);
+                    onToggleReordering();
+                    onClose();
                   }}
                   className="comic-btn secondary"
                   style={{
-                    ...styles.currencyBtn,
-                    backgroundColor: displayCurrency === curr ? '#000000' : '#FFFFFF',
-                    color: displayCurrency === curr ? '#FFFFFF' : '#666666',
-                    transform: displayCurrency === curr ? 'scale(1.05)' : 'none',
-                    boxShadow: displayCurrency === curr ? '3px 3px 0px #000000' : '1px 1px 0px #000000',
+                    padding: '10px 16px',
+                    fontSize: '0.85rem',
+                    fontWeight: '800',
+                    border: '2.5px solid #000000',
+                    backgroundColor: '#FFFFFF',
+                    width: '100%',
+                    justifyContent: 'center',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
                   }}
                 >
-                  <span style={{ fontSize: '1.2rem', marginRight: '4px' }}>
-                    {curr === 'TWD' ? '🇹🇼' : curr === 'SGD' ? '🇸🇬' : curr === 'CNY' ? '🇨🇳' : '🇺🇸'}
-                  </span>
-                  <span>{curr === 'TWD' ? 'TWD (台幣)' : curr === 'SGD' ? 'SGD (新幣)' : curr === 'CNY' ? 'CNY (人民幣)' : 'USD (美金)'}</span>
+                  <span>調整版面區塊順序</span>
                 </button>
-              ))}
-            </div>
-
-            <div style={{ marginTop: '10px', borderTop: '2px dashed var(--border-color)', paddingTop: '16px' }}>
-              <label style={styles.label}>
-                🧹 家事勞動點數折算金額
-              </label>
-              <p style={{ ...styles.tabDescription, marginTop: '2px', marginBottom: '8px' }}>
-                設定每 1 點家事勞動點數折合多少金錢（與上方預設幣別同值），使付出更具體。
-              </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontWeight: '800', fontSize: '0.9rem' }}>1 點 ＝</span>
-                <input 
-                  type="number"
-                  min="1"
-                  step="any"
-                  value={lovePointRateInput}
-                  onChange={(e) => {
-                    const rawVal = e.target.value;
-                    setLovePointRateInput(rawVal);
-                    const val = parseFloat(rawVal);
-                    if (!isNaN(val) && val > 0) {
-                      onUpdateLovePointRate(val);
-                    }
-                  }}
-                  className="comic-input"
-                  style={{ width: '120px', padding: '8px 12px', borderColor: 'var(--border-color)', borderWidth: '2px', borderRadius: '8px' }}
-                />
-                <span style={{ fontWeight: '800', fontSize: '0.9rem' }}>
-                  {displayCurrency === 'TWD' ? '元 (TWD)' : displayCurrency === 'SGD' ? '元 (SGD)' : displayCurrency === 'CNY' ? '元 (CNY)' : '元 (USD)'}
-                </span>
               </div>
-            </div>
 
             {localSuccess && <div style={styles.localSuccessText}>{localSuccess}</div>}
           </div>
@@ -300,19 +362,6 @@ export default function SettingsModal({
                   className="comic-input" 
                   style={styles.inputField}
                 />
-              </div>
-
-              {/* Swap Button */}
-              <div style={styles.swapCol}>
-                <button 
-                  type="button" 
-                  onClick={handleSwapRoles} 
-                  className="comic-btn secondary"
-                  style={styles.swapBtn}
-                  title="互換代表角色"
-                >
-                  <ArrowLeftRight size={16} />
-                </button>
               </div>
 
               {/* Partner 2 Input */}
@@ -436,6 +485,18 @@ export default function SettingsModal({
 
             {!offlineMode && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '10px' }}>
+                 <div style={styles.inputCol}>
+                  <label style={styles.label}>GitHub Token (Personal Access Token)</label>
+                  <input
+                    type="password"
+                    value={gistTokenInput}
+                    onChange={(e) => setGistTokenInput(e.target.value)}
+                    className="comic-input"
+                    placeholder={import.meta.env.VITE_GIST_TOKEN ? "已使用環境變數設定 (選填)" : "請輸入您的 GitHub Token (需具備 gist 權限)"}
+                    style={styles.inputField}
+                  />
+                </div>
+
                 <div style={styles.inputCol}>
                   <label style={styles.label}>專屬雲端 Gist ID</label>
                   <input
@@ -548,6 +609,37 @@ export default function SettingsModal({
                 p1Name={partners.p1.name}
                 p2Name={partners.p2.name}
               />
+            </div>
+          </div>
+        )}
+        </div>
+        {showScrollHint && (
+          <div style={{
+            position: 'absolute',
+            bottom: '16px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            pointerEvents: 'none',
+            zIndex: 100
+          }}>
+            <div 
+              className="animate-float" 
+              style={{
+                backgroundColor: '#000000',
+                color: '#FFFFFF',
+                padding: '5px 12px',
+                borderRadius: '20px',
+                fontSize: '0.72rem',
+                fontWeight: '900',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                boxShadow: 'var(--shadow-sm)',
+                opacity: 0.95,
+                border: '2.5px solid var(--border-color, #000)'
+              }}
+            >
+              <span>▼ 滑動查看更多設定</span>
             </div>
           </div>
         )}

@@ -23,7 +23,7 @@ export default function App() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [offlineMode, setOfflineMode] = useState(false);
   const [displayCurrency, setDisplayCurrency] = useState('TWD');
-  const [lovePointRate, setLovePointRate] = useState(50);
+  const [lovePointRate, setLovePointRate] = useState(25);
   const [myIdentity, setMyIdentity] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [addModalDefaultType, setAddModalDefaultType] = useState('money');
@@ -54,7 +54,7 @@ export default function App() {
         if (Array.isArray(parsed) && parsed.length === 3) return parsed;
       } catch (e) {}
     }
-    return ['scales', 'dashboard', 'history'];
+    return ['dashboard', 'scales', 'history'];
   });
   const [draggedId, setDraggedId] = useState(null);
 
@@ -203,12 +203,12 @@ export default function App() {
             if (data.time_last_update_utc) {
               const d = new Date(data.time_last_update_utc);
               if (!isNaN(d.getTime())) {
-                const year = d.getFullYear();
-                const month = String(d.getMonth() + 1).padStart(2, '0');
-                const date = String(d.getDate()).padStart(2, '0');
-                const hours = String(d.getHours()).padStart(2, '0');
-                const minutes = String(d.getMinutes()).padStart(2, '0');
-                setRatesLastUpdated(`${year}/${month}/${date} ${hours}:${minutes} (UTC)`);
+                const year = d.getUTCFullYear();
+                const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+                const date = String(d.getUTCDate()).padStart(2, '0');
+                const hours = String(d.getUTCHours()).padStart(2, '0');
+                const minutes = String(d.getUTCMinutes()).padStart(2, '0');
+                setRatesLastUpdated(`${year}/${month}/${date} ${hours}:${minutes} UTC`);
               }
             }
           }
@@ -637,7 +637,8 @@ export default function App() {
       id: `log_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       timestamp: new Date().toISOString(),
       action: 'add',
-      by: record.by || myIdentity || 'p1',
+      by: myIdentity || 'p1',
+      payer: record.by,
       recordId: record.id,
       recordTitle: record.title,
       recordValue: record.value,
@@ -680,6 +681,7 @@ export default function App() {
         timestamp: new Date().toISOString(),
         action: 'delete',
         by: localStorage.getItem('my_identity') || myIdentity || 'p1',
+        payer: deletedRecord?.by,
         recordId: id,
         recordTitle: deletedRecord?.title || '未知明細',
         recordValue: deletedRecord?.value || 0,
@@ -880,17 +882,24 @@ export default function App() {
       </header>
 
       {/* --- STATUS & SETTINGS BAR (EXCHANGE RATES DISPLAY WITH SOURCE) --- */}
-      <div className="status-container" style={{ ...styles.statusContainer, flexDirection: 'column', gap: '4px', alignItems: 'center', justifyContent: 'center', minHeight: 'auto', padding: '10px 16px' }}>
-        <div className="status-badges" style={{ ...styles.statusBadges, gap: '6px', flexWrap: 'wrap', justifyContent: 'center' }}>
-          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: '900', letterSpacing: '0.5px' }}>📊 匯率基準 (來源: ExchangeRate-API)：</span>
-          <span style={{ ...styles.badge, backgroundColor: '#FFFFFF', padding: '3px 8px', fontSize: '0.75rem', fontWeight: '800' }}>1 USD = {exchangeRates.USD} TWD</span>
-          <span style={{ ...styles.badge, backgroundColor: '#FFFFFF', padding: '3px 8px', fontSize: '0.75rem', fontWeight: '800' }}>1 SGD = {exchangeRates.SGD} TWD</span>
-          <span style={{ ...styles.badge, backgroundColor: '#FFFFFF', padding: '3px 8px', fontSize: '0.75rem', fontWeight: '800' }}>1 CNY = {exchangeRates.CNY} TWD</span>
-        </div>
+      <div className="status-container" style={{ 
+        ...styles.statusContainer, 
+        flexDirection: 'row', 
+        gap: '6px', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        minHeight: 'auto', 
+        padding: '6px 12px',
+        marginBottom: '16px',
+        flexWrap: 'wrap'
+      }}>
+        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: '900', letterSpacing: '0.3px' }}>
+          📊 匯率基準 (1 USD = {exchangeRates.USD} TWD | 1 SGD = {exchangeRates.SGD} TWD | 1 CNY = {exchangeRates.CNY} TWD)
+        </span>
         {ratesLastUpdated && (
-          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: '750', marginTop: '2px' }}>
-            ⏰ 更新時間：{ratesLastUpdated}
-          </div>
+          <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontWeight: '750', marginLeft: '4px' }}>
+            ⏰ 更新於 {ratesLastUpdated}
+          </span>
         )}
       </div>
 
@@ -913,7 +922,7 @@ export default function App() {
                   currency={displayCurrency}
                   label={`共同金錢天秤 (${displayCurrency === 'TWD' ? 'NT$' : displayCurrency === 'SGD' ? 'S$' : displayCurrency === 'CNY' ? '¥' : 'US$'}) 💸`}
                   onClick={() => openAddModal('money')}
-                  lovePointRate={lovePointRate}
+                  lovePointRate={convertValue(lovePointRate, 'TWD', displayCurrency)}
                   exchangeRates={exchangeRates}
                 />
 
@@ -928,7 +937,7 @@ export default function App() {
                   unit="點"
                   label="家事與勞動天秤 🧹"
                   onClick={() => openAddModal('love')}
-                  lovePointRate={lovePointRate}
+                  lovePointRate={convertValue(lovePointRate, 'TWD', displayCurrency)}
                   exchangeRates={exchangeRates}
                 />
               </div>
@@ -949,7 +958,8 @@ export default function App() {
                 p1Role={partners.p1.role}
                 p2Role={partners.p2.role}
                 currency={displayCurrency}
-                lovePointRate={lovePointRate}
+                lovePointRate={convertValue(lovePointRate, 'TWD', displayCurrency)}
+                exchangeRates={exchangeRates}
               />
             </div>
           );
@@ -966,7 +976,7 @@ export default function App() {
                 p1Role={partners.p1.role}
                 p2Role={partners.p2.role}
                 displayCurrency={displayCurrency}
-                lovePointRate={lovePointRate}
+                lovePointRate={convertValue(lovePointRate, 'TWD', displayCurrency)}
                 exchangeRates={exchangeRates}
               />
             </div>
@@ -1014,12 +1024,15 @@ export default function App() {
           setDisplayCurrency(val);
           localStorage.setItem('display_currency', val);
         }}
-        lovePointRate={lovePointRate}
-        onUpdateLovePointRate={(val) => {
-          setLovePointRate(val);
-          localStorage.setItem('love_point_rate', val.toString());
+        lovePointRate={convertValue(lovePointRate, 'TWD', displayCurrency)}
+        onUpdateLovePointRate={(valInDisplayCurrency) => {
+          const valInTWD = convertValue(valInDisplayCurrency, displayCurrency, 'TWD');
+          setLovePointRate(valInTWD);
+          localStorage.setItem('love_point_rate', valInTWD.toString());
         }}
         activityLog={activityLog}
+        isReordering={isReordering}
+        onToggleReordering={() => setIsReordering(!isReordering)}
       />
 
       {/* --- ADD RECORD FORM MODAL (RENDERED OUTSIDE CONTAINER TO FIX VIEWPORT POSITIONING) --- */}
@@ -1033,8 +1046,8 @@ export default function App() {
         p2Role={partners.p2.role}
         defaultByPartner={myIdentity}
         defaultType={addModalDefaultType}
-        currency={displayCurrency}
-        lovePointRate={lovePointRate}
+        displayCurrency={displayCurrency}
+        lovePointRate={convertValue(lovePointRate, 'TWD', displayCurrency)}
       />
 
       {/* --- SYSTEM CUTE TOAST ALERT (RENDERED OUTSIDE CONTAINER TO FIX VIEWPORT POSITIONING) --- */}
@@ -1064,25 +1077,28 @@ export default function App() {
 
       {/* --- FLOATING SETTINGS TRIGGER BUTTON --- */}
       <div className="floating-settings-wrapper" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-        <button 
-          onClick={() => setIsReordering(!isReordering)}
-          className="settings-btn"
-          style={{
-            backgroundColor: isReordering ? '#FFE033' : '#FFFFFF',
-            color: '#000000',
-            border: '2.5px solid #000000',
-          }}
-          title={isReordering ? "儲存並完成排序" : "調整版面順序"}
-        >
-          {isReordering ? <Check size={20} strokeWidth={3} /> : <ArrowUpDown size={20} strokeWidth={2.5} />}
-        </button>
-        <button 
-          onClick={() => setIsSettingsOpen(true)}
-          className="settings-btn"
-          title="開啟系統設定"
-        >
-          <Settings size={22} strokeWidth={2.5} />
-        </button>
+        {isReordering ? (
+          <button 
+            onClick={() => setIsReordering(false)}
+            className="settings-btn"
+            style={{
+              backgroundColor: '#FFE033',
+              color: '#000000',
+              border: '2.5px solid #000000',
+            }}
+            title="儲存並完成排序"
+          >
+            <Check size={20} strokeWidth={3} />
+          </button>
+        ) : (
+          <button 
+            onClick={() => setIsSettingsOpen(true)}
+            className="settings-btn"
+            title="開啟系統設定"
+          >
+            <Settings size={22} strokeWidth={2.5} />
+          </button>
+        )}
       </div>
     </div>
   );

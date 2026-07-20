@@ -1,18 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { Trash2, Calendar, User, Footprints, Search } from 'lucide-react';
-
-const EXCHANGE_RATES = {
-  TWD: 1.0,
-  USD: 32.5,
-  SGD: 24.0,
-  CNY: 4.5,
-};
-
-const convertValue = (val, from = 'TWD', to = 'TWD') => {
-  const fromRate = EXCHANGE_RATES[from] || 1.0;
-  const toRate = EXCHANGE_RATES[to] || 1.0;
-  return (val * fromRate) / toRate;
-};
+import React, { useState } from 'react';
+import { Trash2, Calendar, Footprints, Search, Coins, Heart, Users } from 'lucide-react';
 
 export default function HistoryList({ 
   records = [], 
@@ -22,34 +9,19 @@ export default function HistoryList({
   p1Role = 'white_dog',
   p2Role = 'brown_dog',
   displayCurrency = 'TWD',
-  lovePointRate = 50,
+  lovePointRate = 25,
   exchangeRates
 }) {
-  const convertValueLocal = (val, from = 'TWD', to = 'TWD') => {
-    const rates = exchangeRates || EXCHANGE_RATES;
-    const fromRate = rates[from] || 1.0;
-    const toRate = rates[to] || 1.0;
-    return (val * fromRate) / toRate;
-  };
-
-  const [activeTab, setActiveTab] = useState('money'); // 'money' or 'love'
+  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'money' | 'love'
+  const [filterPartner, setFilterPartner] = useState('all'); // 'all' | 'p1' | 'p2'
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
-  // Filter records based on tab and search query
-  const filteredRecords = records
-    .filter(r => r.type === activeTab)
-    .filter(r => searchQuery.trim() === '' || r.title.toLowerCase().includes(searchQuery.toLowerCase()))
-    // Newest first
-    .sort((a, b) => new Date(b.date) - new Date(a.date));
-
-  const formatDate = (isoString) => {
-    try {
-      const date = new Date(isoString);
-      return `${date.getMonth() + 1}/${date.getDate()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-    } catch (e) {
-      return '';
-    }
+  const convertValueLocal = (val, from = 'TWD', to = 'TWD') => {
+    const rates = exchangeRates || { TWD: 1.0, USD: 32.5, SGD: 24.0, CNY: 4.5 };
+    const fromRate = rates[from] || 1.0;
+    const toRate = rates[to] || 1.0;
+    return (val * fromRate) / toRate;
   };
 
   const getCurrencySymbol = (code) => {
@@ -60,41 +32,140 @@ export default function HistoryList({
     return 'NT$';
   };
 
+  const formatDate = (isoString) => {
+    try {
+      const date = new Date(isoString);
+      return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+    } catch (e) {
+      return '';
+    }
+  };
+
+  const getGroupKey = (isoString) => {
+    try {
+      const d = new Date(isoString);
+      const days = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const date = String(d.getDate()).padStart(2, '0');
+      return `${d.getFullYear()}/${month}/${date} (${days[d.getDay()]})`;
+    } catch (e) {
+      return '其他日期';
+    }
+  };
+
+  // Filter and sort records
+  const filteredRecords = records
+    .filter(r => {
+      if (activeTab === 'all') return true;
+      return r.type === activeTab;
+    })
+    .filter(r => {
+      if (filterPartner === 'all') return true;
+      return r.by === filterPartner;
+    })
+    .filter(r => {
+      if (!searchQuery.trim()) return true;
+      return r.title.toLowerCase().includes(searchQuery.toLowerCase());
+    })
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  // Group records by day
+  const groupKeys = [];
+  const groups = {};
+  filteredRecords.forEach(record => {
+    const key = getGroupKey(record.date);
+    if (!groups[key]) {
+      groups[key] = [];
+      groupKeys.push(key);
+    }
+    groups[key].push(record);
+  });
+
+  // Calculate day totals for summary
+  const getDaySummary = (dayRecords) => {
+    let moneySum = 0;
+    let loveSum = 0;
+    dayRecords.forEach(r => {
+      if (r.type === 'money') {
+        const cur = r.currency || 'TWD';
+        moneySum += convertValueLocal(r.value, cur, displayCurrency);
+      } else {
+        loveSum += r.value;
+      }
+    });
+
+    const parts = [];
+    if (moneySum > 0) {
+      parts.push(`${getCurrencySymbol(displayCurrency)} ${Math.round(moneySum).toLocaleString()}`);
+    }
+    if (loveSum > 0) {
+      parts.push(`❤️ ${loveSum}點`);
+    }
+    return parts.join(' | ') || '無付出';
+  };
+
   return (
     <div className="comic-card" style={styles.container}>
-      {/* Tab Selectors inside the history panel */}
-      <div className="HistoryList-header" style={styles.header}>
-        <h3 className="HistoryList-title" style={styles.title}>生活付出足跡明細</h3>
-        
-        <div className="HistoryList-tabContainer" style={styles.tabContainer}>
-          <button
-            onClick={() => setActiveTab('money')}
-            className={`tab-btn HistoryList-tab ${activeTab === 'money' ? 'active' : ''}`}
-            style={{
-              ...styles.tab,
-              backgroundColor: activeTab === 'money' ? 'var(--color-money-accent)' : '#FFFFFF',
-              color: activeTab === 'money' ? '#FFFFFF' : 'var(--text-muted)',
-              borderColor: 'var(--border-color)',
-              boxShadow: activeTab === 'money' ? 'var(--shadow-xs)' : 'none',
-              transform: activeTab === 'money' ? 'translate(-1px, -1px)' : 'none',
-            }}
-          >
-            金錢支出 ({records.filter(r => r.type === 'money').length})
-          </button>
-          <button
-            onClick={() => setActiveTab('love')}
-            className={`tab-btn HistoryList-tab ${activeTab === 'love' ? 'active' : ''}`}
-            style={{
-              ...styles.tab,
-              backgroundColor: activeTab === 'love' ? 'var(--color-love-accent)' : '#FFFFFF',
-              color: activeTab === 'love' ? '#FFFFFF' : 'var(--text-muted)',
-              borderColor: 'var(--border-color)',
-              boxShadow: activeTab === 'love' ? 'var(--shadow-xs)' : 'none',
-              transform: activeTab === 'love' ? 'translate(-1px, -1px)' : 'none',
-            }}
-          >
-            家事勞動 ({records.filter(r => r.type === 'love').length})
-          </button>
+      <h3 style={styles.title}>生活付出足跡明細</h3>
+
+      {/* FILTER BUTTONS & SELECTORS */}
+      <div style={styles.filterSection}>
+        {/* Category Filter */}
+        <div style={styles.filterRow}>
+          <span style={styles.filterLabel}>篩選分類</span>
+          <div style={styles.btnGroup}>
+            {[
+              { id: 'all', label: '全部', icon: <Footprints size={12} /> },
+              { id: 'money', label: '金錢支出', icon: <Coins size={12} /> },
+              { id: 'love', label: '家事勞動', icon: <Heart size={12} /> },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className="comic-btn secondary"
+                style={{
+                  ...styles.filterBtn,
+                  backgroundColor: activeTab === tab.id ? '#000000' : '#FFFFFF',
+                  color: activeTab === tab.id ? '#FFFFFF' : '#000000',
+                  borderColor: 'var(--border-color)',
+                  transform: activeTab === tab.id ? 'translate(-1px, -1px)' : 'none',
+                  boxShadow: activeTab === tab.id ? 'var(--shadow-xs)' : 'none',
+                }}
+              >
+                {tab.icon}
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Partner Filter */}
+        <div style={styles.filterRow}>
+          <span style={styles.filterLabel}>付出對象</span>
+          <div style={styles.btnGroup}>
+            {[
+              { id: 'all', label: '所有人', icon: <Users size={12} /> },
+              { id: 'p1', label: `${p1Name} ${p1Role === 'white_dog' ? '🐶' : '🐻'}`, icon: null },
+              { id: 'p2', label: `${p2Name} ${p2Role === 'white_dog' ? '🐶' : '🐻'}`, icon: null },
+            ].map(partner => (
+              <button
+                key={partner.id}
+                onClick={() => setFilterPartner(partner.id)}
+                className="comic-btn secondary"
+                style={{
+                  ...styles.filterBtn,
+                  backgroundColor: filterPartner === partner.id ? '#000000' : '#FFFFFF',
+                  color: filterPartner === partner.id ? '#FFFFFF' : '#000000',
+                  borderColor: 'var(--border-color)',
+                  transform: filterPartner === partner.id ? 'translate(-1px, -1px)' : 'none',
+                  boxShadow: filterPartner === partner.id ? 'var(--shadow-xs)' : 'none',
+                }}
+              >
+                {partner.icon}
+                <span>{partner.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -114,7 +185,7 @@ export default function HistoryList({
         />
         <input
           type="text"
-          placeholder="🔍 搜尋付出項目名稱..."
+          placeholder="🔍 輸入描述搜尋付出足跡..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={() => setIsSearchFocused(true)}
@@ -132,95 +203,115 @@ export default function HistoryList({
         )}
       </div>
 
-      {/* History Items list */}
+      {/* List Wrapper */}
       <div style={styles.listWrapper}>
-        {filteredRecords.length === 0 ? (
+        {groupKeys.length === 0 ? (
           <div style={styles.emptyState}>
             <Footprints size={40} color="var(--text-subtle)" style={{ marginBottom: '12px' }} />
-            <p style={styles.emptyText}>尚未有付出足跡</p>
-            <p style={styles.emptySubtext}>點擊下方的「登記生活付出」來留下點滴足跡吧</p>
+            <p style={styles.emptyText}>尚未有符合的付出足跡</p>
+            <p style={styles.emptySubtext}>嘗試調整篩選條件，或在下方登記生活付出吧！</p>
           </div>
         ) : (
-          filteredRecords.map((record) => {
-            const isP1 = record.by === 'p1';
-            const name = isP1 ? p1Name : p2Name;
-            const role = isP1 ? p1Role : p2Role;
-            const isWhite = role === 'white_dog';
-
-            // Money conversions display
-            const origCurrency = record.currency || 'TWD';
-            const showConverted = record.type === 'money' && origCurrency !== displayCurrency;
-            const convertedVal = showConverted ? convertValueLocal(record.value, origCurrency, displayCurrency) : 0;
-            
+          groupKeys.map(dayKey => {
+            const dayRecords = groups[dayKey];
             return (
-              <div 
-                key={record.id} 
-                className="comic-card animate-pop HistoryList-itemCard" 
-                style={{ 
-                  ...styles.itemCard,
-                  borderLeft: isWhite ? '8px solid var(--border-color)' : '8px solid var(--color-warm-gold)',
-                  backgroundColor: '#FFFFFF'
-                }}
-              >
-                {/* Left side: Avatar & Info */}
-                <div className="HistoryList-itemLeft" style={styles.itemLeft}>
-                  {/* Miniature Dog typographic label */}
-                  <div 
-                    title={isWhite ? '白狗角色' : '褐狗角色'}
-                    style={{ 
-                      ...styles.dogBadge, 
-                      backgroundColor: isWhite ? '#FFFFFF' : '#F5E6D8',
-                      borderColor: 'var(--border-color)',
-                    }} 
-                  >
-                    <span style={{ fontSize: '0.85rem' }}>{isWhite ? '🐶' : '🐻'}</span>
+              <div key={dayKey} style={styles.dayGroup}>
+                {/* Day Header Block */}
+                <div style={styles.dayHeader}>
+                  <div style={styles.dayDate}>
+                    <Calendar size={14} style={{ marginRight: '6px' }} />
+                    <span>{dayKey}</span>
                   </div>
-
-                  <div className="HistoryList-itemMeta" style={styles.itemMeta}>
-                    <div className="HistoryList-itemTitle" style={styles.itemTitle}>{record.title}</div>
-                    <div className="HistoryList-itemDetails" style={styles.itemDetails}>
-                      <span style={styles.userSpan}>
-                        <User size={12} style={{ marginRight: '4px', color: 'var(--text-subtle)' }} />
-                        {name}
-                      </span>
-                      <span style={styles.dateSpan}>
-                        <Calendar size={12} style={{ marginRight: '4px', color: 'var(--text-subtle)' }} />
-                        {formatDate(record.date)}
-                      </span>
-                    </div>
+                  <div style={styles.dayTotal}>
+                    <span>日小計：</span>
+                    <span style={{ fontWeight: '800' }}>{getDaySummary(dayRecords)}</span>
                   </div>
                 </div>
 
-                {/* Right side: Value & Delete */}
-                <div className="HistoryList-itemRight" style={styles.itemRight}>
-                  <div style={styles.valueText}>
-                    {record.type === 'money' ? (
-                      <div style={styles.moneyContainer}>
-                        <span className="HistoryList-moneyVal" style={styles.moneyVal}>{getCurrencySymbol(origCurrency)} {record.value.toLocaleString()}</span>
-                        {showConverted && (
-                          <span className="HistoryList-convertedVal" style={styles.convertedVal}>
-                            ({getCurrencySymbol(displayCurrency)} {convertedVal.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })})
-                          </span>
-                        )}
-                      </div>
-                    ) : (
-                      <div style={styles.moneyContainer}>
-                        <span className="HistoryList-loveVal" style={styles.loveVal}>+{record.value} 點</span>
-                        <span className="HistoryList-convertedVal" style={styles.convertedVal}>
-                          ({getCurrencySymbol(displayCurrency)} {(record.value * lovePointRate).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })})
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                {/* Day Rows Container */}
+                <div style={styles.dayRows}>
+                  {dayRecords.map((record, index) => {
+                    const isP1 = record.by === 'p1';
+                    const name = isP1 ? p1Name : p2Name;
+                    const role = isP1 ? p1Role : p2Role;
+                    const isWhite = role === 'white_dog';
 
-                  <button
-                    onClick={() => onDeleteRecord(record.id)}
-                    className="comic-btn secondary"
-                    style={{ ...styles.deleteBtn, borderColor: 'var(--border-color)' }}
-                    title="刪除此筆明細"
-                  >
-                    <Trash2 size={13} color="var(--border-color)" />
-                  </button>
+                    // Money conversions display
+                    const origCurrency = record.currency || 'TWD';
+                    const showConverted = record.type === 'money' && origCurrency !== displayCurrency;
+                    const convertedVal = showConverted ? convertValueLocal(record.value, origCurrency, displayCurrency) : 0;
+
+                    return (
+                      <div 
+                        key={record.id} 
+                        style={{
+                          ...styles.recordRow,
+                          borderBottom: index === dayRecords.length - 1 ? 'none' : '1.5px dashed var(--border-color)',
+                          backgroundColor: '#FFFFFF'
+                        }}
+                      >
+                        {/* Left Info */}
+                        <div style={styles.rowLeft}>
+                          {/* Avatar Badge */}
+                          <div 
+                            title={`${name} (${isWhite ? '白狗' : '褐狗'})`}
+                            style={{ 
+                              ...styles.dogBadge, 
+                              backgroundColor: isWhite ? '#FFFFFF' : '#F5E6D8',
+                              borderColor: 'var(--border-color)',
+                            }} 
+                          >
+                            <span style={{ fontSize: '0.85rem' }}>{isWhite ? '🐶' : '🐻'}</span>
+                          </div>
+
+                          <div style={styles.rowMeta}>
+                            <div style={styles.rowTitle}>{record.title}</div>
+                            <div style={styles.rowDetails}>
+                              <span style={styles.timeSpan}>{formatDate(record.date)}</span>
+                              <span style={{ color: 'var(--text-subtle)' }}>•</span>
+                              <span style={styles.nameSpan}>{name}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Right Amount & Delete */}
+                        <div style={styles.rowRight}>
+                          <div style={styles.rowAmountContainer}>
+                            {record.type === 'money' ? (
+                              <>
+                                <span style={styles.amountMoney}>
+                                  {getCurrencySymbol(origCurrency)} {record.value.toLocaleString()}
+                                </span>
+                                {showConverted && (
+                                  <span style={styles.amountConverted}>
+                                    ({getCurrencySymbol(displayCurrency)} {convertedVal.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })})
+                                  </span>
+                                )}
+                              </>
+                            ) : (
+                              <>
+                                <span style={styles.amountLove}>
+                                  +{record.value} 點
+                                </span>
+                                <span style={styles.amountConverted}>
+                                  ({getCurrencySymbol(displayCurrency)} {(record.value * lovePointRate).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })})
+                                </span>
+                              </>
+                            )}
+                          </div>
+
+                          <button
+                            onClick={() => onDeleteRecord(record.id)}
+                            className="comic-btn secondary"
+                            style={styles.rowDeleteBtn}
+                            title="刪除此筆明細"
+                          >
+                            <Trash2 size={13} color="var(--border-color)" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             );
@@ -238,33 +329,54 @@ const styles = {
     border: 'var(--border-thick)',
     boxShadow: 'var(--shadow-flat)',
   },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: '12px',
-    borderBottom: '2px dashed var(--border-color)',
-    paddingBottom: '16px',
-    marginBottom: '20px',
-  },
   title: {
-    fontSize: '1.2rem',
-    fontWeight: '800',
+    fontSize: '1.25rem',
+    fontWeight: '900',
     color: 'var(--text-primary)',
     letterSpacing: '0.5px',
+    marginBottom: '18px',
+    borderBottom: '2.5px solid #000000',
+    paddingBottom: '10px',
   },
-  tabContainer: {
+  filterSection: {
     display: 'flex',
-    gap: '8px',
+    flexDirection: 'column',
+    gap: '12px',
+    marginBottom: '16px',
+    backgroundColor: '#FAF8F5',
+    padding: '12px',
+    borderRadius: '12px',
+    border: '2px solid #000000',
   },
-  tab: {
-    fontSize: '0.8rem',
-    padding: '6px 14px',
-    borderRadius: '10px',
+  filterRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    flexWrap: 'wrap',
+  },
+  filterLabel: {
+    fontSize: '0.82rem',
     fontWeight: '800',
+    color: '#333333',
+    width: '64px',
+    flexShrink: 0,
+  },
+  btnGroup: {
+    display: 'flex',
+    gap: '6px',
+    flexWrap: 'wrap',
+  },
+  filterBtn: {
+    padding: '5px 12px',
+    fontSize: '0.78rem',
+    fontWeight: '800',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    borderRadius: '8px',
     cursor: 'pointer',
-    transition: 'all 0.2s var(--ease-snappy)',
+    transition: 'all 0.15s var(--ease-snappy)',
+    boxShadow: 'none',
   },
   searchContainer: {
     display: 'flex',
@@ -274,7 +386,7 @@ const styles = {
     borderRadius: '12px',
     backgroundColor: '#FFFFFF',
     padding: '10px 14px',
-    marginBottom: '16px',
+    marginBottom: '18px',
     transition: 'box-shadow 0.2s ease, transform 0.2s ease',
     cursor: 'text',
   },
@@ -308,8 +420,8 @@ const styles = {
   listWrapper: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '12px',
-    maxHeight: '400px',
+    gap: '16px',
+    maxHeight: '500px',
     overflowY: 'auto',
     paddingRight: '4px',
   },
@@ -322,7 +434,7 @@ const styles = {
     justifyContent: 'center',
   },
   emptyText: {
-    fontWeight: '800',
+    fontWeight: '900',
     fontSize: '0.95rem',
     color: 'var(--text-primary)',
     marginBottom: '6px',
@@ -330,23 +442,54 @@ const styles = {
   emptySubtext: {
     fontSize: '0.8rem',
     color: 'var(--text-muted)',
-    fontWeight: '700',
+    fontWeight: '750',
   },
-  itemCard: {
-    padding: '14px 18px',
-    boxShadow: 'var(--shadow-sm)',
-    border: 'var(--border-thick)',
-    borderRadius: '14px', /* Rounded paper slip card feel */
+  dayGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+  dayHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    transition: 'transform 0.22s var(--ease-snappy), box-shadow 0.22s var(--ease-snappy)',
+    padding: '8px 14px',
+    backgroundColor: '#FAF5ED',
+    border: '2px solid #000000',
+    borderRadius: '10px',
+    fontSize: '0.82rem',
+    fontWeight: '800',
   },
-  itemLeft: {
+  dayDate: {
     display: 'flex',
     alignItems: 'center',
-    gap: '14px',
+    color: '#000000',
+  },
+  dayTotal: {
+    fontSize: '0.78rem',
+    color: '#555555',
+  },
+  dayRows: {
+    border: '2px solid #000000',
+    borderRadius: '10px',
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+    boxShadow: 'var(--shadow-xs)',
+  },
+  recordRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '12px 14px',
+    transition: 'background-color 0.18s ease',
+  },
+  rowLeft: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
     flex: 1,
+    minWidth: 0,
   },
   dogBadge: {
     width: '28px',
@@ -357,69 +500,73 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     boxShadow: 'var(--shadow-xs)',
+    flexShrink: 0,
   },
-  itemMeta: {
+  rowMeta: {
     display: 'flex',
     flexDirection: 'column',
     gap: '4px',
+    minWidth: 0,
   },
-  itemTitle: {
+  rowTitle: {
     fontWeight: '800',
-    fontSize: '0.98rem',
+    fontSize: '0.92rem',
     color: 'var(--text-primary)',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
-  itemDetails: {
+  rowDetails: {
     display: 'flex',
-    gap: '12px',
-    fontSize: '0.78rem',
+    gap: '6px',
+    alignItems: 'center',
+    fontSize: '0.75rem',
     color: 'var(--text-muted)',
     fontWeight: '700',
   },
-  userSpan: {
-    display: 'inline-flex',
-    alignItems: 'center',
+  timeSpan: {
+    color: 'var(--text-muted)',
   },
-  dateSpan: {
-    display: 'inline-flex',
-    alignItems: 'center',
+  nameSpan: {
+    color: '#555555',
   },
-  itemRight: {
+  rowRight: {
     display: 'flex',
     alignItems: 'center',
-    gap: '14px',
+    gap: '12px',
+    flexShrink: 0,
   },
-  valueText: {
-    fontWeight: '800',
-    fontSize: '1.05rem',
-  },
-  moneyContainer: {
+  rowAmountContainer: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'flex-end',
     gap: '2px',
   },
-  moneyVal: {
+  amountMoney: {
     color: 'var(--text-primary)',
-    fontSize: '1.02rem',
+    fontWeight: '900',
+    fontSize: '0.95rem',
   },
-  convertedVal: {
-    fontSize: '0.75rem',
+  amountLove: {
+    color: 'var(--color-love-accent-hover)',
+    fontWeight: '900',
+    fontSize: '0.95rem',
+  },
+  amountConverted: {
+    fontSize: '0.72rem',
     color: 'var(--text-muted)',
     fontWeight: '700',
   },
-  loveVal: {
-    color: 'var(--text-primary)',
-  },
-  deleteBtn: {
+  rowDeleteBtn: {
     padding: '6px',
     borderRadius: '8px',
-    boxShadow: 'var(--shadow-xs)',
+    boxShadow: 'none',
     backgroundColor: '#FFFFFF',
     border: '1.8px solid var(--border-color)',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    transition: 'transform 0.15s var(--ease-snappy), box-shadow 0.15s var(--ease-snappy)',
+    transition: 'all 0.15s var(--ease-snappy)',
   }
 };

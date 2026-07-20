@@ -20,6 +20,7 @@ export default function OnboardingWizard({
 
   // Join state
   const [joinGistId, setJoinGistId] = useState('');
+  const [gistToken, setGistToken] = useState(localStorage.getItem('gist_token') || '');
   const [fetchedPartners, setFetchedPartners] = useState(null);
   const [selectedJoinIdentity, setSelectedJoinIdentity] = useState('');
 
@@ -74,9 +75,9 @@ export default function OnboardingWizard({
     const customPartners = getCustomPartnersPayload();
     onUpdateMyIdentity('p1');
 
-    const finalToken = (import.meta.env.VITE_GIST_TOKEN || localStorage.getItem('gist_token') || '').trim();
+    const finalToken = (gistToken.trim() || import.meta.env.VITE_GIST_TOKEN || localStorage.getItem('gist_token') || '').trim();
     if (!finalToken) {
-      setLocalError('⚠️ 系統未檢測到 VITE_GIST_TOKEN，無法自動建立雲端連線，請點擊「本機離線體驗」！');
+      setLocalError('⚠️ 請輸入您的 GitHub Token 以自動建立雲端生活天秤！或點擊「先離線使用」。');
       return;
     }
 
@@ -118,11 +119,11 @@ export default function OnboardingWizard({
     setLocalError('');
     setLocalSuccess('');
     
-    const finalToken = (import.meta.env.VITE_GIST_TOKEN || localStorage.getItem('gist_token') || '').trim();
+    const finalToken = (gistToken.trim() || import.meta.env.VITE_GIST_TOKEN || localStorage.getItem('gist_token') || '').trim();
     const finalGistId = joinGistId.trim();
     
     if (!finalToken) {
-      setLocalError('⚠️ 系統未檢測到 VITE_GIST_TOKEN，無法進行連線！');
+      setLocalError('⚠️ 請填寫 GitHub Token 以進行連線！');
       return;
     }
     if (!finalGistId) {
@@ -154,7 +155,7 @@ export default function OnboardingWizard({
       return;
     }
     
-    const finalToken = (import.meta.env.VITE_GIST_TOKEN || localStorage.getItem('gist_token') || '');
+    const finalToken = (gistToken.trim() || import.meta.env.VITE_GIST_TOKEN || localStorage.getItem('gist_token') || '').trim();
     const finalGistId = joinGistId.trim();
     
     // Bind identity device
@@ -263,6 +264,21 @@ export default function OnboardingWizard({
                   </p>
 
                   <div style={styles.inputCol}>
+                    <label style={styles.label}>GitHub Token (Personal Access Token)</label>
+                    <input 
+                      type="password" 
+                      value={gistToken} 
+                      onChange={(e) => {
+                        setGistToken(e.target.value);
+                        localStorage.setItem('gist_token', e.target.value.trim());
+                      }} 
+                      className="comic-input" 
+                      placeholder={import.meta.env.VITE_GIST_TOKEN ? "已使用環境變數設定 (選填)" : "請輸入您的 GitHub Token"}
+                      style={styles.inputField}
+                    />
+                  </div>
+
+                  <div style={styles.inputCol}>
                     <label style={styles.label}>伴侶分享的 Gist ID</label>
                     <input 
                       type="text" 
@@ -357,18 +373,6 @@ export default function OnboardingWizard({
                       />
                     </div>
 
-                    {/* Swap Button */}
-                    <div style={styles.swapCol}>
-                      <button 
-                        type="button" 
-                        onClick={handleSwapRoles} 
-                        className="comic-btn secondary"
-                        style={styles.swapBtn}
-                      >
-                        <ArrowLeftRight size={16} />
-                      </button>
-                    </div>
-
                     {/* Partner 2 Input */}
                     <div style={styles.inputCol}>
                       <label style={styles.label}>
@@ -420,8 +424,23 @@ export default function OnboardingWizard({
                   <div style={styles.infoBanner}>
                     <span style={{ fontSize: '1.2rem' }}>☁️</span>
                     <p style={{ fontSize: '0.78rem', color: '#333', fontWeight: '700', lineHeight: '1.5', margin: 0 }}>
-                      系統檢測到內建 GitHub Gist 同步，當您點擊「開始使用」時，將<b>自動為您建立專屬雲端資料庫</b>！您只需在完成後將邀請複製發送給伴侶即可！
+                      輸入 GitHub Token 後，系統將<b>自動為您建立專屬雲端資料庫</b>！您只需在完成後將邀請發送給伴侶即可！
                     </p>
+                  </div>
+
+                  <div style={{ ...styles.inputCol, marginTop: '12px', marginBottom: '8px' }}>
+                    <label style={styles.label}>GitHub Token (Personal Access Token)</label>
+                    <input 
+                      type="password" 
+                      value={gistToken} 
+                      onChange={(e) => {
+                        setGistToken(e.target.value);
+                        localStorage.setItem('gist_token', e.target.value.trim());
+                      }} 
+                      className="comic-input" 
+                      placeholder={import.meta.env.VITE_GIST_TOKEN ? "已使用環境變數設定 (選填)" : "請輸入您的 GitHub Token (需勾選 gist 權限)"}
+                      style={styles.inputField}
+                    />
                   </div>
 
                   {localError && <div style={styles.localErrorText}>{localError}</div>}

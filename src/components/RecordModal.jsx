@@ -30,7 +30,7 @@ export default function RecordModal({
   defaultByPartner = 'p1',
   defaultType = 'money',
   displayCurrency = 'TWD',
-  lovePointRate = 50
+  lovePointRate = 25
 }) {
   const getCurrencySymbol = (code) => {
     if (code === 'TWD') return 'NT$';
@@ -71,14 +71,16 @@ export default function RecordModal({
     setValue(points.toString());
   };
 
+  const handleDivideByTwo = () => {
+    const num = parseFloat(value);
+    if (!isNaN(num) && num > 0) {
+      setValue((num / 2).toString());
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
-
-    if (!title.trim()) {
-      setError('請寫下一點簡短項目描述喔！');
-      return;
-    }
 
     const numVal = parseFloat(value);
     if (isNaN(numVal) || numVal <= 0) {
@@ -86,11 +88,23 @@ export default function RecordModal({
       return;
     }
 
+    let finalTitle = title.trim();
+    if (!finalTitle) {
+      const now = new Date();
+      const dateStr = `${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`;
+      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      if (recordType === 'money') {
+        finalTitle = `${currency} ${numVal} (${dateStr} ${timeStr})`;
+      } else {
+        finalTitle = `心意 ${numVal}點 (${dateStr} ${timeStr})`;
+      }
+    }
+
     onAddRecord({
       id: Date.now().toString(),
       type: recordType,
       by: byPartner,
-      title: title.trim(),
+      title: finalTitle,
       value: numVal,
       currency: recordType === 'money' ? currency : undefined,
       date: new Date().toISOString()
@@ -346,6 +360,26 @@ export default function RecordModal({
                 min="1"
                 step="any"
               />
+              <button
+                type="button"
+                onClick={handleDivideByTwo}
+                className="comic-btn secondary"
+                style={{
+                  padding: '6px 12px',
+                  fontSize: '0.85rem',
+                  fontWeight: '900',
+                  border: '2px solid #000000',
+                  boxShadow: 'var(--shadow-xs)',
+                  whiteSpace: 'nowrap',
+                  height: '38px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                title="數值除以二"
+              >
+                ÷ 2
+              </button>
               {isMoney && (
                 <span style={styles.unitText}>
                   {currency === 'TWD' ? '元 (TWD)' : currency === 'SGD' ? '元 (SGD)' : '元 (USD)'}
