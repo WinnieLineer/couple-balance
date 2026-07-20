@@ -93,6 +93,7 @@ export default function OnboardingWizard({
         meta: { updated_at: new Date().toISOString(), version: '1.0' },
         records: [],
         partners: customPartners,
+        lovePointRate: parseFloat(localStorage.getItem('love_point_rate')) || 25,
         activityLog: []
       };
 

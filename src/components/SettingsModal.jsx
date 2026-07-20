@@ -162,6 +162,7 @@ export default function SettingsModal({
         meta: { updated_at: new Date().toISOString(), version: '1.0' },
         records: cachedRecords,
         partners: payloadPartners,
+        lovePointRate: parseFloat(localStorage.getItem('love_point_rate')) || 25,
         activityLog: cachedLog,
       };
       

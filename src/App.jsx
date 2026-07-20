@@ -164,6 +164,7 @@ export default function App() {
   const activityLogRef = useRef([]);
   const partnersRef = useRef({ p1: { name: '伴侶一', role: 'white_dog', deviceId: '' }, p2: { name: '伴侶二', role: 'brown_dog', deviceId: '' } });
   const offlineModeRef = useRef(false);
+  const lovePointRateRef = useRef(25);
 
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || (!import.meta.env.VITE_GIST_TOKEN);
 
@@ -274,6 +275,7 @@ export default function App() {
   useEffect(() => { activityLogRef.current = activityLog; }, [activityLog]);
   useEffect(() => { partnersRef.current = partners; }, [partners]);
   useEffect(() => { offlineModeRef.current = offlineMode; }, [offlineMode]);
+  useEffect(() => { lovePointRateRef.current = lovePointRate; }, [lovePointRate]);
 
   // --- TOAST NOTIFICATIONS ---
   const showToast = (message, type = 'info') => {
@@ -465,6 +467,15 @@ export default function App() {
           localStorage.setItem('partners_config', JSON.stringify(cloudData.partners));
         }
 
+        if (cloudData.lovePointRate !== undefined) {
+          const parsedRate = parseFloat(cloudData.lovePointRate);
+          if (!isNaN(parsedRate)) {
+            setLovePointRate(parsedRate);
+            lovePointRateRef.current = parsedRate;
+            localStorage.setItem('love_point_rate', parsedRate.toString());
+          }
+        }
+
         const now = new Date();
         const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
         setSyncStatus(`已儲存 (${timeStr})`);
@@ -510,7 +521,8 @@ export default function App() {
     newRecords,
     token = syncConfigRef.current.token,
     gistId = syncConfigRef.current.gistId,
-    customPartners = partnersRef.current
+    customPartners = partnersRef.current,
+    customLovePointRate = lovePointRateRef.current
   ) => {
     if (!token || !gistId || offlineModeRef.current) return;
 
@@ -524,6 +536,7 @@ export default function App() {
         },
         records: newRecords,
         partners: customPartners,
+        lovePointRate: customLovePointRate,
         activityLog: activityLogRef.current,  // always include full immutable log
       };
 
@@ -1029,6 +1042,7 @@ export default function App() {
           const valInTWD = convertValue(valInDisplayCurrency, displayCurrency, 'TWD');
           setLovePointRate(valInTWD);
           localStorage.setItem('love_point_rate', valInTWD.toString());
+          pushCloudData(recordsRef.current, undefined, undefined, undefined, valInTWD);
         }}
         activityLog={activityLog}
         isReordering={isReordering}
