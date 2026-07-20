@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { Trash2, Calendar, Footprints, Search, Coins, Heart, Users } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Trash2, Calendar, Footprints, Search, Coins, Heart, Users, Pencil } from 'lucide-react';
 
 export default function HistoryList({ 
   records = [], 
   onDeleteRecord, 
+  onEditRecord,
   p1Name = '伴侶一', 
   p2Name = '伴侶二',
   p1Role = 'white_dog',
@@ -16,6 +17,22 @@ export default function HistoryList({
   const [filterPartner, setFilterPartner] = useState('all'); // 'all' | 'p1' | 'p2'
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [showScrollHint, setShowScrollHint] = useState(false);
+  const listRef = useRef(null);
+
+  const checkScroll = () => {
+    if (listRef.current) {
+      const target = listRef.current;
+      const isScrollable = target.scrollHeight > target.clientHeight;
+      const isAtBottom = Math.ceil(target.scrollHeight - target.scrollTop) <= target.clientHeight + 15;
+      setShowScrollHint(isScrollable && !isAtBottom);
+    }
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(checkScroll, 150);
+    return () => clearTimeout(timer);
+  }, [records, searchQuery, activeTab, filterPartner]);
 
   const convertValueLocal = (val, from = 'TWD', to = 'TWD') => {
     const rates = exchangeRates || { TWD: 1.0, USD: 32.5, SGD: 24.0, CNY: 4.5 };
@@ -204,7 +221,11 @@ export default function HistoryList({
       </div>
 
       {/* List Wrapper */}
-      <div style={styles.listWrapper}>
+      <div 
+        ref={listRef}
+        onScroll={checkScroll}
+        style={styles.listWrapper}
+      >
         {groupKeys.length === 0 ? (
           <div style={styles.emptyState}>
             <Footprints size={40} color="var(--text-subtle)" style={{ marginBottom: '12px' }} />
@@ -301,6 +322,15 @@ export default function HistoryList({
                           </div>
 
                           <button
+                            onClick={() => onEditRecord(record)}
+                            className="comic-btn secondary"
+                            style={{ ...styles.rowDeleteBtn, marginRight: '4px' }}
+                            title="編輯此筆明細"
+                          >
+                            <Pencil size={13} color="var(--border-color)" />
+                          </button>
+
+                          <button
                             onClick={() => onDeleteRecord(record.id)}
                             className="comic-btn secondary"
                             style={styles.rowDeleteBtn}
@@ -318,6 +348,47 @@ export default function HistoryList({
           })
         )}
       </div>
+      {showScrollHint && (
+        <div 
+          onClick={() => {
+            if (listRef.current) {
+              listRef.current.scrollTo({
+                top: listRef.current.scrollHeight,
+                behavior: 'smooth'
+              });
+            }
+          }}
+          style={{
+            position: 'absolute',
+            bottom: '12px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            pointerEvents: 'auto',
+            cursor: 'pointer',
+            zIndex: 100
+          }}
+        >
+          <div 
+            className="animate-float" 
+            style={{
+              backgroundColor: '#000000',
+              color: '#FFFFFF',
+              padding: '5px 12px',
+              borderRadius: '20px',
+              fontSize: '0.72rem',
+              fontWeight: '900',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              boxShadow: 'var(--shadow-sm)',
+              opacity: 0.95,
+              border: '2.5px solid var(--border-color, #000)'
+            }}
+          >
+            <span>▼ 滑動查看更多明細</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -328,6 +399,7 @@ const styles = {
     padding: '24px',
     border: 'var(--border-thick)',
     boxShadow: 'var(--shadow-flat)',
+    position: 'relative',
   },
   title: {
     fontSize: '1.25rem',

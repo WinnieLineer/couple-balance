@@ -25,7 +25,7 @@ export default function SettingsModal({
   isReordering,
   onToggleReordering
 }) {
-  const [activeTab, setActiveTab] = useState('currency'); // 'currency' | 'partners' | 'cloud' | 'activity'
+  const [activeTab, setActiveTab] = useState('activity'); // 'activity' | 'currency' | 'cloud'
   const [lovePointRateInput, setLovePointRateInput] = useState(lovePointRate.toString());
 
   // Partners state
@@ -211,6 +211,13 @@ export default function SettingsModal({
         {/* Tab Navigation */}
         <div className="settings-tab-nav">
           <button
+            className={`settings-tab-link ${activeTab === 'activity' ? 'active' : ''}`}
+            onClick={() => { setActiveTab('activity'); setLocalError(''); setLocalSuccess(''); }}
+          >
+            <History size={16} />
+            <span>活動日誌</span>
+          </button>
+          <button
             className={`settings-tab-link ${activeTab === 'currency' ? 'active' : ''}`}
             onClick={() => { setActiveTab('currency'); setLocalError(''); setLocalSuccess(''); }}
           >
@@ -218,25 +225,11 @@ export default function SettingsModal({
             <span>幣別與折算</span>
           </button>
           <button
-            className={`settings-tab-link ${activeTab === 'partners' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('partners'); setLocalError(''); setLocalSuccess(''); }}
-          >
-            <Users size={16} />
-            <span>伴侶稱呼</span>
-          </button>
-          <button
             className={`settings-tab-link ${activeTab === 'cloud' ? 'active' : ''}`}
             onClick={() => { setActiveTab('cloud'); setLocalError(''); setLocalSuccess(''); }}
           >
             <Cloud size={16} />
-            <span>雲端與備份</span>
-          </button>
-          <button
-            className={`settings-tab-link ${activeTab === 'activity' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('activity'); setLocalError(''); setLocalSuccess(''); }}
-          >
-            <History size={16} />
-            <span>活動日誌</span>
+            <span>雲端設定</span>
           </button>
         </div>
 
@@ -344,88 +337,94 @@ export default function SettingsModal({
           </div>
         )}
 
-        {/* TAB 2: PARTNERS */}
-        {activeTab === 'partners' && (
-          <div style={styles.tabContent}>
-            <p style={styles.tabDescription}>
-              在此修改雙方在天秤上顯示的稱呼，並選擇象徵的角色。
-            </p>
-            <div className="names-row" style={styles.namesRow}>
-              {/* Partner 1 Input */}
-              <div style={styles.inputCol}>
-                <label style={styles.label}>
-                  伴侶一 姓名
-                </label>
-                <input 
-                  type="text" 
-                  value={p1Name} 
-                  onChange={(e) => setP1Name(e.target.value)} 
-                  className="comic-input" 
-                  style={styles.inputField}
-                />
-              </div>
-
-              {/* Partner 2 Input */}
-              <div style={styles.inputCol}>
-                <label style={styles.label}>
-                  伴侶二 姓名
-                </label>
-                <input 
-                  type="text" 
-                  value={p2Name} 
-                  onChange={(e) => setP2Name(e.target.value)} 
-                  className="comic-input" 
-                  style={styles.inputField}
-                />
-              </div>
-            </div>
-
-            {/* Device User Identification */}
-            <div style={{ marginTop: '20px' }}>
-              <label style={styles.label}>這台裝置的主要使用者是誰？（用以區分是誰記帳）</label>
-              <div className="identity-row" style={styles.identityRow}>
-                <button
-                  type="button"
-                  onClick={() => onUpdateMyIdentity('p1')}
-                  className="comic-btn secondary"
-                  style={{
-                    ...styles.identityBtn,
-                    backgroundColor: myIdentity === 'p1' ? '#000000' : '#FFFFFF',
-                    color: myIdentity === 'p1' ? '#FFFFFF' : '#000000',
-                  }}
-                >
-                  我是 {p1Name}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onUpdateMyIdentity('p2')}
-                  className="comic-btn secondary"
-                  style={{
-                    ...styles.identityBtn,
-                    backgroundColor: myIdentity === 'p2' ? '#000000' : '#FFFFFF',
-                    color: myIdentity === 'p2' ? '#FFFFFF' : '#000000',
-                  }}
-                >
-                  我是 {p2Name}
-                </button>
-              </div>
-            </div>
-
-            <button
-              onClick={handleSavePartners}
-              className="comic-btn"
-              style={{ width: '100%', marginTop: '20px', padding: '12px', justifyContent: 'center' }}
-            >
-              💾 儲存稱呼與角色變更
-            </button>
-
-            {localSuccess && <div style={styles.localSuccessText}>{localSuccess}</div>}
-          </div>
-        )}
-
-        {/* TAB 3: CLOUD */}
+        {/* TAB 3: CLOUD & PARTNERS */}
         {activeTab === 'cloud' && (
           <div style={styles.tabContent}>
+            {/* 👥 Partner Nickname and Identification Settings */}
+            <div style={{ borderBottom: '2px dashed var(--border-color)', paddingBottom: '20px', marginBottom: '20px' }}>
+              <h4 style={{ ...styles.label, fontSize: '1rem', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Users size={18} />
+                <span>伴侶稱呼與角色設定</span>
+              </h4>
+              <p style={{ ...styles.tabDescription, marginTop: '2px', marginBottom: '12px' }}>
+                在此修改雙方在天秤上顯示的稱呼，並選擇象徵的角色。
+              </p>
+              
+              <div className="names-row" style={styles.namesRow}>
+                {/* Partner 1 Input */}
+                <div style={styles.inputCol}>
+                  <label style={styles.label}>
+                    伴侶一 姓名
+                  </label>
+                  <input 
+                    type="text" 
+                    value={p1Name} 
+                    onChange={(e) => setP1Name(e.target.value)} 
+                    className="comic-input" 
+                    style={styles.inputField}
+                  />
+                </div>
+
+                {/* Partner 2 Input */}
+                <div style={styles.inputCol}>
+                  <label style={styles.label}>
+                    伴侶二 姓名
+                  </label>
+                  <input 
+                    type="text" 
+                    value={p2Name} 
+                    onChange={(e) => setP2Name(e.target.value)} 
+                    className="comic-input" 
+                    style={styles.inputField}
+                  />
+                </div>
+              </div>
+
+              {/* Device User Identification */}
+              <div style={{ marginTop: '20px' }}>
+                <label style={styles.label}>這台裝置的主要使用者是誰？（用以區分是誰記帳）</label>
+                <div className="identity-row" style={styles.identityRow}>
+                  <button
+                    type="button"
+                    onClick={() => onUpdateMyIdentity('p1')}
+                    className="comic-btn secondary"
+                    style={{
+                      ...styles.identityBtn,
+                      backgroundColor: myIdentity === 'p1' ? '#000000' : '#FFFFFF',
+                      color: myIdentity === 'p1' ? '#FFFFFF' : '#000000',
+                    }}
+                  >
+                    我是 {p1Name}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onUpdateMyIdentity('p2')}
+                    className="comic-btn secondary"
+                    style={{
+                      ...styles.identityBtn,
+                      backgroundColor: myIdentity === 'p2' ? '#000000' : '#FFFFFF',
+                      color: myIdentity === 'p2' ? '#FFFFFF' : '#000000',
+                    }}
+                  >
+                    我是 {p2Name}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                onClick={handleSavePartners}
+                className="comic-btn"
+                style={{ width: '100%', marginTop: '20px', padding: '12px', justifyContent: 'center' }}
+              >
+                💾 儲存稱呼與角色變更
+              </button>
+            </div>
+
+            {/* ☁️ Cloud Sync Settings */}
+            <h4 style={{ ...styles.label, fontSize: '1rem', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Cloud size={18} />
+              <span>雲端同步與備份</span>
+            </h4>
             <p style={styles.tabDescription}>
               設定 GitHub Gist 進行雲端備份，讓您與伴侶的資料隨時保持一致。
             </p>
@@ -615,14 +614,25 @@ export default function SettingsModal({
         )}
         </div>
         {showScrollHint && (
-          <div style={{
-            position: 'absolute',
-            bottom: '16px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            pointerEvents: 'none',
-            zIndex: 100
-          }}>
+          <div 
+            onClick={() => {
+              if (bodyRef.current) {
+                bodyRef.current.scrollTo({
+                  top: bodyRef.current.scrollHeight,
+                  behavior: 'smooth'
+                });
+              }
+            }}
+            style={{
+              position: 'absolute',
+              bottom: '16px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              pointerEvents: 'auto',
+              cursor: 'pointer',
+              zIndex: 100
+            }}
+          >
             <div 
               className="animate-float" 
               style={{
@@ -654,7 +664,7 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '16px',
-    animation: 'pop 0.18s var(--ease-snappy)',
+    animation: 'fadeIn 0.22s ease-out',
   },
   tabDescription: {
     fontSize: '0.82rem',

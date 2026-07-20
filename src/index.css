@@ -293,16 +293,25 @@ h1, h2, h3, h4, h5, h6 {
 /* Settings tab nav */
 .settings-tab-nav {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border-bottom: var(--border-thick);
   margin-bottom: 22px;
-  gap: 2px;
+  gap: 8px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.settings-tab-nav::-webkit-scrollbar {
+  display: none;
 }
 
 .settings-tab-link {
-  flex: 1 1 auto;
-  min-width: 90px;
-  padding: 10px 8px;
+  flex: 0 0 auto;
+  white-space: nowrap;
+  min-width: fit-content;
+  padding: 10px 14px;
   font-family: inherit;
   font-weight: 800;
   font-size: 0.82rem;
@@ -692,20 +701,32 @@ body::-webkit-scrollbar {
   .HistoryList-convertedVal { font-size: 0.68rem !important; }
 
   /* Modals */
+  .modal-backdrop,
+  .RecordModal-overlay {
+    align-items: flex-start !important;
+    padding-top: 16px !important;
+    padding-bottom: 24px !important;
+  }
+
   .settings-modal-card {
     padding: 20px 16px !important;
     border-width: 2.5px !important;
     border-radius: 16px !important;
+    max-height: 90vh !important;
   }
 
   .wizard-card {
     padding: 18px 14px !important;
     border-width: 2.5px !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
   }
 
   .RecordModal-card {
     padding: 18px 14px !important;
     border-width: 2.5px !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
   }
 
   .RecordModal-title        { font-size: 1.1rem !important; }

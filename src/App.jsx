@@ -27,6 +27,8 @@ export default function App() {
   const [myIdentity, setMyIdentity] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [addModalDefaultType, setAddModalDefaultType] = useState('money');
+  const [editingRecord, setEditingRecord] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showWizard, setShowWizard] = useState(!localStorage.getItem('partners_config'));
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
@@ -715,6 +717,39 @@ export default function App() {
     }
   };
 
+  // --- EDIT RECORD ---
+  const handleEditRecord = (updatedRecord) => {
+    const updatedRecords = records.map(r => r.id === updatedRecord.id ? updatedRecord : r);
+    setRecords(updatedRecords);
+    recordsRef.current = updatedRecords;
+
+    // Append immutable activity log entry for edit
+    const logEntry = {
+      id: `log_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      timestamp: new Date().toISOString(),
+      action: 'edit',
+      by: localStorage.getItem('my_identity') || myIdentity || 'p1',
+      payer: updatedRecord.by,
+      recordId: updatedRecord.id,
+      recordTitle: updatedRecord.title,
+      recordValue: updatedRecord.value,
+      recordType: updatedRecord.type,
+      recordCurrency: updatedRecord.currency || 'TWD',
+    };
+    const updatedLog = [...activityLogRef.current, logEntry];
+    setActivityLog(updatedLog);
+    activityLogRef.current = updatedLog;
+    localStorage.setItem('cached_activity_log', JSON.stringify(updatedLog));
+
+    // Write local storage
+    localStorage.setItem('cached_records', JSON.stringify(updatedRecords));
+
+    showToast(`修改成功：${updatedRecord.title}`, 'success');
+
+    // Push records + activity log to cloud
+    pushCloudData(updatedRecords);
+  };
+
   // --- PULL TO REFRESH EVENT HANDLERS ---
   const startYRef = useRef(0);
   const isDraggingRef = useRef(false);
@@ -984,6 +1019,10 @@ export default function App() {
               <HistoryList
                 records={records}
                 onDeleteRecord={handleDeleteRecord}
+                onEditRecord={(record) => {
+                  setEditingRecord(record);
+                  setIsEditModalOpen(true);
+                }}
                 p1Name={partners.p1.name}
                 p2Name={partners.p2.name}
                 p1Role={partners.p1.role}
@@ -1060,6 +1099,25 @@ export default function App() {
         p2Role={partners.p2.role}
         defaultByPartner={myIdentity}
         defaultType={addModalDefaultType}
+        displayCurrency={displayCurrency}
+        lovePointRate={convertValue(lovePointRate, 'TWD', displayCurrency)}
+      />
+
+      {/* --- EDIT RECORD FORM MODAL (RENDERED OUTSIDE CONTAINER TO FIX VIEWPORT POSITIONING) --- */}
+      <RecordModal 
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditingRecord(null);
+        }}
+        onAddRecord={() => {}}
+        onEditRecord={handleEditRecord}
+        editingRecord={editingRecord}
+        p1Name={partners.p1.name}
+        p2Name={partners.p2.name}
+        p1Role={partners.p1.role}
+        p2Role={partners.p2.role}
+        defaultByPartner={myIdentity}
         displayCurrency={displayCurrency}
         lovePointRate={convertValue(lovePointRate, 'TWD', displayCurrency)}
       />

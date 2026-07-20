@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Plus, Trash2, ScrollText } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ChevronDown, ChevronUp, Plus, Trash2, ScrollText, Pencil } from 'lucide-react';
 
 export default function ActivityLog({ 
   activityLog = [], 
@@ -11,6 +11,22 @@ export default function ActivityLog({
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [filterTab, setFilterTab] = useState('all'); // 'all' | 'login' | 'p1' | 'p2'
+  const [showScrollHint, setShowScrollHint] = useState(false);
+  const logRef = useRef(null);
+
+  const checkScroll = () => {
+    if (logRef.current) {
+      const target = logRef.current;
+      const isScrollable = target.scrollHeight > target.clientHeight;
+      const isAtBottom = Math.ceil(target.scrollHeight - target.scrollTop) <= target.clientHeight + 15;
+      setShowScrollHint(isScrollable && !isAtBottom);
+    }
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(checkScroll, 150);
+    return () => clearTimeout(timer);
+  }, [activityLog, isExpanded, filterTab]);
 
   if (activityLog.length === 0) {
     return (
@@ -87,6 +103,7 @@ export default function ActivityLog({
     return filteredEntries.map((entry, idx) => {
       const isAdd = entry.action === 'add';
       const isOpen = entry.action === 'open';
+      const isEdit = entry.action === 'edit';
       const getCurrencySymbol = (code) => {
         if (code === 'TWD') return 'NT$';
         if (code === 'SGD') return 'S$';
@@ -103,11 +120,13 @@ export default function ActivityLog({
       return (
         <div key={entry.id || idx} style={styles.entry}>
           {/* Timeline dot */}
-          <div style={{ ...styles.dot, backgroundColor: isAdd || isOpen ? '#000' : '#888' }}>
+          <div style={{ ...styles.dot, backgroundColor: isAdd || isOpen || isEdit ? '#000' : '#888' }}>
             {isOpen ? (
               <span style={{ fontSize: '10px' }}>👋</span>
             ) : isAdd ? (
               <Plus size={10} strokeWidth={3} color="#fff" />
+            ) : isEdit ? (
+              <Pencil size={8} strokeWidth={3} color="#fff" />
             ) : (
               <Trash2 size={10} strokeWidth={3} color="#fff" />
             )}
@@ -129,6 +148,14 @@ export default function ActivityLog({
                     </span>
                     {' '}代登記了{' '}
                   </span>
+                ) : isEdit ? (
+                  <span>
+                    {' '}幫{' '}
+                    <span style={{ ...styles.who, color: 'var(--color-love-accent, #E22B55)' }}>
+                      {getPartnerName(entry.payer)}
+                    </span>
+                    {' '}代編輯了{' '}
+                  </span>
                 ) : (
                   <span>
                     {' '}代{' '}
@@ -139,8 +166,8 @@ export default function ActivityLog({
                   </span>
                 )
               ) : (
-                <span style={{ ...styles.action, color: isAdd || isOpen ? '#000' : '#888' }}>
-                  {isOpen ? ' 登入了 ' : isAdd ? ' 新增了 ' : ' 刪除了 '}
+                <span style={{ ...styles.action, color: isAdd || isOpen || isEdit ? '#000' : '#888' }}>
+                  {isOpen ? ' 登入了 ' : isAdd ? ' 新增了 ' : isEdit ? ' 編輯了 ' : ' 刪除了 '}
                 </span>
               )}
               {isOpen ? (
@@ -163,13 +190,58 @@ export default function ActivityLog({
 
   if (alwaysExpanded) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', width: '100%', maxHeight: '340px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', width: '100%', maxHeight: '340px', position: 'relative' }}>
         <div style={{ padding: '12px 14px 4px 14px', borderBottom: '2px dashed var(--border-color, #000)' }}>
           {renderFilterBar()}
         </div>
-        <div style={{ ...styles.modalLogList, overflowY: 'auto', flex: 1, maxHeight: '280px' }}>
+        <div 
+          ref={logRef}
+          onScroll={checkScroll}
+          style={{ ...styles.modalLogList, overflowY: 'auto', flex: 1, maxHeight: '280px' }}
+        >
           {renderEntries()}
         </div>
+        {showScrollHint && (
+          <div 
+            onClick={() => {
+              if (logRef.current) {
+                logRef.current.scrollTo({
+                  top: logRef.current.scrollHeight,
+                  behavior: 'smooth'
+                });
+              }
+            }}
+            style={{
+              position: 'absolute',
+              bottom: '10px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              pointerEvents: 'auto',
+              cursor: 'pointer',
+              zIndex: 100
+            }}
+          >
+            <div 
+              className="animate-float" 
+              style={{
+                backgroundColor: '#000000',
+                color: '#FFFFFF',
+                padding: '4px 10px',
+                borderRadius: '16px',
+                fontSize: '0.68rem',
+                fontWeight: '900',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                boxShadow: 'var(--shadow-sm)',
+                opacity: 0.9,
+                border: '2px solid var(--border-color, #000)'
+              }}
+            >
+              <span>▼ 滑動查看日誌</span>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -194,11 +266,56 @@ export default function ActivityLog({
 
       {/* Log entries */}
       {isExpanded && (
-        <div style={styles.logContainer}>
+        <div style={{ ...styles.logContainer, position: 'relative' }}>
           {renderFilterBar()}
-          <div style={{ borderTop: '2px dashed var(--border-color, #000)', marginTop: '8px', paddingTop: '12px', maxHeight: '320px', overflowY: 'auto' }}>
+          <div 
+            ref={logRef}
+            onScroll={checkScroll}
+            style={{ borderTop: '2px dashed var(--border-color, #000)', marginTop: '8px', paddingTop: '12px', maxHeight: '320px', overflowY: 'auto' }}
+          >
             {renderEntries()}
           </div>
+          {showScrollHint && (
+            <div 
+              onClick={() => {
+                if (logRef.current) {
+                  logRef.current.scrollTo({
+                    top: logRef.current.scrollHeight,
+                    behavior: 'smooth'
+                  });
+                }
+              }}
+              style={{
+                position: 'absolute',
+                bottom: '10px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                pointerEvents: 'auto',
+                cursor: 'pointer',
+                zIndex: 100
+              }}
+            >
+              <div 
+                className="animate-float" 
+                style={{
+                  backgroundColor: '#000000',
+                  color: '#FFFFFF',
+                  padding: '4px 10px',
+                  borderRadius: '16px',
+                  fontSize: '0.68rem',
+                  fontWeight: '900',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  boxShadow: 'var(--shadow-sm)',
+                  opacity: 0.9,
+                  border: '2px solid var(--border-color, #000)'
+                }}
+              >
+                <span>▼ 滑動查看日誌</span>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

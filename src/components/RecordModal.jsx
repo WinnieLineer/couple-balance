@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Landmark, Heart, Sparkles, User, Tag, Plus, Check } from 'lucide-react';
 
 const MONEY_PRESETS = [
@@ -23,6 +23,8 @@ export default function RecordModal({
   isOpen, 
   onClose, 
   onAddRecord, 
+  onEditRecord,
+  editingRecord = null,
   p1Name = '伴侶一', 
   p2Name = '伴侶二',
   p1Role = 'white_dog',
@@ -49,13 +51,41 @@ export default function RecordModal({
   const [error, setError] = useState('');
   const [isTitleFocused, setIsTitleFocused] = useState(false);
   const [isValueFocused, setIsValueFocused] = useState(false);
+  const [showScrollHint, setShowScrollHint] = useState(false);
+  const cardRef = useRef(null);
+
+  const checkScroll = () => {
+    if (cardRef.current) {
+      const target = cardRef.current;
+      const isScrollable = target.scrollHeight > target.clientHeight;
+      const isAtBottom = Math.ceil(target.scrollHeight - target.scrollTop) <= target.clientHeight + 15;
+      setShowScrollHint(isScrollable && !isAtBottom);
+    }
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(checkScroll, 150);
+    return () => clearTimeout(timer);
+  }, [isOpen, recordType, value]);
 
   useEffect(() => {
     if (isOpen) {
-      setByPartner(defaultByPartner);
-      setRecordType(defaultType);
+      if (editingRecord) {
+        setRecordType(editingRecord.type || 'money');
+        setByPartner(editingRecord.by || 'p1');
+        setTitle(editingRecord.title || '');
+        setValue(editingRecord.value ? editingRecord.value.toString() : '');
+        setCurrency(editingRecord.currency || 'TWD');
+      } else {
+        setByPartner(defaultByPartner);
+        setRecordType(defaultType);
+        setTitle('');
+        setValue('');
+        setCurrency('TWD');
+      }
+      setError('');
     }
-  }, [isOpen, defaultByPartner, defaultType]);
+  }, [isOpen, defaultByPartner, defaultType, editingRecord]);
 
 
   if (!isOpen) return null;
@@ -100,15 +130,21 @@ export default function RecordModal({
       }
     }
 
-    onAddRecord({
-      id: Date.now().toString(),
+    const finalRecord = {
+      id: editingRecord ? editingRecord.id : Date.now().toString(),
       type: recordType,
       by: byPartner,
       title: finalTitle,
       value: numVal,
       currency: recordType === 'money' ? currency : undefined,
-      date: new Date().toISOString()
-    });
+      date: editingRecord ? editingRecord.date : new Date().toISOString()
+    };
+
+    if (editingRecord) {
+      onEditRecord(finalRecord);
+    } else {
+      onAddRecord(finalRecord);
+    }
 
     // Reset Form
     setTitle('');
@@ -150,6 +186,7 @@ export default function RecordModal({
 
   return (
     <div 
+      className="RecordModal-overlay"
       style={styles.overlay}
       onMouseDown={(e) => e.stopPropagation()}
       onMouseMove={(e) => e.stopPropagation()}
@@ -158,7 +195,12 @@ export default function RecordModal({
       onTouchMove={(e) => e.stopPropagation()}
       onTouchEnd={(e) => e.stopPropagation()}
     >
-      <div className="comic-card animate-pop RecordModal-card" style={styles.modalCard}>
+      <div 
+        ref={cardRef}
+        onScroll={checkScroll}
+        className="comic-card animate-pop RecordModal-card" 
+        style={styles.modalCard}
+      >
         {/* Decorative diagonal tape */}
         <div className="paper-tape" style={{ backgroundColor: isMoney ? 'rgba(122, 168, 144, 0.2)' : 'rgba(255, 138, 138, 0.2)' }} />
 
@@ -176,7 +218,7 @@ export default function RecordModal({
           </button>
         </div>
 
-        <h2 className="RecordModal-title" style={styles.title}>登記生活付出項目</h2>
+        <h2 className="RecordModal-title" style={styles.title}>{editingRecord ? '編輯生活付出項目' : '登記生活付出項目'}</h2>
         
         {/* Type selector tabs */}
         <div className="RecordModal-typeSelector" style={styles.typeSelector}>
@@ -464,11 +506,52 @@ export default function RecordModal({
                 e.currentTarget.style.backgroundColor = activeColor;
               }}
             >
-              <Plus size={16} strokeWidth={3} />
-              <span>完成儲存</span>
+              {editingRecord ? <Check size={16} strokeWidth={3} /> : <Plus size={16} strokeWidth={3} />}
+              <span>{editingRecord ? '儲存修改' : '完成儲存'}</span>
             </button>
           </div>
         </form>
+        {showScrollHint && (
+          <div 
+            onClick={() => {
+              if (cardRef.current) {
+                cardRef.current.scrollTo({
+                  top: cardRef.current.scrollHeight,
+                  behavior: 'smooth'
+                });
+              }
+            }}
+            style={{
+              position: 'absolute',
+              bottom: '10px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              pointerEvents: 'auto',
+              cursor: 'pointer',
+              zIndex: 100
+            }}
+          >
+            <div 
+              className="animate-float" 
+              style={{
+                backgroundColor: '#000000',
+                color: '#FFFFFF',
+                padding: '4px 10px',
+                borderRadius: '16px',
+                fontSize: '0.68rem',
+                fontWeight: '900',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                boxShadow: 'var(--shadow-sm)',
+                opacity: 0.95,
+                border: '2px solid var(--border-color, #000)'
+              }}
+            >
+              <span>▼ 滑動查看更多欄位</span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
