@@ -12,7 +12,7 @@ import ActivityLog from './components/ActivityLog';
 import PWAPrompt from './components/PWAPrompt';
 import { fetchGistData, updateGistData } from './utils/githubGist';
 
-const APP_VERSION_CODE = 9;
+const APP_VERSION_CODE = 10;
 
 export default function App() {
   // --- STATES ---
