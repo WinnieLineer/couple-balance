@@ -31,6 +31,74 @@ export default function App() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showWizard, setShowWizard] = useState(!localStorage.getItem('partners_config'));
+
+  // Custom Presets State
+  const [moneyPresets, setMoneyPresets] = useState([
+    { tag: '餐飲伙食', val: '' },
+    { tag: '生活雜項', val: '' },
+    { tag: '交通出行', val: '' },
+    { tag: '娛樂玩耍', val: '' },
+    { tag: '居住水電', val: '' },
+    { tag: '醫藥醫療', val: '' }
+  ]);
+
+  const [lovePresets, setLovePresets] = useState([
+    { tag: '洗碗盤', points: 15 },
+    { tag: '洗衣服', points: 20 },
+    { tag: '拖地/整理', points: 30 },
+    { tag: '倒垃圾', points: 10 },
+    { tag: '準備餐點', points: 40 },
+    { tag: '遛狗', points: 25 }
+  ]);
+
+  const moneyPresetsRef = useRef(moneyPresets);
+  const lovePresetsRef = useRef(lovePresets);
+
+  // Geolocation, device details, and history category filter lifting
+  const [geoInfo, setGeoInfo] = useState('未知定位');
+  const [historyCategory, setHistoryCategory] = useState('all'); // 'all' | 'money' | 'love'
+  const historySectionRef = useRef(null);
+
+  useEffect(() => {
+    const fetchGeo = async () => {
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.city && data.country_name) {
+            setGeoInfo(`${data.city}, ${data.country_name}`);
+            return;
+          }
+        }
+      } catch (e) {}
+      // fallback to timezone
+      try {
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (tz) {
+          setGeoInfo(`${tz} (時區定位)`);
+        }
+      } catch (e) {}
+    };
+    fetchGeo();
+  }, []);
+
+  const getDeviceDetails = () => {
+    const ua = navigator.userAgent;
+    if (/mobile/i.test(ua)) {
+      if (/ipad|playbook|silk/i.test(ua)) return '平板裝置';
+      return '手機行動裝置';
+    }
+    if (/smart-tv|smarttv|googletv|appletv/i.test(ua)) return '智慧電視';
+    return '桌面電腦裝置';
+  };
+
+  const handleScaleClick = (category) => {
+    setHistoryCategory(category);
+    if (historySectionRef.current) {
+      historySectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
   const [needsUpdate, setNeedsUpdate] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
@@ -278,6 +346,8 @@ export default function App() {
   useEffect(() => { partnersRef.current = partners; }, [partners]);
   useEffect(() => { offlineModeRef.current = offlineMode; }, [offlineMode]);
   useEffect(() => { lovePointRateRef.current = lovePointRate; }, [lovePointRate]);
+  useEffect(() => { moneyPresetsRef.current = moneyPresets; }, [moneyPresets]);
+  useEffect(() => { lovePresetsRef.current = lovePresets; }, [lovePresets]);
 
   // --- TOAST NOTIFICATIONS ---
   const showToast = (message, type = 'info') => {
@@ -369,6 +439,24 @@ export default function App() {
       if (!isNaN(parsedRate)) {
         setLovePointRate(parsedRate);
       }
+    }
+
+    // 4c. Load cached presets
+    const savedMoneyPresets = localStorage.getItem('money_presets');
+    if (savedMoneyPresets) {
+      try {
+        const parsed = JSON.parse(savedMoneyPresets);
+        setMoneyPresets(parsed);
+        moneyPresetsRef.current = parsed;
+      } catch (e) {}
+    }
+    const savedLovePresets = localStorage.getItem('love_presets');
+    if (savedLovePresets) {
+      try {
+        const parsed = JSON.parse(savedLovePresets);
+        setLovePresets(parsed);
+        lovePresetsRef.current = parsed;
+      } catch (e) {}
     }
 
     // 5. Request notification permission on PWA startup
@@ -478,6 +566,18 @@ export default function App() {
           }
         }
 
+        if (cloudData.moneyPresets) {
+          setMoneyPresets(cloudData.moneyPresets);
+          moneyPresetsRef.current = cloudData.moneyPresets;
+          localStorage.setItem('money_presets', JSON.stringify(cloudData.moneyPresets));
+        }
+
+        if (cloudData.lovePresets) {
+          setLovePresets(cloudData.lovePresets);
+          lovePresetsRef.current = cloudData.lovePresets;
+          localStorage.setItem('love_presets', JSON.stringify(cloudData.lovePresets));
+        }
+
         const now = new Date();
         const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
         setSyncStatus(`已儲存 (${timeStr})`);
@@ -539,6 +639,8 @@ export default function App() {
         records: newRecords,
         partners: customPartners,
         lovePointRate: customLovePointRate,
+        moneyPresets: moneyPresetsRef.current,
+        lovePresets: lovePresetsRef.current,
         activityLog: activityLogRef.current,  // always include full immutable log
       };
 
@@ -643,7 +745,14 @@ export default function App() {
 
   // --- ADD RECORD ---
   const handleAddRecord = (record) => {
-    const updatedRecords = [record, ...records];
+    const recordWithMetadata = {
+      ...record,
+      recordedBy: myIdentity || 'p1',
+      recordedAt: geoInfo,
+      recordedDevice: getDeviceDetails(),
+      recordedHost: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '本地測試環境 (Localhost)' : `雲端網站 (${window.location.hostname})`
+    };
+    const updatedRecords = [recordWithMetadata, ...records];
     setRecords(updatedRecords);
     recordsRef.current = updatedRecords;
 
@@ -717,9 +826,16 @@ export default function App() {
     }
   };
 
-  // --- EDIT RECORD ---
   const handleEditRecord = (updatedRecord) => {
-    const updatedRecords = records.map(r => r.id === updatedRecord.id ? updatedRecord : r);
+    const original = records.find(r => r.id === updatedRecord.id) || {};
+    const finalRecord = {
+      ...updatedRecord,
+      recordedBy: original.recordedBy || myIdentity || 'p1',
+      recordedAt: original.recordedAt || geoInfo,
+      recordedDevice: original.recordedDevice || getDeviceDetails(),
+      recordedHost: original.recordedHost || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '本地測試環境 (Localhost)' : `雲端網站 (${window.location.hostname})`)
+    };
+    const updatedRecords = records.map(r => r.id === updatedRecord.id ? finalRecord : r);
     setRecords(updatedRecords);
     recordsRef.current = updatedRecords;
 
@@ -969,7 +1085,7 @@ export default function App() {
                   unit={displayCurrency === 'TWD' ? '元' : displayCurrency === 'SGD' ? 'SGD' : displayCurrency === 'CNY' ? 'CNY' : 'USD'}
                   currency={displayCurrency}
                   label={`共同金錢天秤 (${displayCurrency === 'TWD' ? 'NT$' : displayCurrency === 'SGD' ? 'S$' : displayCurrency === 'CNY' ? '¥' : 'US$'}) 💸`}
-                  onClick={() => openAddModal('money')}
+                  onClick={() => handleScaleClick('money')}
                   lovePointRate={convertValue(lovePointRate, 'TWD', displayCurrency)}
                   exchangeRates={exchangeRates}
                 />
@@ -984,7 +1100,26 @@ export default function App() {
                   p2Role={partners.p2.role}
                   unit="點"
                   label="家事與勞動天秤 🧹"
-                  onClick={() => openAddModal('love')}
+                  onClick={() => handleScaleClick('love')}
+                  lovePointRate={convertValue(lovePointRate, 'TWD', displayCurrency)}
+                  exchangeRates={exchangeRates}
+                />
+              </div>
+
+              {/* Merged partner individual illustration cards below scales */}
+              <div style={{ marginTop: '16px' }}>
+                <WinnerDashboard 
+                  showSummary={false}
+                  showIndividualStats={true}
+                  p1Money={p1Money}
+                  p2Money={p2Money}
+                  p1Love={p1Love}
+                  p2Love={p2Love}
+                  p1Name={partners.p1.name}
+                  p2Name={partners.p2.name}
+                  p1Role={partners.p1.role}
+                  p2Role={partners.p2.role}
+                  currency={displayCurrency}
                   lovePointRate={convertValue(lovePointRate, 'TWD', displayCurrency)}
                   exchangeRates={exchangeRates}
                 />
@@ -997,6 +1132,8 @@ export default function App() {
             <div key="dashboard" style={{ marginBottom: '28px' }}>
               {isReordering && renderLayoutControl('dashboard', '付出差額與生活總貢獻分析區')}
               <WinnerDashboard 
+                showSummary={true}
+                showIndividualStats={false}
                 p1Money={p1Money}
                 p2Money={p2Money}
                 p1Love={p1Love}
@@ -1014,7 +1151,7 @@ export default function App() {
         }
         if (sectionId === 'history') {
           return (
-            <div key="history" style={{ marginBottom: '28px' }}>
+            <div key="history" ref={historySectionRef} style={{ marginBottom: '28px' }}>
               {isReordering && renderLayoutControl('history', '付出歷史足跡明細區')}
               <HistoryList
                 records={records}
@@ -1030,6 +1167,8 @@ export default function App() {
                 displayCurrency={displayCurrency}
                 lovePointRate={convertValue(lovePointRate, 'TWD', displayCurrency)}
                 exchangeRates={exchangeRates}
+                activeTab={historyCategory}
+                onActiveTabChange={setHistoryCategory}
               />
             </div>
           );
@@ -1086,6 +1225,17 @@ export default function App() {
         activityLog={activityLog}
         isReordering={isReordering}
         onToggleReordering={() => setIsReordering(!isReordering)}
+        moneyPresets={moneyPresets}
+        lovePresets={lovePresets}
+        onUpdatePresets={(money, love) => {
+          setMoneyPresets(money);
+          setLovePresets(love);
+          localStorage.setItem('money_presets', JSON.stringify(money));
+          localStorage.setItem('love_presets', JSON.stringify(love));
+          moneyPresetsRef.current = money;
+          lovePresetsRef.current = love;
+          pushCloudData(recordsRef.current);
+        }}
       />
 
       {/* --- ADD RECORD FORM MODAL (RENDERED OUTSIDE CONTAINER TO FIX VIEWPORT POSITIONING) --- */}
@@ -1101,6 +1251,8 @@ export default function App() {
         defaultType={addModalDefaultType}
         displayCurrency={displayCurrency}
         lovePointRate={convertValue(lovePointRate, 'TWD', displayCurrency)}
+        moneyPresets={moneyPresets}
+        lovePresets={lovePresets}
       />
 
       {/* --- EDIT RECORD FORM MODAL (RENDERED OUTSIDE CONTAINER TO FIX VIEWPORT POSITIONING) --- */}
@@ -1120,6 +1272,8 @@ export default function App() {
         defaultByPartner={myIdentity}
         displayCurrency={displayCurrency}
         lovePointRate={convertValue(lovePointRate, 'TWD', displayCurrency)}
+        moneyPresets={moneyPresets}
+        lovePresets={lovePresets}
       />
 
       {/* --- SYSTEM CUTE TOAST ALERT (RENDERED OUTSIDE CONTAINER TO FIX VIEWPORT POSITIONING) --- */}

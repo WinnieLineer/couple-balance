@@ -819,3 +819,13 @@ body::-webkit-scrollbar {
   transform: translateY(-2.5px) translate(-1px, -1px) !important;
   box-shadow: var(--shadow-sm) !important;
 }
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

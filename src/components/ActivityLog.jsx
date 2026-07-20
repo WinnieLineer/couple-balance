@@ -134,7 +134,7 @@ export default function ActivityLog({
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px' }}>
 
         {/* Row 1: Action type — multi-select */}
-        <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div className="no-scrollbar" style={{ display: 'flex', gap: '5px', flexWrap: 'nowrap', overflowX: 'auto', alignItems: 'center', paddingBottom: '4px', WebkitOverflowScrolling: 'touch' }}>
           <span style={labelStyle}>操作：</span>
           {/* '全部' clears the array */}
           <button
@@ -153,6 +153,7 @@ export default function ActivityLog({
               boxShadow: filterAction.length === 0 ? '1px 2px 0px #000' : 'none',
               transform: filterAction.length === 0 ? 'translate(-1px,-1px)' : 'none',
               whiteSpace: 'nowrap',
+              flexShrink: 0,
             }}
           >
             全部
@@ -177,6 +178,7 @@ export default function ActivityLog({
                   boxShadow: active ? `1px 2px 0px ${chip.activeColor}` : 'none',
                   transform: active ? 'translate(-1px,-1px)' : 'none',
                   whiteSpace: 'nowrap',
+                  flexShrink: 0,
                 }}
               >
                 {chip.label}
@@ -186,7 +188,7 @@ export default function ActivityLog({
         </div>
 
         {/* Row 2: Person — multi-select */}
-        <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div className="no-scrollbar" style={{ display: 'flex', gap: '5px', flexWrap: 'nowrap', overflowX: 'auto', alignItems: 'center', paddingBottom: '4px', WebkitOverflowScrolling: 'touch' }}>
           <span style={labelStyle}>人物：</span>
           {/* '全員' clears the array */}
           <button
@@ -205,6 +207,7 @@ export default function ActivityLog({
               boxShadow: filterPerson.length === 0 ? '1px 2px 0px #000' : 'none',
               transform: filterPerson.length === 0 ? 'translate(-1px,-1px)' : 'none',
               whiteSpace: 'nowrap',
+              flexShrink: 0,
             }}
           >
             👥 全員
@@ -229,6 +232,7 @@ export default function ActivityLog({
                   boxShadow: active ? '1px 2px 0px #000' : 'none',
                   transform: active ? 'translate(-1px,-1px)' : 'none',
                   whiteSpace: 'nowrap',
+                  flexShrink: 0,
                 }}
               >
                 {chip.label}
@@ -238,7 +242,7 @@ export default function ActivityLog({
         </div>
 
         {/* Row 3: Date range */}
-        <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div className="no-scrollbar" style={{ display: 'flex', gap: '5px', flexWrap: 'nowrap', overflowX: 'auto', alignItems: 'center', paddingBottom: '4px', WebkitOverflowScrolling: 'touch' }}>
           <span style={labelStyle}>🗓️ 日期：</span>
           <input
             type="date"
@@ -246,7 +250,7 @@ export default function ActivityLog({
             onChange={e => setFilterDateFrom(e.target.value)}
             style={dateInputStyle}
           />
-          <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#888' }}>→</span>
+          <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#888', flexShrink: 0 }}>→</span>
           <input
             type="date"
             value={filterDateTo}
@@ -548,6 +552,7 @@ const dateInputStyle = {
   fontFamily: 'inherit',
   backgroundColor: '#fff',
   cursor: 'pointer',
+  flexShrink: 0,
 };
 
 const clearBtnStyle = {

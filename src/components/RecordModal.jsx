@@ -32,7 +32,9 @@ export default function RecordModal({
   defaultByPartner = 'p1',
   defaultType = 'money',
   displayCurrency = 'TWD',
-  lovePointRate = 25
+  lovePointRate = 25,
+  moneyPresets = MONEY_PRESETS,
+  lovePresets = LOVE_PRESETS
 }) {
   const getCurrencySymbol = (code) => {
     if (code === 'TWD') return 'NT$';
@@ -105,6 +107,9 @@ export default function RecordModal({
     const num = parseFloat(value);
     if (!isNaN(num) && num > 0) {
       setValue((num / 2).toString());
+      if (!title.includes('（已除二）')) {
+        setTitle(title.trim() + '（已除二）');
+      }
     }
   };
 
@@ -289,34 +294,11 @@ export default function RecordModal({
             </div>
           </div>
 
-          {/* Description Input */}
-          <div style={styles.formGroup}>
-            <label style={styles.label}>
-              <Tag size={15} style={{ marginRight: '4px' }} />
-              付出項目描述
-            </label>
-            <input 
-              type="text" 
-              placeholder={isMoney ? '例如：買全聯菜肉、繳電費...' : '例如：掃地洗衣服、搥背...' }
-              value={title} 
-              onChange={(e) => setTitle(e.target.value)} 
-              onFocus={() => setIsTitleFocused(true)}
-              onBlur={() => setIsTitleFocused(false)}
-              style={{
-                borderColor: isTitleFocused ? activeColor : 'var(--border-color)',
-                boxShadow: isTitleFocused ? `0 0 0 3.5px ${isMoney ? 'rgba(122,168,144,0.25)' : 'rgba(255,138,138,0.25)'}` : 'none',
-                transition: 'all 0.15s ease',
-              }}
-              className="comic-input" 
-              maxLength="30"
-            />
-          </div>
-
           {/* Quick presets */}
           <div style={styles.formGroup}>
             <label style={styles.presetLabel}>推薦常用項目：</label>
             <div style={styles.presetsList}>
-              {(isMoney ? MONEY_PRESETS : LOVE_PRESETS).map((item, idx) => (
+              {(isMoney ? moneyPresets : lovePresets).map((item, idx) => (
                 <button
                   key={idx}
                   type="button"
@@ -343,6 +325,29 @@ export default function RecordModal({
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Description Input */}
+          <div style={styles.formGroup}>
+            <label style={styles.label}>
+              <Tag size={15} style={{ marginRight: '4px' }} />
+              付出項目描述
+            </label>
+            <input 
+              type="text" 
+              placeholder={isMoney ? '例如：買全聯菜肉、繳電費...' : '例如：掃地洗衣服、搥背...' }
+              value={title} 
+              onChange={(e) => setTitle(e.target.value)} 
+              onFocus={() => setIsTitleFocused(true)}
+              onBlur={() => setIsTitleFocused(false)}
+              style={{
+                borderColor: isTitleFocused ? activeColor : 'var(--border-color)',
+                boxShadow: isTitleFocused ? `0 0 0 3.5px ${isMoney ? 'rgba(122,168,144,0.25)' : 'rgba(255,138,138,0.25)'}` : 'none',
+                transition: 'all 0.15s ease',
+              }}
+              className="comic-input" 
+              maxLength="30"
+            />
           </div>
 
           {/* Currency selection for money */}

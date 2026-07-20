@@ -11,7 +11,9 @@ export default function WinnerDashboard({
   p2Role = 'brown_dog',
   currency = 'TWD',
   lovePointRate = 25,
-  exchangeRates
+  exchangeRates,
+  showSummary = true,
+  showIndividualStats = true
 }) {
   const [hoveredDog, setHoveredDog] = useState(null);
 
@@ -184,199 +186,202 @@ export default function WinnerDashboard({
   return (
     <div style={styles.container}>
       {/* 1. Difference Analysis (Top, Full Width) */}
-      <div className="comic-card WinnerDashboard-summaryCard" style={styles.summaryCard}>
-        <div style={styles.banner}>
-          <span style={styles.bannerText}>⚖️ 雙方付出差額分析</span>
-        </div>
-
-        {/* INTEGRATED TOTAL CONTRIBUTION BALANCE SCALE */}
-        <div style={styles.scaleCardContainer}>
-          <div style={styles.scaleCardLabel}>
-            ⚖️ 生活總貢獻天秤 (綜合折算：金錢支出 + 家事價值)
+      {showSummary && (
+        <div className="comic-card WinnerDashboard-summaryCard" style={styles.summaryCard}>
+          <div style={styles.banner}>
+            <span style={styles.bannerText}>⚖️ 雙方付出差額分析</span>
           </div>
-          <div style={styles.scaleContainer}>
-            <svg viewBox="0 0 300 200" style={styles.scaleSvg}>
-              {/* Pedestal */}
-              <path d="M 105 180 L 195 180 L 175 160 L 125 160 Z" fill="#000000" stroke="var(--border-color)" strokeWidth="2.5" strokeLinejoin="round" />
-              
-              {/* Vertical post */}
-              <line x1="150" y1="65" x2="150" y2="162" stroke="#000000" strokeWidth="7" strokeLinecap="round" />
-              <line x1="150" y1="65" x2="150" y2="162" stroke="var(--border-color)" strokeWidth="2.5" strokeLinecap="round" />
-              <circle cx="150" cy="160" r="8" fill="var(--border-color)" />
 
-              {/* Horizontal rotating beam */}
-              <line 
-                x1={lx} 
-                y1={ly} 
-                x2={rx} 
-                y2={ry} 
-                stroke="#FF9F1C" 
-                strokeWidth="7" 
-                strokeLinecap="round" 
-                style={styles.scaleTransition}
-              />
-              <line 
-                x1={lx} 
-                y1={ly} 
-                x2={rx} 
-                y2={ry} 
-                stroke="var(--border-color)" 
-                strokeWidth="2.5" 
-                strokeLinecap="round" 
-                style={styles.scaleTransition}
-              />
-              {/* Fulcrum indicator */}
-              <circle cx="150" cy="65" r="7" fill="#FFE033" stroke="var(--border-color)" strokeWidth="2.5" />
-
-              {/* LEFT PAN (Partner 1) */}
-              <g style={styles.scaleTransition}>
-                <line x1={lx} y1={ly} x2={lx - 25} y2={ly + 60} stroke="var(--border-color)" strokeWidth="2" />
-                <line x1={lx} y1={ly} x2={lx + 25} y2={ly + 60} stroke="var(--border-color)" strokeWidth="2" />
-                <path d={`M ${lx - 32} ${ly + 60} C ${lx - 32} ${ly + 72}, ${lx + 32} ${ly + 72}, ${lx + 32} ${ly + 60} Z`} fill="#FFFDF9" stroke="var(--border-color)" strokeWidth="2.5" />
-
-                <g 
-                  transform={`translate(${lx - 20}, ${ly + 20})`}
-                  onMouseEnter={() => setHoveredDog('p1')}
-                  onMouseLeave={() => setHoveredDog(null)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <g className="dog-idle-float-white">
-                    {p1Role === 'white_dog' ? renderWhiteDog(totalDiff > 0) : renderBrownDog(totalDiff > 0)}
-                    {hoveredDog === 'p1' && (
-                      renderSpeechBubble(-30, -46, getP1SpeechText(), true)
-                    )}
-                  </g>
-                </g>
-              </g>
-
-              {/* RIGHT PAN (Partner 2) */}
-              <g style={styles.scaleTransition}>
-                <line x1={rx} y1={ry} x2={rx - 25} y2={ry + 60} stroke="var(--border-color)" strokeWidth="2" />
-                <line x1={rx} y1={ry} x2={rx + 25} y2={ry + 60} stroke="var(--border-color)" strokeWidth="2" />
-                <path d={`M ${rx - 32} ${ry + 60} C ${rx - 32} ${ry + 72}, ${rx + 32} ${ry + 72}, ${rx + 32} ${ry + 60} Z`} fill="#FFFDF9" stroke="var(--border-color)" strokeWidth="2.5" />
-
-                <g 
-                  transform={`translate(${rx - 20}, ${ry + 20})`}
-                  onMouseEnter={() => setHoveredDog('p2')}
-                  onMouseLeave={() => setHoveredDog(null)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <g className="dog-idle-float-brown">
-                    {p2Role === 'white_dog' ? renderWhiteDog(totalDiff < 0) : renderBrownDog(totalDiff < 0)}
-                    {hoveredDog === 'p2' && (
-                      renderSpeechBubble(-30, -46, getP2SpeechText(), false)
-                    )}
-                  </g>
-                </g>
-              </g>
-            </svg>
-          </div>
-        </div>
-
-        <div style={styles.summaryBody}>
-          {/* Money Balance */}
-          <div style={styles.summaryItem}>
-            <span style={styles.balanceLabel}>💰 共同生活金錢差額比對</span>
-            <div style={styles.balanceValueContainer}>
-              {moneyDiff === 0 ? (
-                <span style={styles.balancedText}>🎉 雙方目前的金錢支出達到完美平衡！</span>
-              ) : (
-                <span style={styles.imbalancedText}>
-                  <strong>{moneyDiff > 0 ? p1Name : p2Name}</strong> 比對手多支出了 <strong style={styles.highlight}>{symbol} {Math.abs(moneyDiff).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</strong>
-                </span>
-              )}
+          {/* INTEGRATED TOTAL CONTRIBUTION BALANCE SCALE */}
+          <div style={styles.scaleCardContainer}>
+            <div style={styles.scaleCardLabel}>
+              ⚖️ 生活總貢獻天秤 (綜合折算：金錢支出 + 家事價值)
             </div>
-          </div>
-          
-          <div style={styles.dividerLine} />
+            <div style={styles.scaleContainer}>
+              <svg viewBox="0 0 300 200" style={styles.scaleSvg}>
+                {/* Pedestal */}
+                <path d="M 105 180 L 195 180 L 175 160 L 125 160 Z" fill="#000000" stroke="var(--border-color)" strokeWidth="2.5" strokeLinejoin="round" />
+                
+                {/* Vertical post */}
+                <line x1="150" y1="65" x2="150" y2="162" stroke="#000000" strokeWidth="7" strokeLinecap="round" />
+                <line x1="150" y1="65" x2="150" y2="162" stroke="var(--border-color)" strokeWidth="2.5" strokeLinecap="round" />
+                <circle cx="150" cy="160" r="8" fill="var(--border-color)" />
 
-          {/* Chore Balance */}
-          <div style={styles.summaryItem}>
-            <span style={styles.balanceLabel}>🧹 家事勞動差額與價值折算</span>
-            <div style={styles.balanceValueContainer}>
-              {loveDiff === 0 ? (
-                <span style={styles.balancedText}>🎉 雙方付出家事勞動已完美平衡！</span>
-              ) : (
-                <span style={styles.imbalancedText}>
-                  <strong>{loveDiff > 0 ? p1Name : p2Name}</strong> 多付出了 <strong style={styles.highlight}>{Math.abs(loveDiff)} 點</strong> 的家事勞動 (折合 <strong style={styles.highlight}>{symbol} {(Math.abs(loveDiff) * lovePointRate).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</strong> 勞動價值)
-                </span>
-              )}
+                {/* Horizontal rotating beam */}
+                <line 
+                  x1={lx} 
+                  y1={ly} 
+                  x2={rx} 
+                  y2={ry} 
+                  stroke="#FF9F1C" 
+                  strokeWidth="7" 
+                  strokeLinecap="round" 
+                  style={styles.scaleTransition}
+                />
+                <line 
+                  x1={lx} 
+                  y1={ly} 
+                  x2={rx} 
+                  y2={ry} 
+                  stroke="var(--border-color)" 
+                  strokeWidth="2.5" 
+                  strokeLinecap="round" 
+                  style={styles.scaleTransition}
+                />
+                {/* Fulcrum indicator */}
+                <circle cx="150" cy="65" r="7" fill="#FFE033" stroke="var(--border-color)" strokeWidth="2.5" />
+
+                {/* LEFT PAN (Partner 1) */}
+                <g style={styles.scaleTransition}>
+                  <line x1={lx} y1={ly} x2={lx - 25} y2={ly + 60} stroke="var(--border-color)" strokeWidth="2" />
+                  <line x1={lx} y1={ly} x2={lx + 25} y2={ly + 60} stroke="var(--border-color)" strokeWidth="2" />
+                  <path d={`M ${lx - 32} ${ly + 60} C ${lx - 32} ${ly + 72}, ${lx + 32} ${ly + 72}, ${lx + 32} ${ly + 60} Z`} fill="#FFFDF9" stroke="var(--border-color)" strokeWidth="2.5" />
+
+                  <g 
+                    transform={`translate(${lx - 20}, ${ly + 20})`}
+                    onMouseEnter={() => setHoveredDog('p1')}
+                    onMouseLeave={() => setHoveredDog(null)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <g className="dog-idle-float-white">
+                      {p1Role === 'white_dog' ? renderWhiteDog(totalDiff > 0) : renderBrownDog(totalDiff > 0)}
+                      {hoveredDog === 'p1' && (
+                        renderSpeechBubble(-30, -46, getP1SpeechText(), true)
+                      )}
+                    </g>
+                  </g>
+                </g>
+
+                {/* RIGHT PAN (Partner 2) */}
+                <g style={styles.scaleTransition}>
+                  <line x1={rx} y1={ry} x2={rx - 25} y2={ry + 60} stroke="var(--border-color)" strokeWidth="2" />
+                  <line x1={rx} y1={ry} x2={rx + 25} y2={ry + 60} stroke="var(--border-color)" strokeWidth="2" />
+                  <path d={`M ${rx - 32} ${ry + 60} C ${rx - 32} ${ry + 72}, ${rx + 32} ${ry + 72}, ${rx + 32} ${ry + 60} Z`} fill="#FFFDF9" stroke="var(--border-color)" strokeWidth="2.5" />
+
+                  <g 
+                    transform={`translate(${rx - 20}, ${ry + 20})`}
+                    onMouseEnter={() => setHoveredDog('p2')}
+                    onMouseLeave={() => setHoveredDog(null)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <g className="dog-idle-float-brown">
+                      {p2Role === 'white_dog' ? renderWhiteDog(totalDiff < 0) : renderBrownDog(totalDiff < 0)}
+                      {hoveredDog === 'p2' && (
+                        renderSpeechBubble(-30, -46, getP2SpeechText(), false)
+                      )}
+                    </g>
+                  </g>
+                </g>
+              </svg>
             </div>
           </div>
 
-          <div style={styles.dividerLine} />
-
-          {/* Combined Net Contribution Balance */}
-          <div style={styles.summaryItem}>
-            <span style={styles.balanceLabel}>⚖️ 雙方金錢與家事勞動綜合折算 (生活總貢獻)</span>
-            <div style={styles.balanceValueContainer}>
-              {totalDiff === 0 ? (
-                <span style={styles.balancedText}>🎉 雙方金錢與勞動綜合付出已完美平衡！</span>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div style={styles.summaryBody}>
+            {/* Money Balance */}
+            <div style={styles.summaryItem}>
+              <span style={styles.balanceLabel}>💰 共同生活金錢差額比對</span>
+              <div style={styles.balanceValueContainer}>
+                {moneyDiff === 0 ? (
+                  <span style={styles.balancedText}>🎉 雙方目前的金錢支出達到完美平衡！</span>
+                ) : (
                   <span style={styles.imbalancedText}>
-                    <strong>{totalDiff > 0 ? p1Name : p2Name}</strong> 綜合付出（金錢 + 勞動折算）高出 <strong style={styles.highlight}>{symbol} {Math.abs(totalDiff).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</strong>
+                    <strong>{moneyDiff > 0 ? p1Name : p2Name}</strong> 比對手多支出了 <strong style={styles.highlight}>{symbol} {Math.abs(moneyDiff).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</strong>
                   </span>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: '750', marginTop: '2px' }}>
-                    💡 計算公式：實際金錢支出 + (家事勞動點數 × {symbol}{lovePointRate.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} / 點)
+                )}
+              </div>
+            </div>
+            
+            <div style={styles.dividerLine} />
+
+            {/* Chore Balance */}
+            <div style={styles.summaryItem}>
+              <span style={styles.balanceLabel}>🧹 家事勞動差額與價值折算</span>
+              <div style={styles.balanceValueContainer}>
+                {loveDiff === 0 ? (
+                  <span style={styles.balancedText}>🎉 雙方付出家事勞動已完美平衡！</span>
+                ) : (
+                  <span style={styles.imbalancedText}>
+                    <strong>{loveDiff > 0 ? p1Name : p2Name}</strong> 多付出了 <strong style={styles.highlight}>{Math.abs(loveDiff)} 點</strong> 的家事勞動 (折合 <strong style={styles.highlight}>{symbol} {(Math.abs(loveDiff) * lovePointRate).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</strong> 勞動價值)
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div style={styles.dividerLine} />
+
+            {/* Combined Net Contribution Balance */}
+            <div style={styles.summaryItem}>
+              <span style={styles.balanceLabel}>⚖️ 雙方金錢與家事勞動綜合折算 (生活總貢獻)</span>
+              <div style={styles.balanceValueContainer}>
+                {totalDiff === 0 ? (
+                  <span style={styles.balancedText}>🎉 雙方金錢與勞動綜合付出已完美平衡！</span>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <span style={styles.imbalancedText}>
+                      <strong>{totalDiff > 0 ? p1Name : p2Name}</strong> 綜合付出（金錢 + 勞動折算）高出 <strong style={styles.highlight}>{symbol} {Math.abs(totalDiff).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</strong>
+                    </span>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: '750', marginTop: '2px' }}>
+                      💡 計算公式：實際金錢支出 + (家事勞動點數 × {symbol}{lovePointRate.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} / 點)
+                    </div>
                   </div>
-                </div>
               )}
             </div>
           </div>
         </div>
       </div>
+      )}
 
-      {/* 2. Side-by-side Individual Stats (Bottom) */}
-      <div className="WinnerDashboard-columnsGrid" style={styles.columnsGrid}>
-        {/* P1 Column Card */}
-        <div className="comic-card WinnerDashboard-statsCard" style={styles.statsCard}>
-          <div style={styles.cardHeader}>
-            <div style={styles.avatarWrapper}>
-              {p1Role === 'white_dog' ? renderWhiteDogBadge() : renderGrayDogBadge()}
+      {showIndividualStats && (
+        <div className="WinnerDashboard-columnsGrid" style={styles.columnsGrid}>
+          {/* P1 Column Card */}
+          <div className="comic-card WinnerDashboard-statsCard" style={styles.statsCard}>
+            <div style={styles.cardHeader}>
+              <div style={styles.avatarWrapper}>
+                {p1Role === 'white_dog' ? renderWhiteDogBadge() : renderGrayDogBadge()}
+              </div>
+              <span style={styles.roleName}>{p1Name}</span>
             </div>
-            <span style={styles.roleName}>{p1Name}</span>
+            <div style={styles.statsBody}>
+              <div style={styles.statItem}>
+                <span style={styles.statLabel}>金錢累計支出</span>
+                <span style={styles.statValue}>{symbol} {p1Money.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</span>
+              </div>
+              <div style={styles.statItem}>
+                <span style={styles.statLabel}>家事勞動點數</span>
+                <span style={styles.statValue}>{p1Love} 點 <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '700' }}>({symbol} {(p1Love * lovePointRate).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })})</span></span>
+              </div>
+              <div style={styles.statItem}>
+                <span style={styles.statLabel}>綜合付出價值</span>
+                <span style={{ ...styles.statValue, color: 'var(--color-money-accent-hover)' }}>{symbol} {p1Total.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</span>
+              </div>
+            </div>
           </div>
-          <div style={styles.statsBody}>
-            <div style={styles.statItem}>
-              <span style={styles.statLabel}>金錢累計支出</span>
-              <span style={styles.statValue}>{symbol} {p1Money.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</span>
+
+          {/* P2 Column Card */}
+          <div className="comic-card WinnerDashboard-statsCard" style={styles.statsCard}>
+            <div style={styles.cardHeader}>
+              <div style={styles.avatarWrapper}>
+                {p2Role === 'white_dog' ? renderWhiteDogBadge() : renderGrayDogBadge()}
+              </div>
+              <span style={styles.roleName}>{p2Name}</span>
             </div>
-            <div style={styles.statItem}>
-              <span style={styles.statLabel}>家事勞動點數</span>
-              <span style={styles.statValue}>{p1Love} 點 <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '700' }}>({symbol} {(p1Love * lovePointRate).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })})</span></span>
-            </div>
-            <div style={styles.statItem}>
-              <span style={styles.statLabel}>綜合付出價值</span>
-              <span style={{ ...styles.statValue, color: 'var(--color-money-accent-hover)' }}>{symbol} {p1Total.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</span>
+            <div style={styles.statsBody}>
+              <div style={styles.statItem}>
+                <span style={styles.statLabel}>金錢累計支出</span>
+                <span style={styles.statValue}>{symbol} {p2Money.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</span>
+              </div>
+              <div style={styles.statItem}>
+                <span style={styles.statLabel}>家事勞動點數</span>
+                <span style={styles.statValue}>{p2Love} 點 <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '700' }}>({symbol} {(p2Love * lovePointRate).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })})</span></span>
+              </div>
+              <div style={styles.statItem}>
+                <span style={styles.statLabel}>綜合付出價值</span>
+                <span style={{ ...styles.statValue, color: 'var(--color-money-accent-hover)' }}>{symbol} {p2Total.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</span>
+              </div>
             </div>
           </div>
         </div>
-
-        {/* P2 Column Card */}
-        <div className="comic-card WinnerDashboard-statsCard" style={styles.statsCard}>
-          <div style={styles.cardHeader}>
-            <div style={styles.avatarWrapper}>
-              {p2Role === 'white_dog' ? renderWhiteDogBadge() : renderGrayDogBadge()}
-            </div>
-            <span style={styles.roleName}>{p2Name}</span>
-          </div>
-          <div style={styles.statsBody}>
-            <div style={styles.statItem}>
-              <span style={styles.statLabel}>金錢累計支出</span>
-              <span style={styles.statValue}>{symbol} {p2Money.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</span>
-            </div>
-            <div style={styles.statItem}>
-              <span style={styles.statLabel}>家事勞動點數</span>
-              <span style={styles.statValue}>{p2Love} 點 <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '700' }}>({symbol} {(p2Love * lovePointRate).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })})</span></span>
-            </div>
-            <div style={styles.statItem}>
-              <span style={styles.statLabel}>綜合付出價值</span>
-              <span style={{ ...styles.statValue, color: 'var(--color-money-accent-hover)' }}>{symbol} {p2Total.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

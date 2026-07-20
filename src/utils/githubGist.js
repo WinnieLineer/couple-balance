@@ -111,29 +111,44 @@ export async function fetchGistData(token, gistId) {
  * @param {object} data The full updated database object
  * @returns {Promise<boolean>} Success status
  */
-export async function updateGistData(token, gistId, data) {
-  try {
-    const response = await fetch(`https://api.github.com/gists/${gistId}`, {
-      method: 'PATCH',
-      headers: getHeaders(token),
-      body: JSON.stringify({
-        description: '🐾 Couple Balance App Cloud Database (Cute Line Dogs) 🐾',
-        files: {
-          [FILE_NAME]: {
-            content: JSON.stringify(data, null, 2)
+export async function updateGistData(token, gistId, data, retries = 3, delay = 400) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+        method: 'PATCH',
+        headers: getHeaders(token),
+        body: JSON.stringify({
+          description: '🐾 Couple Balance App Cloud Database (Cute Line Dogs) 🐾',
+          files: {
+            [FILE_NAME]: {
+              content: JSON.stringify(data, null, 2)
+            }
           }
+        })
+      });
+
+      if (!response.ok) {
+        if (response.status === 409 && i < retries - 1) {
+          console.warn(`Gist PATCH returned 409 Conflict. Retrying in ${delay}ms... (Attempt ${i + 1}/${retries})`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
         }
-      })
-    });
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.message || `Failed to update Gist (${response.status})`);
+      }
 
-    if (!response.ok) {
-      const errData = await response.json().catch(() => ({}));
-      throw new Error(errData.message || `Failed to update Gist (${response.status})`);
+      return true;
+    } catch (error) {
+      if (i === retries - 1) {
+        console.error('Error updating Gist after retries:', error);
+        throw error;
+      }
+      // If it's a 409 network exception, wait and retry
+      if (error.message && error.message.includes('409') && i < retries - 1) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      throw error;
     }
-
-    return true;
-  } catch (error) {
-    console.error('Error updating Gist:', error);
-    throw error;
   }
 }

@@ -11,9 +11,11 @@ export default function HistoryList({
   p2Role = 'brown_dog',
   displayCurrency = 'TWD',
   lovePointRate = 25,
-  exchangeRates
+  exchangeRates,
+  activeTab = 'all',
+  onActiveTabChange
 }) {
-  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'money' | 'love'
+  const [selectedRecordForDetail, setSelectedRecordForDetail] = useState(null);
   const [filterPartner, setFilterPartner] = useState('all'); // 'all' | 'p1' | 'p2'
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -138,7 +140,7 @@ export default function HistoryList({
             ].map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => onActiveTabChange(tab.id)}
                 className="comic-btn secondary"
                 style={{
                   ...styles.filterBtn,
@@ -265,10 +267,12 @@ export default function HistoryList({
                     return (
                       <div 
                         key={record.id} 
+                        onClick={() => setSelectedRecordForDetail(record)}
                         style={{
                           ...styles.recordRow,
                           borderBottom: index === dayRecords.length - 1 ? 'none' : '1.5px dashed var(--border-color)',
-                          backgroundColor: '#FFFFFF'
+                          backgroundColor: '#FFFFFF',
+                          cursor: 'pointer'
                         }}
                       >
                         {/* Left Info */}
@@ -322,7 +326,7 @@ export default function HistoryList({
                           </div>
 
                           <button
-                            onClick={() => onEditRecord(record)}
+                            onClick={(e) => { e.stopPropagation(); onEditRecord(record); }}
                             className="comic-btn secondary"
                             style={{ ...styles.rowDeleteBtn, marginRight: '4px' }}
                             title="編輯此筆明細"
@@ -331,7 +335,7 @@ export default function HistoryList({
                           </button>
 
                           <button
-                            onClick={() => onDeleteRecord(record.id)}
+                            onClick={(e) => { e.stopPropagation(); onDeleteRecord(record.id); }}
                             className="comic-btn secondary"
                             style={styles.rowDeleteBtn}
                             title="刪除此筆明細"
@@ -386,6 +390,159 @@ export default function HistoryList({
             }}
           >
             <span>▼ 滑動查看更多明細</span>
+          </div>
+        </div>
+      )}
+
+      {selectedRecordForDetail && (
+        <div 
+          className="modal-backdrop" 
+          onClick={() => setSelectedRecordForDetail(null)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(26, 21, 18, 0.4)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px',
+          }}
+        >
+          <div 
+            className="comic-card animate-pop" 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: '#FFFFFF',
+              maxWidth: '420px',
+              width: '100%',
+              padding: '24px',
+              position: 'relative',
+              border: 'var(--border-thick)',
+              borderRadius: '16px',
+              boxShadow: 'var(--shadow-flat)',
+            }}
+          >
+            {/* Tape decoration */}
+            <div 
+              className="paper-tape" 
+              style={{ 
+                backgroundColor: selectedRecordForDetail.type === 'money' ? 'rgba(122, 168, 144, 0.2)' : 'rgba(255, 138, 138, 0.2)',
+                position: 'absolute',
+                top: '-12px',
+                left: '50%',
+                transform: 'translateX(-50%) rotate(-2deg)',
+                width: '120px',
+                height: '24px',
+                zIndex: 2,
+              }} 
+            />
+
+            <button 
+              onClick={() => setSelectedRecordForDetail(null)}
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                background: 'none',
+                border: '2px solid #000',
+                borderRadius: '50%',
+                width: '28px',
+                height: '28px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontWeight: '900',
+                backgroundColor: '#fff',
+                boxShadow: 'var(--shadow-xs)',
+              }}
+            >
+              ✕
+            </button>
+
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '950', marginBottom: '18px', borderBottom: '2.5px solid #000', paddingBottom: '8px', color: 'var(--text-primary)' }}>
+              🔍 生活付出詳細資料
+            </h3>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div>
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: '800' }}>付出項目描述：</span>
+                <div style={{ fontSize: '1.05rem', fontWeight: '900', color: 'var(--text-primary)', marginTop: '2px' }}>
+                  {selectedRecordForDetail.title}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '16px' }}>
+                <div style={{ flex: 1 }}>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: '800' }}>付出者：</span>
+                  <div style={{ fontSize: '0.9rem', fontWeight: '800', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span>{selectedRecordForDetail.by === 'p1' ? p1Name : p2Name}</span>
+                    <span>{ (selectedRecordForDetail.by === 'p1' ? p1Role : p2Role) === 'white_dog' ? '🐶' : '🐻' }</span>
+                  </div>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: '800' }}>付出類型：</span>
+                  <div style={{ fontSize: '0.9rem', fontWeight: '800', marginTop: '2px' }}>
+                    {selectedRecordForDetail.type === 'money' ? '💰 金錢支出' : '🧹 家事勞動'}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: '800' }}>付出值 (折算金額)：</span>
+                <div style={{ fontSize: '1.1rem', fontWeight: '950', color: 'var(--text-primary)', marginTop: '2px' }}>
+                  {selectedRecordForDetail.type === 'money' ? (
+                    `${getCurrencySymbol(selectedRecordForDetail.currency || 'TWD')} ${selectedRecordForDetail.value.toLocaleString()}`
+                  ) : (
+                    `+${selectedRecordForDetail.value} 點 (折合 ${getCurrencySymbol(displayCurrency)} ${(selectedRecordForDetail.value * lovePointRate).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })})`
+                  )}
+                </div>
+              </div>
+
+              <div style={{ borderTop: '2px dashed var(--border-color)', paddingTop: '10px', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem' }}>
+                  <span style={{ color: 'var(--text-muted)', fontWeight: '750' }}>🕒 紀錄日期時間：</span>
+                  <span style={{ fontWeight: '800', fontFamily: 'monospace' }}>
+                    {new Date(selectedRecordForDetail.date).toLocaleString('zh-TW', { hour12: false })}
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem' }}>
+                  <span style={{ color: 'var(--text-muted)', fontWeight: '750' }}>👤 誰登記的：</span>
+                  <span style={{ fontWeight: '800' }}>
+                    {selectedRecordForDetail.recordedBy 
+                      ? (selectedRecordForDetail.recordedBy === 'p1' ? p1Name : p2Name) 
+                      : (selectedRecordForDetail.by === 'p1' ? p1Name : p2Name)}
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem' }}>
+                  <span style={{ color: 'var(--text-muted)', fontWeight: '750' }}>📍 登記地點：</span>
+                  <span style={{ fontWeight: '800' }}>
+                    {selectedRecordForDetail.recordedAt || '本機定位 (未提供)'}
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem' }}>
+                  <span style={{ color: 'var(--text-muted)', fontWeight: '750' }}>📱 登記裝置：</span>
+                  <span style={{ fontWeight: '800' }}>
+                    {selectedRecordForDetail.recordedDevice || '行動/桌面裝置'}
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem' }}>
+                  <span style={{ color: 'var(--text-muted)', fontWeight: '750' }}>🌐 登記來源環境：</span>
+                  <span style={{ fontWeight: '800', fontFamily: 'monospace' }}>
+                    {selectedRecordForDetail.recordedHost || '本地環境'}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

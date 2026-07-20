@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Coins, Users, Cloud, ArrowLeftRight, Copy, RefreshCw, CloudOff, History } from 'lucide-react';
+import { X, Coins, Users, Cloud, ArrowLeftRight, Copy, RefreshCw, CloudOff, History, Sparkles } from 'lucide-react';
 import { createSecretGist } from '../utils/githubGist';
 import ActivityLog from './ActivityLog';
 
@@ -23,10 +23,17 @@ export default function SettingsModal({
   onUpdateLovePointRate,
   activityLog,
   isReordering,
-  onToggleReordering
+  onToggleReordering,
+  moneyPresets = [],
+  lovePresets = [],
+  onUpdatePresets
 }) {
-  const [activeTab, setActiveTab] = useState('activity'); // 'activity' | 'currency' | 'cloud'
+  const [activeTab, setActiveTab] = useState('activity'); // 'activity' | 'currency' | 'presets' | 'cloud'
   const [lovePointRateInput, setLovePointRateInput] = useState(lovePointRate.toString());
+
+  // Presets state
+  const [localMoneyPresets, setLocalMoneyPresets] = useState([]);
+  const [localLovePresets, setLocalLovePresets] = useState([]);
 
   // Partners state
   const [p1Name, setP1Name] = useState(partners.p1.name || '伴侶一');
@@ -51,6 +58,13 @@ export default function SettingsModal({
   }, [partners]);
 
   useEffect(() => {
+    if (isOpen) {
+      setLocalMoneyPresets(moneyPresets ? JSON.parse(JSON.stringify(moneyPresets)) : []);
+      setLocalLovePresets(lovePresets ? JSON.parse(JSON.stringify(lovePresets)) : []);
+    }
+  }, [isOpen, moneyPresets, lovePresets]);
+
+  useEffect(() => {
     setGistIdInput(syncConfig.gistId || '');
     setGistTokenInput(syncConfig.token || localStorage.getItem('gist_token') || '');
   }, [syncConfig]);
@@ -64,7 +78,9 @@ export default function SettingsModal({
   }, [lovePointRate]);
  
   const [showScrollHint, setShowScrollHint] = useState(false);
+  const [showTabScrollHint, setShowTabScrollHint] = useState(false);
   const bodyRef = React.useRef(null);
+  const tabNavRef = React.useRef(null);
 
   const checkScroll = () => {
     if (bodyRef.current) {
@@ -75,10 +91,39 @@ export default function SettingsModal({
     }
   };
 
+  const checkTabScroll = () => {
+    if (tabNavRef.current) {
+      const el = tabNavRef.current;
+      const isScrollable = el.scrollWidth > el.clientWidth;
+      const isAtEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 10;
+      setShowTabScrollHint(isScrollable && !isAtEnd);
+    }
+  };
+
+  const scrollTabsRight = () => {
+    if (tabNavRef.current) {
+      tabNavRef.current.scrollBy({
+        left: 120,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   useEffect(() => {
-    const timer = setTimeout(checkScroll, 150);
+    const timer = setTimeout(() => {
+      checkScroll();
+      checkTabScroll();
+    }, 150);
     return () => clearTimeout(timer);
   }, [activeTab, isOpen]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      checkTabScroll();
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Lock body scroll when modal is open to prevent background page jumping
   useEffect(() => {
@@ -107,7 +152,10 @@ export default function SettingsModal({
     };
     onUpdatePartners(payload);
     setLocalSuccess('伴侶稱呼與角色設定已成功儲存！');
-    setTimeout(() => setLocalSuccess(''), 2000);
+    setTimeout(() => {
+      setLocalSuccess('');
+      onClose();
+    }, 600);
   };
 
   const handleSaveCloudConfig = () => {
@@ -133,7 +181,10 @@ export default function SettingsModal({
 
     saveConfig(finalToken, finalGistId, payload, myIdentity || 'p1');
     setLocalSuccess('雲端 Gist 設定儲存成功，正進行更新...');
-    setTimeout(() => setLocalSuccess(''), 2500);
+    setTimeout(() => {
+      setLocalSuccess('');
+      onClose();
+    }, 600);
   };
 
   const handleCreateNewGist = async () => {
@@ -218,29 +269,75 @@ export default function SettingsModal({
           ⚙️ HeartSync 系統設定
         </h2>
 
-        {/* Tab Navigation */}
-        <div className="settings-tab-nav">
-          <button
-            className={`settings-tab-link ${activeTab === 'activity' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('activity'); setLocalError(''); setLocalSuccess(''); }}
-          >
-            <History size={16} />
-            <span>活動日誌</span>
-          </button>
-          <button
-            className={`settings-tab-link ${activeTab === 'currency' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('currency'); setLocalError(''); setLocalSuccess(''); }}
-          >
-            <Coins size={16} />
-            <span>幣別與折算</span>
-          </button>
-          <button
-            className={`settings-tab-link ${activeTab === 'cloud' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('cloud'); setLocalError(''); setLocalSuccess(''); }}
-          >
-            <Cloud size={16} />
-            <span>雲端設定</span>
-          </button>
+        <div style={{ position: 'relative', width: '100%' }}>
+          {/* Tab Navigation */}
+          <div className="settings-tab-nav" ref={tabNavRef} onScroll={checkTabScroll}>
+            <button
+              className={`settings-tab-link ${activeTab === 'activity' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('activity'); setLocalError(''); setLocalSuccess(''); }}
+            >
+              <History size={16} />
+              <span>活動日誌</span>
+            </button>
+            <button
+              className={`settings-tab-link ${activeTab === 'currency' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('currency'); setLocalError(''); setLocalSuccess(''); }}
+            >
+              <Coins size={16} />
+              <span>幣別與折算</span>
+            </button>
+            <button
+              className={`settings-tab-link ${activeTab === 'presets' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('presets'); setLocalError(''); setLocalSuccess(''); }}
+            >
+              <Sparkles size={16} />
+              <span>常用推薦</span>
+            </button>
+            <button
+              className={`settings-tab-link ${activeTab === 'cloud' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('cloud'); setLocalError(''); setLocalSuccess(''); }}
+            >
+              <Cloud size={16} />
+              <span>雲端設定</span>
+            </button>
+          </div>
+
+          {showTabScrollHint && (
+            <div 
+              onClick={scrollTabsRight}
+              style={{
+                position: 'absolute',
+                right: '4px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                marginTop: '-4px',
+                pointerEvents: 'auto',
+                cursor: 'pointer',
+                zIndex: 10
+              }}
+            >
+              <div 
+                className="animate-float" 
+                style={{
+                  backgroundColor: '#000000',
+                  color: '#FFFFFF',
+                  padding: '4px 10px',
+                  borderRadius: '20px',
+                  fontSize: '0.68rem',
+                  fontWeight: '900',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  boxShadow: 'var(--shadow-xs)',
+                  opacity: 0.95,
+                  border: '2px solid var(--border-color, #000)',
+                  userSelect: 'none'
+                }}
+              >
+                <span>▶ 滑動分頁</span>
+              </div>
+            </div>
+          )}
         </div>
 
         <div 
@@ -255,30 +352,39 @@ export default function SettingsModal({
               <p style={styles.tabDescription}>
                 選擇用於生活記帳與對比的預設幣別，系統將自動依據固定匯率折算呈現。
               </p>
-              <div style={styles.currencySelectorContainer}>
-                {['TWD', 'SGD', 'USD', 'CNY'].map((curr) => (
-                  <button
-                    key={curr}
-                    onClick={() => {
-                      onUpdateCurrency(curr);
-                      setLocalSuccess(`💱 已成功切換為 ${curr === 'TWD' ? '台幣 TWD' : curr === 'SGD' ? '新幣 SGD' : curr === 'CNY' ? '人民幣 CNY' : '美金 USD'}！`);
-                      setTimeout(() => setLocalSuccess(''), 2000);
-                    }}
-                    className="comic-btn secondary"
-                    style={{
-                      ...styles.currencyBtn,
-                      backgroundColor: displayCurrency === curr ? '#000000' : '#FFFFFF',
-                      color: displayCurrency === curr ? '#FFFFFF' : '#666666',
-                      transform: displayCurrency === curr ? 'scale(1.05)' : 'none',
-                      boxShadow: displayCurrency === curr ? '3px 3px 0px #000000' : '1px 1px 0px #000000',
-                    }}
-                  >
-                    <span style={{ fontSize: '1.2rem', marginRight: '4px' }}>
-                      {curr === 'TWD' ? '🇹🇼' : curr === 'SGD' ? '🇸🇬' : curr === 'CNY' ? '🇨🇳' : '🇺🇸'}
-                    </span>
-                    <span>{curr === 'TWD' ? 'TWD (台幣)' : curr === 'SGD' ? 'SGD (新幣)' : curr === 'CNY' ? 'CNY (人民幣)' : 'USD (美金)'}</span>
-                  </button>
-                ))}
+              <div style={{ marginTop: '4px' }}>
+                <select
+                  value={displayCurrency}
+                  onChange={(e) => {
+                    const curr = e.target.value;
+                    onUpdateCurrency(curr);
+                    setLocalSuccess(`💱 已成功切換為 ${curr === 'TWD' ? '台幣 TWD' : curr === 'SGD' ? '新幣 SGD' : curr === 'CNY' ? '人民幣 CNY' : '美金 USD'}！`);
+                    setTimeout(() => setLocalSuccess(''), 2000);
+                  }}
+                  className="comic-input"
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    border: '2px solid var(--border-color)',
+                    fontSize: '0.88rem',
+                    fontWeight: '850',
+                    borderRadius: '10px',
+                    outline: 'none',
+                    backgroundColor: '#FFFFFF',
+                    cursor: 'pointer',
+                    appearance: 'none',
+                    backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'right 14px center',
+                    backgroundSize: '14px',
+                    paddingRight: '40px',
+                  }}
+                >
+                  <option value="TWD">🇹🇼 TWD (台幣)</option>
+                  <option value="SGD">🇸🇬 SGD (新幣)</option>
+                  <option value="USD">🇺🇸 USD (美金)</option>
+                  <option value="CNY">🇨🇳 CNY (人民幣)</option>
+                </select>
               </div>
 
               <div style={{ marginTop: '10px', borderTop: '2px dashed var(--border-color)', paddingTop: '16px' }}>
@@ -495,17 +601,19 @@ export default function SettingsModal({
 
             {!offlineMode && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '10px' }}>
-                 <div style={styles.inputCol}>
-                  <label style={styles.label}>GitHub Token (Personal Access Token)</label>
-                  <input
-                    type="password"
-                    value={gistTokenInput}
-                    onChange={(e) => setGistTokenInput(e.target.value)}
-                    className="comic-input"
-                    placeholder={import.meta.env.VITE_GIST_TOKEN ? "已使用環境變數設定 (選填)" : "請輸入您的 GitHub Token (需具備 gist 權限)"}
-                    style={styles.inputField}
-                  />
-                </div>
+                 {(typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) && (
+                   <div style={styles.inputCol}>
+                    <label style={styles.label}>GitHub Token (Personal Access Token)</label>
+                    <input
+                      type="password"
+                      value={gistTokenInput}
+                      onChange={(e) => setGistTokenInput(e.target.value)}
+                      className="comic-input"
+                      placeholder={import.meta.env.VITE_GIST_TOKEN ? "已使用環境變數設定 (選填)" : "請輸入您的 GitHub Token (需具備 gist 權限)"}
+                      style={styles.inputField}
+                    />
+                  </div>
+                 )}
 
                 <div style={styles.inputCol}>
                   <label style={styles.label}>專屬雲端 Gist ID</label>
@@ -599,6 +707,134 @@ export default function SettingsModal({
           </div>
         )}
 
+        {/* TAB 3: PRESETS */}
+        {activeTab === 'presets' && (
+          <div style={styles.tabContent}>
+            <p style={styles.tabDescription}>
+              自定義記帳或登記家事時的常用快速按鈕，方便快速選取填入。
+            </p>
+            
+            <div>
+              <h4 style={{ ...styles.label, fontSize: '0.92rem', marginBottom: '8px' }}>💰 金錢支出常用項目 (最多6個)</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {localMoneyPresets.map((preset, idx) => (
+                  <div key={idx} style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                    <input 
+                      type="text" 
+                      value={preset.tag} 
+                      onChange={(e) => {
+                        const updated = [...localMoneyPresets];
+                        updated[idx].tag = e.target.value;
+                        setLocalMoneyPresets(updated);
+                      }}
+                      placeholder="項目名稱，例如：飲料點心"
+                      className="comic-input" 
+                      style={{ ...styles.inputField, flex: 1, padding: '6px 10px' }}
+                    />
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        const updated = localMoneyPresets.filter((_, i) => i !== idx);
+                        setLocalMoneyPresets(updated);
+                      }}
+                      style={{ padding: '6px 10px', backgroundColor: '#FFE4E6', color: '#B91C1C', border: '2px solid #000', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+                {localMoneyPresets.length < 10 && (
+                  <button
+                    type="button"
+                    onClick={() => setLocalMoneyPresets([...localMoneyPresets, { tag: '', val: '' }])}
+                    className="comic-btn secondary"
+                    style={{ padding: '6px 12px', fontSize: '0.8rem', width: '100%', justifyContent: 'center' }}
+                  >
+                    ＋ 新增金錢常用項目
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div style={{ marginTop: '16px', borderTop: '2px dashed var(--border-color)', paddingTop: '16px' }}>
+              <h4 style={{ ...styles.label, fontSize: '0.92rem', marginBottom: '8px' }}>🧹 家事勞動常用項目 (最多6個)</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {localLovePresets.map((preset, idx) => (
+                  <div key={idx} style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                    <input 
+                      type="text" 
+                      value={preset.tag} 
+                      onChange={(e) => {
+                        const updated = [...localLovePresets];
+                        updated[idx].tag = e.target.value;
+                        setLocalLovePresets(updated);
+                      }}
+                      placeholder="家事名稱，例如：倒垃圾"
+                      className="comic-input" 
+                      style={{ ...styles.inputField, flex: 3, padding: '6px 10px' }}
+                    />
+                    <input 
+                      type="number" 
+                      value={preset.points || ''} 
+                      onChange={(e) => {
+                        const updated = [...localLovePresets];
+                        updated[idx].points = parseInt(e.target.value) || 0;
+                        setLocalLovePresets(updated);
+                      }}
+                      placeholder="點數"
+                      className="comic-input" 
+                      style={{ ...styles.inputField, flex: 1, padding: '6px 10px', textAlign: 'center' }}
+                      min="0"
+                    />
+                    <span style={{ fontSize: '0.75rem', fontWeight: '800' }}>點</span>
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        const updated = localLovePresets.filter((_, i) => i !== idx);
+                        setLocalLovePresets(updated);
+                      }}
+                      style={{ padding: '6px 10px', backgroundColor: '#FFE4E6', color: '#B91C1C', border: '2px solid #000', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+                {localLovePresets.length < 10 && (
+                  <button
+                    type="button"
+                    onClick={() => setLocalLovePresets([...localLovePresets, { tag: '', points: 10 }])}
+                    className="comic-btn secondary"
+                    style={{ padding: '6px 12px', fontSize: '0.8rem', width: '100%', justifyContent: 'center' }}
+                  >
+                    ＋ 新增家事常用項目
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                console.log('Saving presets...', localMoneyPresets, localLovePresets);
+                const finalMoney = localMoneyPresets.filter(p => p && typeof p.tag === 'string' && p.tag.trim() !== '');
+                const finalLove = localLovePresets.filter(p => p && typeof p.tag === 'string' && p.tag.trim() !== '');
+                onUpdatePresets(finalMoney, finalLove);
+                setLocalSuccess('✨ 常用推薦項目已儲存並同步！');
+                setTimeout(() => {
+                  setLocalSuccess('');
+                  onClose();
+                }, 600);
+              }}
+              className="comic-btn"
+              style={{ width: '100%', marginTop: '20px', padding: '12px', justifyContent: 'center' }}
+            >
+              💾 儲存自定義常用項目
+            </button>
+
+            {localSuccess && <div style={styles.localSuccessText}>{localSuccess}</div>}
+          </div>
+        )}
+
         {/* TAB 4: ACTIVITY */}
         {activeTab === 'activity' && (
           <div style={styles.tabContent}>
@@ -606,8 +842,6 @@ export default function SettingsModal({
               共同天秤的所有操作日誌（唯讀且不可修改），用於核對和追溯。
             </p>
             <div style={{
-              maxHeight: '320px',
-              overflowY: 'auto',
               border: 'var(--border-thick)',
               borderRadius: '16px',
               backgroundColor: '#FFFFFF',
