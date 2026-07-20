@@ -811,6 +811,24 @@ body::-webkit-scrollbar {
   box-shadow: var(--shadow-sm) !important;
 }
 
+/* WinnerDashboard Stats Card Hover */
+.WinnerDashboard-statsCard {
+  transition: transform 0.22s var(--ease-snappy), box-shadow 0.22s var(--ease-snappy) !important;
+}
+.WinnerDashboard-statsCard:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+/* WinnerDashboard Mini Card Hover */
+.WinnerDashboard-miniCard {
+  transition: transform 0.22s var(--ease-snappy), box-shadow 0.22s var(--ease-snappy) !important;
+}
+.WinnerDashboard-miniCard:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 3px 3px 0px #000 !important;
+}
+
 /* HistoryList Item Card Hover */
 .HistoryList-itemCard {
   transition: transform 0.22s var(--ease-snappy), box-shadow 0.22s var(--ease-snappy), border-left 0.15s ease !important;
@@ -828,4 +846,55 @@ body::-webkit-scrollbar {
 .no-scrollbar {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
+}
+
+/* Mobile specific styling overrides for WinnerDashboard difference analysis card */
+@media (max-width: 600px) {
+  .WinnerDashboard-summaryCard {
+    padding: 14px 16px !important;
+    gap: 8px !important;
+  }
+  .WinnerDashboard-scaleCardContainer {
+    padding: 8px 8px 4px 8px !important;
+    margin-bottom: 6px !important;
+  }
+  .WinnerDashboard-scaleCardLabel {
+    font-size: 0.72rem !important;
+    margin-bottom: 2px !important;
+  }
+  .WinnerDashboard-scaleContainer {
+    height: 120px !important;
+  }
+  .WinnerDashboard-scaleSvg {
+    max-height: 120px !important;
+  }
+  .WinnerDashboard-summaryBody {
+    gap: 8px !important;
+  }
+  .WinnerDashboard-summaryItem {
+    gap: 2px !important;
+  }
+  .WinnerDashboard-balanceLabel {
+    font-size: 0.75rem !important;
+  }
+  .WinnerDashboard-balanceValueContainer {
+    font-size: 0.95rem !important;
+  }
+  .WinnerDashboard-balancedText {
+    padding: 4px 8px !important;
+    font-size: 0.78rem !important;
+  }
+  .WinnerDashboard-highlight {
+    font-size: 1.05rem !important;
+  }
+  .WinnerDashboard-dividerLine {
+    margin: 2px 0 !important;
+  }
+  .WinnerDashboard-banner {
+    padding: 6px 12px !important;
+    margin-bottom: 10px !important;
+  }
+  .WinnerDashboard-bannerText {
+    font-size: 0.85rem !important;
+  }
 }

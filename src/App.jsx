@@ -54,10 +54,18 @@ export default function App() {
   const moneyPresetsRef = useRef(moneyPresets);
   const lovePresetsRef = useRef(lovePresets);
 
-  // Geolocation, device details, and history category filter lifting
+  // Geolocation, device details, and history category/partner filter lifting
   const [geoInfo, setGeoInfo] = useState('未知定位');
   const [historyCategory, setHistoryCategory] = useState('all'); // 'all' | 'money' | 'love'
+  const [historyPartner, setHistoryPartner] = useState('all'); // 'all' | 'p1' | 'p2'
   const historySectionRef = useRef(null);
+
+  const handlePartnerClick = (partnerKey) => {
+    setHistoryPartner(partnerKey);
+    if (historySectionRef.current) {
+      historySectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   useEffect(() => {
     const fetchGeo = async () => {
@@ -247,9 +255,11 @@ export default function App() {
   };
 
   const convertValue = (val, from = 'TWD', to = 'TWD') => {
+    const num = parseFloat(val);
+    if (isNaN(num)) return 0;
     const fromRate = exchangeRates[from] || EXCHANGE_RATES[from] || 1.0;
     const toRate = exchangeRates[to] || EXCHANGE_RATES[to] || 1.0;
-    return (val * fromRate) / toRate;
+    return (num * fromRate) / toRate;
   };
 
   // Fetch exchange rates from public API on mount
@@ -928,8 +938,12 @@ export default function App() {
     .filter(r => r.type === 'money' && r.by === 'p2')
     .reduce((acc, r) => acc + convertValue(r.value, r.currency || 'TWD', displayCurrency), 0);
   // Love/Effort
-  const p1Love = records.filter(r => r.type === 'love' && r.by === 'p1').reduce((acc, r) => acc + r.value, 0);
-  const p2Love = records.filter(r => r.type === 'love' && r.by === 'p2').reduce((acc, r) => acc + r.value, 0);
+  const p1Love = records
+    .filter(r => r.type === 'love' && r.by === 'p1')
+    .reduce((acc, r) => acc + (parseFloat(r.value) || 0), 0);
+  const p2Love = records
+    .filter(r => r.type === 'love' && r.by === 'p2')
+    .reduce((acc, r) => acc + (parseFloat(r.value) || 0), 0);
 
   // --- RENDER EARLY RETURN: AUTOMATED UPDATE NEEDED ---
   if (needsUpdate) {
@@ -1046,23 +1060,29 @@ export default function App() {
       </header>
 
       {/* --- STATUS & SETTINGS BAR (EXCHANGE RATES DISPLAY WITH SOURCE) --- */}
-      <div className="status-container" style={{ 
-        ...styles.statusContainer, 
+      <div className="exchange-rates-pill" style={{ 
+        display: 'flex',
         flexDirection: 'row', 
-        gap: '6px', 
+        gap: '8px', 
         alignItems: 'center', 
         justifyContent: 'center', 
-        minHeight: 'auto', 
-        padding: '6px 12px',
+        padding: '4px 12px',
         marginBottom: '16px',
-        flexWrap: 'wrap'
+        flexWrap: 'wrap',
+        backgroundColor: '#F5F5F7',
+        border: '1.5px solid #000',
+        borderRadius: '20px',
+        alignSelf: 'center',
+        width: 'fit-content',
+        margin: '0 auto 16px auto',
+        boxShadow: '1px 1px 0px #000'
       }}>
-        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: '900', letterSpacing: '0.3px' }}>
-          📊 匯率基準 (1 USD = {exchangeRates.USD} TWD | 1 SGD = {exchangeRates.SGD} TWD | 1 CNY = {exchangeRates.CNY} TWD)
+        <span style={{ fontSize: '0.68rem', color: '#555', fontWeight: '900', letterSpacing: '0.2px' }}>
+          📊 基準匯率 (1 USD = {exchangeRates.USD} | 1 SGD = {exchangeRates.SGD} | 1 CNY = {exchangeRates.CNY} TWD)
         </span>
         {ratesLastUpdated && (
-          <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontWeight: '750', marginLeft: '4px' }}>
-            ⏰ 更新於 {ratesLastUpdated}
+          <span style={{ fontSize: '0.64rem', color: '#777', fontWeight: '750' }}>
+            ({ratesLastUpdated})
           </span>
         )}
       </div>
@@ -1122,6 +1142,7 @@ export default function App() {
                   currency={displayCurrency}
                   lovePointRate={convertValue(lovePointRate, 'TWD', displayCurrency)}
                   exchangeRates={exchangeRates}
+                  onPartnerClick={handlePartnerClick}
                 />
               </div>
             </div>
@@ -1145,6 +1166,7 @@ export default function App() {
                 currency={displayCurrency}
                 lovePointRate={convertValue(lovePointRate, 'TWD', displayCurrency)}
                 exchangeRates={exchangeRates}
+                onPartnerClick={handlePartnerClick}
               />
             </div>
           );
@@ -1169,6 +1191,8 @@ export default function App() {
                 exchangeRates={exchangeRates}
                 activeTab={historyCategory}
                 onActiveTabChange={setHistoryCategory}
+                filterPartner={historyPartner}
+                onFilterPartnerChange={setHistoryPartner}
               />
             </div>
           );

@@ -13,10 +13,11 @@ export default function HistoryList({
   lovePointRate = 25,
   exchangeRates,
   activeTab = 'all',
-  onActiveTabChange
+  onActiveTabChange,
+  filterPartner = 'all',
+  onFilterPartnerChange
 }) {
   const [selectedRecordForDetail, setSelectedRecordForDetail] = useState(null);
-  const [filterPartner, setFilterPartner] = useState('all'); // 'all' | 'p1' | 'p2'
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [showScrollHint, setShowScrollHint] = useState(false);
@@ -169,7 +170,7 @@ export default function HistoryList({
             ].map(partner => (
               <button
                 key={partner.id}
-                onClick={() => setFilterPartner(partner.id)}
+                onClick={() => onFilterPartnerChange(partner.id)}
                 className="comic-btn secondary"
                 style={{
                   ...styles.filterBtn,

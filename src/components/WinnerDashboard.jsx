@@ -13,7 +13,8 @@ export default function WinnerDashboard({
   lovePointRate = 25,
   exchangeRates,
   showSummary = true,
-  showIndividualStats = true
+  showIndividualStats = true,
+  onPartnerClick
 }) {
   const [hoveredDog, setHoveredDog] = useState(null);
 
@@ -118,17 +119,99 @@ export default function WinnerDashboard({
   );
 
   // --- Scale Dog SVGs ---
-  const renderWhiteDog = (isWinning) => (
+  // --- Scale Dog SVGs ---
+  const renderWhiteDog = (isWinning, isLeft, isLosing) => (
     <g style={{ transition: 'transform 0.3s ease' }}>
+      {/* Tiny hands/paws & body holding rope (rendered behind head) */}
+      {isLeft === true && (
+        <g>
+          {/* Dust clouds under feet */}
+          <ellipse cx="2" cy="42" rx="4" ry="2" fill="#E2E8F0" stroke="#000" strokeWidth="1" opacity="0.8" />
+          <ellipse cx="10" cy="43" rx="4" ry="2" fill="#E2E8F0" stroke="#000" strokeWidth="1" opacity="0.8" />
+          {/* Tail */}
+          <path d="M 6 35 Q 0 32 3 27" fill="none" stroke="var(--border-color)" strokeWidth="2.5" strokeLinecap="round" />
+          {/* Left leg (back) */}
+          <ellipse cx="6" cy="41" rx="5" ry="4" fill="#FFFFFF" stroke="var(--border-color)" strokeWidth="2" />
+          {/* Right leg (front) */}
+          <ellipse cx="14" cy="42" rx="5" ry="4" fill="#FFFFFF" stroke="var(--border-color)" strokeWidth="2" />
+          {/* Torso leaning back */}
+          <ellipse cx="13" cy="33" rx="8" ry="10" fill="#FFFFFF" stroke="var(--border-color)" strokeWidth="2.5" transform="rotate(-15, 13, 33)" />
+          {/* Red collar */}
+          <path d="M 9 24 Q 14 28 17 25" fill="none" stroke="#FF5E7E" strokeWidth="3" strokeLinecap="round" />
+          {/* Arms pulling rope */}
+          <path d="M 15 31 Q 22 28 26 28" fill="none" stroke="var(--border-color)" strokeWidth="4.2" strokeLinecap="round" />
+          <path d="M 15 31 Q 24 29 32 28" fill="none" stroke="var(--border-color)" strokeWidth="4.2" strokeLinecap="round" />
+          
+          {/* Hand 1 (Left hand) - 3 fingers wrapping rope */}
+          <rect x="23" y="20.5" width="2.8" height="10" rx="1.4" fill="#FFFFFF" stroke="#000" strokeWidth="1.2" />
+          <rect x="25.8" y="20.5" width="2.8" height="10" rx="1.4" fill="#FFFFFF" stroke="#000" strokeWidth="1.2" />
+          <rect x="28.6" y="20.5" width="2.8" height="10" rx="1.4" fill="#FFFFFF" stroke="#000" strokeWidth="1.2" />
+
+          {/* Hand 2 (Right hand) - 3 fingers wrapping rope */}
+          <rect x="31.4" y="20.5" width="2.8" height="10" rx="1.4" fill="#FFFFFF" stroke="#000" strokeWidth="1.2" />
+          <rect x="34.2" y="20.5" width="2.8" height="10" rx="1.4" fill="#FFFFFF" stroke="#000" strokeWidth="1.2" />
+          <rect x="37" y="20.5" width="2.8" height="10" rx="1.4" fill="#FFFFFF" stroke="#000" strokeWidth="1.2" />
+        </g>
+      )}
+      {isLeft === false && (
+        <g>
+          {/* Dust clouds under feet */}
+          <ellipse cx="38" cy="42" rx="4" ry="2" fill="#E2E8F0" stroke="#000" strokeWidth="1" opacity="0.8" />
+          <ellipse cx="30" cy="43" rx="4" ry="2" fill="#E2E8F0" stroke="#000" strokeWidth="1" opacity="0.8" />
+          {/* Tail */}
+          <path d="M 34 35 Q 40 32 37 27" fill="none" stroke="var(--border-color)" strokeWidth="2.5" strokeLinecap="round" />
+          {/* Right leg (back) */}
+          <ellipse cx="34" cy="41" rx="5" ry="4" fill="#FFFFFF" stroke="var(--border-color)" strokeWidth="2" />
+          {/* Left leg (front) */}
+          <ellipse cx="26" cy="42" rx="5" ry="4" fill="#FFFFFF" stroke="var(--border-color)" strokeWidth="2" />
+          {/* Torso leaning back */}
+          <ellipse cx="27" cy="33" rx="8" ry="10" fill="#FFFFFF" stroke="var(--border-color)" strokeWidth="2.5" transform="rotate(15, 27, 33)" />
+          {/* Blue collar */}
+          <path d="M 31 24 Q 26 28 23 25" fill="none" stroke="#3399FF" strokeWidth="3" strokeLinecap="round" />
+          {/* Arms pulling rope */}
+          <path d="M 25 31 Q 18 28 14 28" fill="none" stroke="var(--border-color)" strokeWidth="4.2" strokeLinecap="round" />
+          <path d="M 25 31 Q 16 29 8 28" fill="none" stroke="var(--border-color)" strokeWidth="4.2" strokeLinecap="round" />
+          
+          {/* Hand 1 (Right hand) - 3 fingers wrapping rope */}
+          <rect x="14" y="20.5" width="2.8" height="10" rx="1.4" fill="#FFFFFF" stroke="#000" strokeWidth="1.2" />
+          <rect x="11.2" y="20.5" width="2.8" height="10" rx="1.4" fill="#FFFFFF" stroke="#000" strokeWidth="1.2" />
+          <rect x="8.4" y="20.5" width="2.8" height="10" rx="1.4" fill="#FFFFFF" stroke="#000" strokeWidth="1.2" />
+
+          {/* Hand 2 (Left hand) - 3 fingers wrapping rope */}
+          <rect x="5.6" y="20.5" width="2.8" height="10" rx="1.4" fill="#FFFFFF" stroke="#000" strokeWidth="1.2" />
+          <rect x="2.8" y="20.5" width="2.8" height="10" rx="1.4" fill="#FFFFFF" stroke="#000" strokeWidth="1.2" />
+          <rect x="0" y="20.5" width="2.8" height="10" rx="1.4" fill="#FFFFFF" stroke="#000" strokeWidth="1.2" />
+        </g>
+      )}
+
+      {/* Head details */}
       <ellipse cx="6" cy="15" rx="4" ry="7" fill="#FFFFFF" stroke="var(--border-color)" strokeWidth="2.5" />
       <ellipse cx="34" cy="15" rx="4" ry="7" fill="#FFFFFF" stroke="var(--border-color)" strokeWidth="2.5" />
       <ellipse cx="20" cy="22" rx="14" ry="12" fill="#FFFFFF" stroke="var(--border-color)" strokeWidth="2.5" />
-      <circle cx="15" cy="20" r="2" fill="var(--border-color)" />
-      <circle cx="25" cy="20" r="2" fill="var(--border-color)" />
+
+      {/* Expressions: Normal vs Losing */}
+      {isLosing ? (
+        <g>
+          {/* Dizzy Cross Eyes */}
+          <path d="M 12 18 L 16 22 M 16 18 L 12 22" stroke="var(--border-color)" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M 24 18 L 28 22 M 28 18 L 24 22" stroke="var(--border-color)" strokeWidth="1.8" strokeLinecap="round" />
+          {/* Wavy mouth */}
+          <path d="M16 29 Q 18 27 20 29 Q 22 31 24 29" fill="none" stroke="var(--border-color)" strokeWidth="1.8" strokeLinecap="round" />
+        </g>
+      ) : (
+        <g>
+          {/* Normal eyes */}
+          <circle cx="15" cy="20" r="2" fill="var(--border-color)" />
+          <circle cx="25" cy="20" r="2" fill="var(--border-color)" />
+          {/* Normal mouth */}
+          <path d="M 18 27 Q 20 29 22 27" fill="none" stroke="var(--border-color)" strokeWidth="1.5" strokeLinecap="round" />
+        </g>
+      )}
+
       <circle cx="10" cy="24" r="3.5" fill="#FFB7B2" opacity="0.9" />
       <circle cx="30" cy="24" r="3.5" fill="#FFB7B2" opacity="0.9" />
       <polygon points="18,23 22,23 20,25" fill="var(--border-color)" />
-      <path d="M 18 27 Q 20 29 22 27" fill="none" stroke="var(--border-color)" strokeWidth="1.5" strokeLinecap="round" />
+
       {isWinning && (
         <g transform="translate(10, -14)" className="animate-float">
           <path d="M10 3.22C10 3.22 9.1-1 4.5-1-1.3-1-1.3 5.4 4.5 9 10.3 12.6 10 13.5 10 13.5s-.3-.9 5.5-4.5c5.8-3.6 5.8-10 0-10C10.9-1 10 3.22 10 3.22z" fill="#FF8A8A" stroke="var(--border-color)" strokeWidth="1.5" strokeLinejoin="round" />
@@ -137,17 +220,98 @@ export default function WinnerDashboard({
     </g>
   );
 
-  const renderBrownDog = (isWinning) => (
+  const renderBrownDog = (isWinning, isLeft, isLosing) => (
     <g style={{ transition: 'transform 0.3s ease' }}>
+      {/* Tiny hands/paws & body holding rope (rendered behind head) */}
+      {isLeft === true && (
+        <g>
+          {/* Dust clouds under feet */}
+          <ellipse cx="2" cy="42" rx="4" ry="2" fill="#E2E8F0" stroke="#000" strokeWidth="1" opacity="0.8" />
+          <ellipse cx="10" cy="43" rx="4" ry="2" fill="#E2E8F0" stroke="#000" strokeWidth="1" opacity="0.8" />
+          {/* Tail */}
+          <path d="M 6 35 Q 0 32 3 27" fill="none" stroke="var(--border-color)" strokeWidth="2.5" strokeLinecap="round" />
+          {/* Left leg (back) */}
+          <ellipse cx="6" cy="41" rx="5" ry="4" fill="#D4A373" stroke="var(--border-color)" strokeWidth="2" />
+          {/* Right leg (front) */}
+          <ellipse cx="14" cy="42" rx="5" ry="4" fill="#D4A373" stroke="var(--border-color)" strokeWidth="2" />
+          {/* Torso leaning back */}
+          <ellipse cx="13" cy="33" rx="8" ry="10" fill="#D4A373" stroke="var(--border-color)" strokeWidth="2.5" transform="rotate(-15, 13, 33)" />
+          {/* Red collar */}
+          <path d="M 9 24 Q 14 28 17 25" fill="none" stroke="#FF5E7E" strokeWidth="3" strokeLinecap="round" />
+          {/* Arms pulling rope */}
+          <path d="M 15 31 Q 22 28 26 28" fill="none" stroke="var(--border-color)" strokeWidth="4.2" strokeLinecap="round" />
+          <path d="M 15 31 Q 24 29 32 28" fill="none" stroke="var(--border-color)" strokeWidth="4.2" strokeLinecap="round" />
+          
+          {/* Hand 1 (Left hand) - 3 fingers wrapping rope */}
+          <rect x="23" y="20.5" width="2.8" height="10" rx="1.4" fill="#D4A373" stroke="#000" strokeWidth="1.2" />
+          <rect x="25.8" y="20.5" width="2.8" height="10" rx="1.4" fill="#D4A373" stroke="#000" strokeWidth="1.2" />
+          <rect x="28.6" y="20.5" width="2.8" height="10" rx="1.4" fill="#D4A373" stroke="#000" strokeWidth="1.2" />
+
+          {/* Hand 2 (Right hand) - 3 fingers wrapping rope */}
+          <rect x="31.4" y="20.5" width="2.8" height="10" rx="1.4" fill="#D4A373" stroke="#000" strokeWidth="1.2" />
+          <rect x="34.2" y="20.5" width="2.8" height="10" rx="1.4" fill="#D4A373" stroke="#000" strokeWidth="1.2" />
+          <rect x="37" y="20.5" width="2.8" height="10" rx="1.4" fill="#D4A373" stroke="#000" strokeWidth="1.2" />
+        </g>
+      )}
+      {isLeft === false && (
+        <g>
+          {/* Dust clouds under feet */}
+          <ellipse cx="38" cy="42" rx="4" ry="2" fill="#E2E8F0" stroke="#000" strokeWidth="1" opacity="0.8" />
+          <ellipse cx="30" cy="43" rx="4" ry="2" fill="#E2E8F0" stroke="#000" strokeWidth="1" opacity="0.8" />
+          {/* Tail */}
+          <path d="M 34 35 Q 40 32 37 27" fill="none" stroke="var(--border-color)" strokeWidth="2.5" strokeLinecap="round" />
+          {/* Right leg (back) */}
+          <ellipse cx="34" cy="41" rx="5" ry="4" fill="#D4A373" stroke="var(--border-color)" strokeWidth="2" />
+          {/* Left leg (front) */}
+          <ellipse cx="26" cy="42" rx="5" ry="4" fill="#D4A373" stroke="var(--border-color)" strokeWidth="2" />
+          {/* Torso leaning back */}
+          <ellipse cx="27" cy="33" rx="8" ry="10" fill="#D4A373" stroke="var(--border-color)" strokeWidth="2.5" transform="rotate(15, 27, 33)" />
+          {/* Blue collar */}
+          <path d="M 31 24 Q 26 28 23 25" fill="none" stroke="#3399FF" strokeWidth="3" strokeLinecap="round" />
+          {/* Arms pulling rope */}
+          <path d="M 25 31 Q 18 28 14 28" fill="none" stroke="var(--border-color)" strokeWidth="4.2" strokeLinecap="round" />
+          <path d="M 25 31 Q 16 29 8 28" fill="none" stroke="var(--border-color)" strokeWidth="4.2" strokeLinecap="round" />
+          
+          {/* Hand 1 (Right hand) - 3 fingers wrapping rope */}
+          <rect x="14" y="20.5" width="2.8" height="10" rx="1.4" fill="#D4A373" stroke="#000" strokeWidth="1.2" />
+          <rect x="11.2" y="20.5" width="2.8" height="10" rx="1.4" fill="#D4A373" stroke="#000" strokeWidth="1.2" />
+          <rect x="8.4" y="20.5" width="2.8" height="10" rx="1.4" fill="#D4A373" stroke="#000" strokeWidth="1.2" />
+
+          {/* Hand 2 (Left hand) - 3 fingers wrapping rope */}
+          <rect x="5.6" y="20.5" width="2.8" height="10" rx="1.4" fill="#D4A373" stroke="#000" strokeWidth="1.2" />
+          <rect x="2.8" y="20.5" width="2.8" height="10" rx="1.4" fill="#D4A373" stroke="#000" strokeWidth="1.2" />
+          <rect x="0" y="20.5" width="2.8" height="10" rx="1.4" fill="#D4A373" stroke="#000" strokeWidth="1.2" />
+        </g>
+      )}
+
+      {/* Head details */}
       <ellipse cx="6" cy="15" rx="4" ry="7" fill="#D4A373" stroke="var(--border-color)" strokeWidth="2.5" />
       <ellipse cx="34" cy="15" rx="4" ry="7" fill="#D4A373" stroke="var(--border-color)" strokeWidth="2.5" />
       <ellipse cx="20" cy="22" rx="14" ry="12" fill="#D4A373" stroke="var(--border-color)" strokeWidth="2.5" />
-      <circle cx="15" cy="20" r="2" fill="var(--border-color)" />
-      <circle cx="25" cy="20" r="2" fill="var(--border-color)" />
+
+      {/* Expressions: Normal vs Losing */}
+      {isLosing ? (
+        <g>
+          {/* Dizzy Cross Eyes */}
+          <path d="M 12 18 L 16 22 M 16 18 L 12 22" stroke="var(--border-color)" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M 24 18 L 28 22 M 28 18 L 24 22" stroke="var(--border-color)" strokeWidth="1.8" strokeLinecap="round" />
+          {/* Wavy mouth */}
+          <path d="M16 29 Q 18 27 20 29 Q 22 31 24 29" fill="none" stroke="var(--border-color)" strokeWidth="1.8" strokeLinecap="round" />
+        </g>
+      ) : (
+        <g>
+          {/* Normal eyes */}
+          <circle cx="15" cy="20" r="2" fill="var(--border-color)" />
+          <circle cx="25" cy="20" r="2" fill="var(--border-color)" />
+          {/* Normal mouth */}
+          <path d="M 18 27 Q 20 29 22 27" fill="none" stroke="var(--border-color)" strokeWidth="1.5" strokeLinecap="round" />
+        </g>
+      )}
+
       <circle cx="10" cy="24" r="3.5" fill="#FFA4A4" opacity="0.9" />
       <circle cx="30" cy="24" r="3.5" fill="#FFA4A4" opacity="0.9" />
       <polygon points="18,23 22,23 20,25" fill="var(--border-color)" />
-      <path d="M 17 26 Q 20 28 23 26" fill="none" stroke="var(--border-color)" strokeWidth="1.5" strokeLinecap="round" />
+
       {isWinning && (
         <g transform="translate(10, -14)" className="animate-float">
           <path d="M10 3.22C10 3.22 9.1-1 4.5-1-1.3-1-1.3 5.4 4.5 9 10.3 12.6 10 13.5 10 13.5s-.3-.9 5.5-4.5c5.8-3.6 5.8-10 0-10C10.9-1 10 3.22 10 3.22z" fill="#FFC857" stroke="var(--border-color)" strokeWidth="1.5" strokeLinejoin="round" />
@@ -183,158 +347,265 @@ export default function WinnerDashboard({
     </g>
   );
 
+  // --- TUG OF WAR SVG ---
+  const renderTugOfWar = () => {
+    let shift = 0;
+    const maxShift = 70;
+    if (totalDiff !== 0) {
+      const scaleMax = 5000 * rate;
+      const percent = Math.min(1, Math.max(-1, totalDiff / scaleMax));
+      shift = percent * maxShift;
+    }
+
+    const ropeY = 54;
+    const ropeLeft = 50;
+    const ropeRight = 270;
+    const heartX = 160 - shift;
+
+    // Dog positions
+    const p1X = 30 - shift * 0.25;
+    const p2X = 250 - shift * 0.25;
+
+    // Posture rotation
+    const p1Rotation = shift > 10 ? -12 : (shift < -10 ? 12 : 0);
+    const p2Rotation = shift < -10 ? 12 : (shift > 10 ? -12 : 0);
+
+    const p1Winning = shift > 5;
+    const p2Winning = shift < -5;
+
+    const renderSweat = (x, y) => (
+      <g transform={`translate(${x}, ${y})`}>
+        <path d="M0,0 Q3,-3 0,-8 Q-3,-3 0,0" fill="#70D6FF" stroke="#000" strokeWidth="1.2" />
+        <path d="M6,4 Q9,1 6,-4 Q3,1 6,4" fill="#70D6FF" stroke="#000" strokeWidth="1.2" />
+      </g>
+    );
+
+    return (
+      <div className="WinnerDashboard-tugOfWarContainer" style={{
+        backgroundColor: '#FFFDF9',
+        border: '2.5px solid #000',
+        borderRadius: '16px',
+        padding: '12px 10px 8px 10px',
+        marginBottom: '14px',
+        boxShadow: 'var(--shadow-xs)',
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        width: '100%'
+      }}>
+        <div style={{
+          fontSize: '0.8rem',
+          fontWeight: '900',
+          color: 'var(--text-muted)',
+          marginBottom: '4px',
+          letterSpacing: '0.5px',
+          textAlign: 'center'
+        }}>
+          🐶 雙方生活總付出 —— 拔河大對決 🐾
+        </div>
+        
+        <svg viewBox="0 0 320 90" style={{ width: '100%', height: '100%', maxWidth: '340px' }}>
+          {/* Dotted Center Reference Line */}
+          <line x1="160" y1="15" x2="160" y2="85" stroke="#E2E8F0" strokeWidth="2" strokeDasharray="3,3" />
+          <text x="160" y="12" textAnchor="middle" fontSize="7.5" fontWeight="900" fill="#A0AEC0">平衡點</text>
+
+          {/* Render Referee in background */}
+          {(() => {
+            const rx = 160;
+            const ry = 30;
+            const isP1Win = shift > 10;
+            const isP2Win = shift < -10;
+            return (
+              <g>
+                {/* Referee Body/Shirt (Black/White stripes) */}
+                <path d={`M ${rx-7} ${ry+10} L ${rx+7} ${ry+10} L ${rx+5} ${ry+22} L ${rx-5} ${ry+22} Z`} fill="#000000" stroke="#000" strokeWidth="1.5" />
+                <line x1={rx-3} y1={ry+10} x2={rx-3} y2={ry+22} stroke="#FFFFFF" strokeWidth="1.2" />
+                <line x1={rx} y1={ry+10} x2={rx} y2={ry+22} stroke="#FFFFFF" strokeWidth="1.2" />
+                <line x1={rx+3} y1={ry+10} x2={rx+3} y2={ry+22} stroke="#FFFFFF" strokeWidth="1.2" />
+
+                {/* Head (Cute yellow chick referee) */}
+                <circle cx={rx} cy={ry} r="9" fill="#FFE066" stroke="#000" strokeWidth="1.8" />
+                <polygon points={`${rx-2.5},${ry+1} ${rx+2.5},${ry+1} ${rx},${ry+4.5}`} fill="#FF9233" stroke="#000" strokeWidth="1" />
+                <circle cx={rx-3} cy={ry-2} r="1.1" fill="#000" />
+                <circle cx={rx+3} cy={ry-2} r="1.1" fill="#000" />
+                <circle cx={rx-5} cy={ry+1.5} r="1.2" fill="#FFB7B2" opacity="0.8" />
+                <circle cx={rx+5} cy={ry+1.5} r="1.2" fill="#FFB7B2" opacity="0.8" />
+
+                {/* Whistle */}
+                <path d={`M ${rx} ${ry+2} L ${rx-1.5} ${ry+6} L ${rx-4} ${ry+6}`} fill="none" stroke="#000" strokeWidth="1" strokeLinecap="round" />
+                <circle cx={rx-4.5} cy={ry+6} r="1.2" fill="#C0C0C0" stroke="#000" strokeWidth="0.8" />
+                
+                {/* Whistle sound text "嗶" when balanced */}
+                {!isP1Win && !isP2Win && (
+                  <g className="animate-float">
+                    <text x={rx-18} y={ry+2} fontSize="6" fontWeight="950" fill="#FF3366">嗶！</text>
+                  </g>
+                )}
+
+                {/* Point left flag */}
+                {isP1Win && (
+                  <g>
+                    <path d={`M ${rx-5} ${ry+12} Q ${rx-12} ${ry+8} ${rx-15} ${ry+13}`} fill="none" stroke="#000" strokeWidth="2" strokeLinecap="round" />
+                    <polygon points={`${rx-15},${ry+13} ${rx-21},${ry+8} ${rx-18},${ry+5}`} fill="#FF3366" stroke="#000" strokeWidth="1" />
+                    <line x1={rx-15} y1={ry+13} x2={rx-18} y2={ry+5} stroke="#000" strokeWidth="1" />
+                  </g>
+                )}
+
+                {/* Point right flag */}
+                {isP2Win && (
+                  <g>
+                    <path d={`M ${rx+5} ${ry+12} Q ${rx+12} ${ry+8} ${rx+15} ${ry+13}`} fill="none" stroke="#000" strokeWidth="2" strokeLinecap="round" />
+                    <polygon points={`${rx+15},${ry+13} ${rx+21},${ry+8} ${rx+18},${ry+5}`} fill="#3399FF" stroke="#000" strokeWidth="1" />
+                    <line x1={rx+15} y1={ry+13} x2={rx+18} y2={ry+5} stroke="#000" strokeWidth="1" />
+                  </g>
+                )}
+
+                {/* Hands up when balanced */}
+                {!isP1Win && !isP2Win && (
+                  <g>
+                    <path d={`M ${rx-5} ${ry+12} Q ${rx-10} ${ry+5} ${rx-10} ${ry-1}`} fill="none" stroke="#000" strokeWidth="2" strokeLinecap="round" />
+                    <path d={`M ${rx+5} ${ry+12} Q ${rx+10} ${ry+5} ${rx+10} ${ry-1}`} fill="none" stroke="#000" strokeWidth="2" strokeLinecap="round" />
+                  </g>
+                )}
+              </g>
+            );
+          })()}
+
+          {/* Tug rope (Twisted hemp rope effect) */}
+          <line x1={ropeLeft} y1={ropeY} x2={ropeRight} y2={ropeY} stroke="#7F5539" strokeWidth="5.5" strokeLinecap="round" />
+          <line x1={ropeLeft} y1={ropeY} x2={ropeRight} y2={ropeY} stroke="#E6CCB2" strokeWidth="2" strokeDasharray="5,5" strokeLinecap="round" />
+          <line x1={ropeLeft + 35} y1={ropeY - 2.5} x2={ropeLeft + 35} y2={ropeY + 2.5} stroke="#000" strokeWidth="2.5" />
+          <line x1={ropeRight - 35} y1={ropeY - 2.5} x2={ropeRight - 35} y2={ropeY + 2.5} stroke="#000" strokeWidth="2.5" />
+
+          {/* Left Dog */}
+          <g transform={`translate(${p1X}, ${ropeY - 26}) rotate(${p1Rotation}, 20, 20)`} style={{ transition: 'transform 0.4s ease' }}>
+            {p1Role === 'white_dog' ? renderWhiteDog(p1Winning, true, p2Winning) : renderBrownDog(p1Winning, true, p2Winning)}
+            {p2Winning && renderSweat(32, -4)}
+          </g>
+
+          {/* Right Dog */}
+          <g transform={`translate(${p2X}, ${ropeY - 26}) rotate(${p2Rotation}, 20, 20)`} style={{ transition: 'transform 0.4s ease' }}>
+            {p2Role === 'white_dog' ? renderWhiteDog(p2Winning, false, p1Winning) : renderBrownDog(p2Winning, false, p1Winning)}
+            {p1Winning && renderSweat(-8, -4)}
+          </g>
+
+          {/* Center Tied Ribbon Flag & Heart */}
+          <g transform={`translate(${heartX}, ${ropeY})`} style={{ transition: 'transform 0.4s ease' }}>
+            {/* Tied Red Ribbon Tape hanging from rope */}
+            <path d="M-2,0 L2,0 L4,13 L0,11 L-4,13 Z" fill="#FF3366" stroke="#000" strokeWidth="1.5" />
+            <circle cx="0" cy="0" r="3" fill="none" stroke="#000" strokeWidth="2" />
+            
+            {/* Floating Heart above rope */}
+            <g transform="translate(-10, -22)" className="animate-float">
+              <path 
+                d="M10 3.22C10 3.22 9.1-1 4.5-1-1.3-1-1.3 5.4 4.5 9 10.3 12.6 10 13.5 10 13.5s-.3-.9 5.5-4.5c5.8-3.6 5.8-10 0-10C10.9-1 10 3.22 10 3.22z" 
+                fill="#FF3366" 
+                stroke="#000" 
+                strokeWidth="1.8" 
+                strokeLinejoin="round" 
+              />
+              {shift > 10 && (
+                <text x="-6" y="8" fontSize="7.5" fontWeight="950" fill="#FF3366">◀</text>
+              )}
+              {shift < -10 && (
+                <text x="22" y="8" fontSize="7.5" fontWeight="950" fill="#FF3366">▶</text>
+              )}
+            </g>
+          </g>
+        </svg>
+
+        <div style={{
+          fontSize: '0.75rem',
+          fontWeight: '850',
+          marginTop: '4px',
+          color: totalDiff === 0 ? 'green' : '#C53030',
+          textAlign: 'center'
+        }}>
+          {totalDiff === 0 ? (
+            <span>🥳 完美對等！雙方正在甜美平衡中拉扯！</span>
+          ) : (
+            <span>
+              💪 <strong>{totalDiff > 0 ? p1Name : p2Name}</strong> 佔據上風，正把綜合付出拉向自己！
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div style={styles.container}>
       {/* 1. Difference Analysis (Top, Full Width) */}
       {showSummary && (
         <div className="comic-card WinnerDashboard-summaryCard" style={styles.summaryCard}>
-          <div style={styles.banner}>
+          <div className="WinnerDashboard-banner" style={styles.banner}>
             <span style={styles.bannerText}>⚖️ 雙方付出差額分析</span>
           </div>
 
-          {/* INTEGRATED TOTAL CONTRIBUTION BALANCE SCALE */}
-          <div style={styles.scaleCardContainer}>
-            <div style={styles.scaleCardLabel}>
-              ⚖️ 生活總貢獻天秤 (綜合折算：金錢支出 + 家事價值)
-            </div>
-            <div style={styles.scaleContainer}>
-              <svg viewBox="0 0 300 200" style={styles.scaleSvg}>
-                {/* Pedestal */}
-                <path d="M 105 180 L 195 180 L 175 160 L 125 160 Z" fill="#000000" stroke="var(--border-color)" strokeWidth="2.5" strokeLinejoin="round" />
-                
-                {/* Vertical post */}
-                <line x1="150" y1="65" x2="150" y2="162" stroke="#000000" strokeWidth="7" strokeLinecap="round" />
-                <line x1="150" y1="65" x2="150" y2="162" stroke="var(--border-color)" strokeWidth="2.5" strokeLinecap="round" />
-                <circle cx="150" cy="160" r="8" fill="var(--border-color)" />
+          {renderTugOfWar()}
 
-                {/* Horizontal rotating beam */}
-                <line 
-                  x1={lx} 
-                  y1={ly} 
-                  x2={rx} 
-                  y2={ry} 
-                  stroke="#FF9F1C" 
-                  strokeWidth="7" 
-                  strokeLinecap="round" 
-                  style={styles.scaleTransition}
-                />
-                <line 
-                  x1={lx} 
-                  y1={ly} 
-                  x2={rx} 
-                  y2={ry} 
-                  stroke="var(--border-color)" 
-                  strokeWidth="2.5" 
-                  strokeLinecap="round" 
-                  style={styles.scaleTransition}
-                />
-                {/* Fulcrum indicator */}
-                <circle cx="150" cy="65" r="7" fill="#FFE033" stroke="var(--border-color)" strokeWidth="2.5" />
-
-                {/* LEFT PAN (Partner 1) */}
-                <g style={styles.scaleTransition}>
-                  <line x1={lx} y1={ly} x2={lx - 25} y2={ly + 60} stroke="var(--border-color)" strokeWidth="2" />
-                  <line x1={lx} y1={ly} x2={lx + 25} y2={ly + 60} stroke="var(--border-color)" strokeWidth="2" />
-                  <path d={`M ${lx - 32} ${ly + 60} C ${lx - 32} ${ly + 72}, ${lx + 32} ${ly + 72}, ${lx + 32} ${ly + 60} Z`} fill="#FFFDF9" stroke="var(--border-color)" strokeWidth="2.5" />
-
-                  <g 
-                    transform={`translate(${lx - 20}, ${ly + 20})`}
-                    onMouseEnter={() => setHoveredDog('p1')}
-                    onMouseLeave={() => setHoveredDog(null)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <g className="dog-idle-float-white">
-                      {p1Role === 'white_dog' ? renderWhiteDog(totalDiff > 0) : renderBrownDog(totalDiff > 0)}
-                      {hoveredDog === 'p1' && (
-                        renderSpeechBubble(-30, -46, getP1SpeechText(), true)
-                      )}
-                    </g>
-                  </g>
-                </g>
-
-                {/* RIGHT PAN (Partner 2) */}
-                <g style={styles.scaleTransition}>
-                  <line x1={rx} y1={ry} x2={rx - 25} y2={ry + 60} stroke="var(--border-color)" strokeWidth="2" />
-                  <line x1={rx} y1={ry} x2={rx + 25} y2={ry + 60} stroke="var(--border-color)" strokeWidth="2" />
-                  <path d={`M ${rx - 32} ${ry + 60} C ${rx - 32} ${ry + 72}, ${rx + 32} ${ry + 72}, ${rx + 32} ${ry + 60} Z`} fill="#FFFDF9" stroke="var(--border-color)" strokeWidth="2.5" />
-
-                  <g 
-                    transform={`translate(${rx - 20}, ${ry + 20})`}
-                    onMouseEnter={() => setHoveredDog('p2')}
-                    onMouseLeave={() => setHoveredDog(null)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <g className="dog-idle-float-brown">
-                      {p2Role === 'white_dog' ? renderWhiteDog(totalDiff < 0) : renderBrownDog(totalDiff < 0)}
-                      {hoveredDog === 'p2' && (
-                        renderSpeechBubble(-30, -46, getP2SpeechText(), false)
-                      )}
-                    </g>
-                  </g>
-                </g>
-              </svg>
-            </div>
-          </div>
-
-          <div style={styles.summaryBody}>
-            {/* Money Balance */}
-            <div style={styles.summaryItem}>
-              <span style={styles.balanceLabel}>💰 共同生活金錢差額比對</span>
-              <div style={styles.balanceValueContainer}>
+          <div className="WinnerDashboard-summaryBodyGrid" style={styles.summaryBodyGrid}>
+            {/* Card 1: Money Difference */}
+            <div className="comic-card WinnerDashboard-miniCard" style={styles.miniCard}>
+              <span className="WinnerDashboard-miniLabel" style={styles.miniLabel}>💰 共同生活金錢差額</span>
+              <div style={styles.miniValue}>
                 {moneyDiff === 0 ? (
-                  <span style={styles.balancedText}>🎉 雙方目前的金錢支出達到完美平衡！</span>
+                  <span style={styles.miniBalanced}>完美平衡</span>
                 ) : (
-                  <span style={styles.imbalancedText}>
-                    <strong>{moneyDiff > 0 ? p1Name : p2Name}</strong> 比對手多支出了 <strong style={styles.highlight}>{symbol} {Math.abs(moneyDiff).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</strong>
-                  </span>
-                )}
-              </div>
-            </div>
-            
-            <div style={styles.dividerLine} />
-
-            {/* Chore Balance */}
-            <div style={styles.summaryItem}>
-              <span style={styles.balanceLabel}>🧹 家事勞動差額與價值折算</span>
-              <div style={styles.balanceValueContainer}>
-                {loveDiff === 0 ? (
-                  <span style={styles.balancedText}>🎉 雙方付出家事勞動已完美平衡！</span>
-                ) : (
-                  <span style={styles.imbalancedText}>
-                    <strong>{loveDiff > 0 ? p1Name : p2Name}</strong> 多付出了 <strong style={styles.highlight}>{Math.abs(loveDiff)} 點</strong> 的家事勞動 (折合 <strong style={styles.highlight}>{symbol} {(Math.abs(loveDiff) * lovePointRate).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</strong> 勞動價值)
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div style={styles.dividerLine} />
-
-            {/* Combined Net Contribution Balance */}
-            <div style={styles.summaryItem}>
-              <span style={styles.balanceLabel}>⚖️ 雙方金錢與家事勞動綜合折算 (生活總貢獻)</span>
-              <div style={styles.balanceValueContainer}>
-                {totalDiff === 0 ? (
-                  <span style={styles.balancedText}>🎉 雙方金錢與勞動綜合付出已完美平衡！</span>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <span style={styles.imbalancedText}>
-                      <strong>{totalDiff > 0 ? p1Name : p2Name}</strong> 綜合付出（金錢 + 勞動折算）高出 <strong style={styles.highlight}>{symbol} {Math.abs(totalDiff).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</strong>
-                    </span>
-                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: '750', marginTop: '2px' }}>
-                      💡 計算公式：實際金錢支出 + (家事勞動點數 × {symbol}{lovePointRate.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} / 點)
-                    </div>
+                  <div style={styles.miniImbalanced}>
+                    <span style={styles.miniName}>{moneyDiff > 0 ? p1Name : p2Name} 多支出</span>
+                    <span style={styles.miniAmount}>{symbol} {Math.abs(moneyDiff).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                   </div>
-              )}
+                )}
+              </div>
+            </div>
+
+            {/* Card 2: Chores Difference */}
+            <div className="comic-card WinnerDashboard-miniCard" style={styles.miniCard}>
+              <span className="WinnerDashboard-miniLabel" style={styles.miniLabel}>🧹 家事勞動差額</span>
+              <div style={styles.miniValue}>
+                {loveDiff === 0 ? (
+                  <span style={styles.miniBalanced}>完美平衡</span>
+                ) : (
+                  <div style={styles.miniImbalanced}>
+                    <span style={styles.miniName}>{loveDiff > 0 ? p1Name : p2Name} 多付出</span>
+                    <span style={styles.miniAmount}>{Math.abs(loveDiff)} 點</span>
+                    <span style={styles.miniSubValue}>折合 {symbol} {(Math.abs(loveDiff) * lovePointRate).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Card 3: Combined Net Contribution */}
+            <div className="comic-card WinnerDashboard-miniCard" style={{ ...styles.miniCard, backgroundColor: '#FFEBEF', borderColor: '#FF5E7E' }}>
+              <span className="WinnerDashboard-miniLabel" style={{ ...styles.miniLabel, color: '#B91C1C' }}>⚖️ 雙方生活總貢獻差額</span>
+              <div style={styles.miniValue}>
+                {totalDiff === 0 ? (
+                  <span style={{ ...styles.miniBalanced, backgroundColor: '#FF5E7E', color: '#fff' }}>完美平衡</span>
+                ) : (
+                  <div style={styles.miniImbalanced}>
+                    <span style={{ ...styles.miniName, color: '#B91C1C' }}>{totalDiff > 0 ? p1Name : p2Name} 總貢獻高出</span>
+                    <span style={{ ...styles.miniAmount, color: '#D01C4C' }}>{symbol} {Math.abs(totalDiff).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                    <span style={{ fontSize: '0.64rem', color: '#666', fontWeight: '750', marginTop: '2px' }}>
+                      (支出的金錢 + 家事折算)
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
       )}
 
       {showIndividualStats && (
         <div className="WinnerDashboard-columnsGrid" style={styles.columnsGrid}>
           {/* P1 Column Card */}
-          <div className="comic-card WinnerDashboard-statsCard" style={styles.statsCard}>
+          <div 
+            onClick={() => onPartnerClick && onPartnerClick('p1')}
+            className="comic-card WinnerDashboard-statsCard" 
+            style={{ ...styles.statsCard, cursor: onPartnerClick ? 'pointer' : 'default' }}
+          >
             <div style={styles.cardHeader}>
               <div style={styles.avatarWrapper}>
                 {p1Role === 'white_dog' ? renderWhiteDogBadge() : renderGrayDogBadge()}
@@ -358,7 +629,11 @@ export default function WinnerDashboard({
           </div>
 
           {/* P2 Column Card */}
-          <div className="comic-card WinnerDashboard-statsCard" style={styles.statsCard}>
+          <div 
+            onClick={() => onPartnerClick && onPartnerClick('p2')}
+            className="comic-card WinnerDashboard-statsCard" 
+            style={{ ...styles.statsCard, cursor: onPartnerClick ? 'pointer' : 'default' }}
+          >
             <div style={styles.cardHeader}>
               <div style={styles.avatarWrapper}>
                 {p2Role === 'white_dog' ? renderWhiteDogBadge() : renderGrayDogBadge()}
@@ -555,5 +830,67 @@ const styles = {
   },
   scaleTransition: {
     transition: 'all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+  },
+  summaryBodyGrid: {
+    display: 'flex',
+    gap: '16px',
+    flexWrap: 'wrap',
+    width: '100%',
+  },
+  miniCard: {
+    flex: '1 1 200px',
+    backgroundColor: '#FFFFFF',
+    border: '2.5px solid #000',
+    borderRadius: '12px',
+    padding: '14px 16px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+    boxShadow: '2px 2px 0px #000',
+    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+  },
+  miniLabel: {
+    fontSize: '0.78rem',
+    color: '#666666',
+    fontWeight: '900',
+    letterSpacing: '0.5px',
+  },
+  miniValue: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    flex: 1,
+  },
+  miniBalanced: {
+    display: 'inline-flex',
+    alignSelf: 'flex-start',
+    backgroundColor: '#000000',
+    color: '#FFFFFF',
+    padding: '3px 8px',
+    borderRadius: '8px',
+    fontSize: '0.75rem',
+    fontWeight: '900',
+  },
+  miniImbalanced: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  miniName: {
+    fontSize: '0.8rem',
+    fontWeight: '800',
+    color: '#333333',
+  },
+  miniAmount: {
+    fontSize: '1.35rem',
+    fontWeight: '950',
+    color: '#000000',
+    lineHeight: '1.2',
+    marginTop: '2px',
+  },
+  miniSubValue: {
+    fontSize: '0.72rem',
+    color: '#666666',
+    fontWeight: '750',
+    marginTop: '2px',
   }
 };
